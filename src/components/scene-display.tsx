@@ -1,14 +1,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Bot, Cube, User } from "lucide-react";
+import { Users, Bot, Box, User } from "lucide-react";
 
 const getEntityIcon = (entity: string) => {
     const lowerEntity = entity.toLowerCase();
     if (lowerEntity.includes('player')) return <User className="w-6 h-6 text-accent"/>;
     if (lowerEntity.includes('enemy') || lowerEntity.includes('goblin') || lowerEntity.includes('orc') || lowerEntity.includes('bandit')) return <Bot className="w-6 h-6 text-destructive"/>;
     if (lowerEntity.includes('companion') || lowerEntity.includes('ally')) return <Users className="w-6 h-6 text-green-500"/>
-    return <Cube className="w-6 h-6 text-muted-foreground"/>
+    return <Box className="w-6 h-6 text-muted-foreground"/>
 }
 
 export function SceneDisplay({ entities }: { entities: string[] }) {
