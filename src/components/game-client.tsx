@@ -27,7 +27,7 @@ export const initialGameState: GameState = {
   inventory: [],
   skills: [],
   quests: [],
-  choices: [],
+  choices: ["کاوش در اطراف", "بررسی کوله‌پشتی", "صبر کردن", "فریاد زدن برای کمک"],
   worldState: {},
   sceneEntities: [],
   isCombat: false,
@@ -119,7 +119,7 @@ export function GameClient() {
   }, [toast]);
   
   const processPlayerAction = async (playerAction: string) => {
-    setGameState(prev => ({ ...prev, isLoading: true, gameStarted: true }));
+    setGameState(prev => ({ ...prev, isLoading: true, gameStarted: true, choices: [] }));
     setView("game");
 
     const currentGameStateForAI = { ...gameState };
@@ -157,19 +157,18 @@ export function GameClient() {
   };
 
   const startNewGame = (scenario: CustomScenario) => {
-      const playerAction = `Start a new game.
-      Scenario Title: ${scenario.title}
-      Character: ${scenario.character}
-      Starting Items: ${scenario.initialItems}
-      Opening Scene: ${scenario.storyPrompt}`;
-
-      const freshGameState = {
+      const freshGameState: GameState = {
         ...initialGameState,
-        gameStarted: true
+        story: scenario.storyPrompt, // Use scenario description as the opening story
+        playerState: { health: 100, sanity: 100 },
+        inventory: [scenario.initialItems],
+        skills: [scenario.character], // Store character info in skills for now
+        gameStarted: true,
+        isLoading: false,
       };
 
       setGameState(freshGameState);
-      processPlayerAction(playerAction);
+      setView("game");
   };
 
   const resetGame = () => {
