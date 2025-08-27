@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Dna, Landmark, Wand, FlaskConical, Swords, User, Shield, HeartCrack, Rocket, Bot, Fingerprint, Ghost, Sun, Moon, Drama, Skull, ShieldCheck, Crosshair, Leaf, HandHeart, Hammer, Gem, Telescope, Briefcase, Handshake } from "lucide-react";
+import { ArrowLeft, Dna, Landmark, Wand, FlaskConical, Swords, User, Shield, HeartCrack, Rocket, Bot, Fingerprint, Ghost, Sun, Moon, Drama, Skull, ShieldCheck, Crosshair, Leaf, HandHeart, Hammer, Gem, Telescope, Briefcase, Handshake, Rabbit, Brain, Eye, Speaker, Anchor, Angry, Shell, Puzzle, Drama as DramaIcon, Hand, Footprints, Ear, Wind } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -43,13 +43,32 @@ const perks = {
     'کاریزماتیک': { icon: User, description: "توانایی بالا در متقاعد کردن دیگران و نفوذ اجتماعی." },
     'مقاوم': { icon: Shield, description: "بدنی سرسخت که در برابر آسیب‌ها و بیماری‌ها مقاوم‌تر است." },
     'تیزهوش': { icon: Fingerprint, description: "ذهنی خلاق و سریع برای حل معماها و یافتن راه‌حل‌های غیرمنتظره." },
+    'چابک': { icon: Rabbit, description: "حرکت سریع و بی‌صدا، استاد فرار و جاخالی دادن." },
+    'حافظه قوی': { icon: Brain, description: "جزئیات و اطلاعات مهم را به راحتی به خاطر می‌سپارد." },
+    'چشمان تیزبین': { icon: Eye, description: "قابلیت دیدن جزئیات پنهان و پیدا کردن سرنخ‌ها." },
+    'سخنور': { icon: Speaker, description: "مهارت بالا در سخنرانی، الهام‌بخشیدن و رهبری دیگران." },
+    'ردیاب': { icon: Footprints, description: "توانایی دنبال کردن ردپاها و یافتن مسیرهای مخفی." },
+    'گوش‌های حساس': { icon: Ear, description: "شنیدن صداهای ضعیف از فواصل دور و تشخیص خطر." },
+    'اراده آهنین': { icon: Anchor, description: "مقاومت بالا در برابر فشارهای روانی و کنترل ذهن." },
+    'دست‌های ماهر': { icon: Hand, description: "استعداد در کارهای دستی مانند باز کردن قفل‌ها یا خنثی‌سازی تله‌ها." },
+    'سبک‌بار': { icon: Wind, description: "نیاز کمتر به غذا و آب، توانایی بقا در شرایط سخت." }
 };
 
 const flaws = {
     'ترسو': { icon: HeartCrack, description: "در موقعیت‌های خطرناک دچار استرس و وحشت می‌شود." },
     'بدشانس': { icon: Moon, description: "همیشه بدترین اتفاق ممکن برایش رخ می‌دهد." },
     'مغرور': { icon: Sun, description: "اعتماد به نفس بیش از حد، گاهی کار دستش می‌دهد." },
+    'دست و پا چلفتی': { icon: Wind, description: "مستعد خرابکاری و انداختن وسایل در حساس‌ترین لحظات." }, // Placeholder Icon
+    'کله‌شق': { icon: Angry, description: "به سختی نظرش را عوض می‌کند و اغلب راه اشتباه را می‌رود." },
+    'زودباور': { icon: Shell, description: "به راحتی حرف دیگران را باور می‌کند و فریب می‌خورد." },
+    'فراموشکار': { icon: Puzzle, description: "جزئیات مهم را فراموش می‌کند و سرنخ‌ها را از دست می‌دهد." },
+    'پرحرف': { icon: DramaIcon, description: "نمی‌تواند جلوی زبانش را بگیرد و اسرار را فاش می‌کند." },
+    'حواس‌پرت': { icon: Wind, description: "به راحتی تمرکزش را از دست می‌دهد و متوجه خطرهای اطرافش نمی‌شود." },
+    'طمع‌کار': { icon: Gem, description: "عشق به ثروت و اشیاء قیمتی او را به دردسر می‌اندازد." },
+    'بی‌سواد': { icon: Dna, description: "توانایی خواندن و نوشتن ندارد و از درک متون عاجز است." },
+    'فوبیای خاص': { icon: Ghost, description: "ترس شدید از یک چیز خاص (مثلاً ارتفاع، عنکبوت، تاریکی)." }
 };
+
 
 const scenarios = {
     'فانتزی': [
@@ -245,7 +264,7 @@ const SelectionGrid = ({ items, selected, onSelect, columns = 3 }: { items: any,
 const FeatureSelection = ({ title, items, selected, onSelect }: { title: string, items: any, selected: string | null, onSelect: (key: string) => void }) => (
     <div>
         <h3 className="text-xl font-bold text-center mb-4 text-accent">{title}</h3>
-        <div className="space-y-3">
+        <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
             {Object.entries(items).map(([key, value]: [string, any]) => (
                 <Card 
                     key={key} 
@@ -298,3 +317,4 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
     
 
     
+
