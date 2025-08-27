@@ -228,7 +228,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                      <Button onClick={onBack} variant="ghost" size="icon">
                         <ArrowLeft className="w-6 h-6" />
                     </Button>
-                    <h1 className="text-2xl sm:text-4xl font-headline text-accent">ماجراجویی جدید</h1>
+                    <h1 className="text-2xl sm:text-4xl font-headline text-primary">ماجراجویی جدید</h1>
                     <div className="w-10"></div>
                 </div>
 
@@ -262,8 +262,15 @@ const Step = ({ title, description, children }: { title: string, description: st
     </Card>
 );
 
-const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: string }) => (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", `md:grid-cols-${columns}`)}>
+const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: "2" | "3" | "4" }) => {
+    const columnClasses: Record<string, string> = {
+        "2": "md:grid-cols-2",
+        "3": "md:grid-cols-3",
+        "4": "md:grid-cols-4",
+    };
+    
+    return (
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", columnClasses[columns || "3"])}>
         {Object.entries(items).map(([key, value]: [string, any]) => (
             <Card 
                 key={key}
@@ -283,7 +290,8 @@ const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: an
             </Card>
         ))}
     </div>
-);
+    )
+};
 
 const FeatureSelection = ({ title, items, selected, onSelect }: { title: string, items: any, selected: string | null, onSelect: (key: string) => void }) => (
     <div>
@@ -331,11 +339,3 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
         ))}
     </div>
 );
-
-    
-
-    
-
-    
-
-

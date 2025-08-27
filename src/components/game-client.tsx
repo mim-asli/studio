@@ -77,7 +77,7 @@ export function GameClient() {
   useEffect(() => {
     handleLowSanityEffect();
     handleLowHealthEffect();
-  }, [handleLowHealthEffect, handleLowHealthEffect]);
+  }, [handleLowSanityEffect, handleLowHealthEffect]);
 
   const saveGame = useCallback((stateToSave: GameState) => {
     if (!stateToSave.gameStarted || !stateToSave.id) return;
