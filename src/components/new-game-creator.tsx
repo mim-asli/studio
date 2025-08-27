@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Dna, Landmark, Wand, FlaskConical, Swords, User, Shield, HeartCrack, Rocket, Bot, Fingerprint, Ghost, Sun, Moon } from "lucide-react";
+import { ArrowLeft, Dna, Landmark, Wand, FlaskConical, Swords, User, Shield, HeartCrack, Rocket, Bot, Fingerprint, Ghost, Sun, Moon, Drama, Skull } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -19,6 +19,9 @@ const genres = {
     'علمی-تخیلی': { icon: Rocket },
     'فانتزی': { icon: Wand },
     'کلاسیک': { icon: Landmark },
+    'ترسناک': { icon: Skull },
+    'معمایی': { icon: Fingerprint },
+    'پسا-آخرالزمانی': { icon: Bot },
 };
 
 const archetypes = {
@@ -52,6 +55,18 @@ const scenarios = {
     'کلاسیک': [
         { title: "قتل در قطار سریع‌السیر", description: "به عنوان یک کارآگاه مشهور، باید راز قتلی که در یک قطار لوکس رخ داده را پیش از رسیدن به مقصد حل کنید." },
         { title: "گنجینه گمشده دزدان دریایی", description: "نقشه‌ای قدیمی شما را به جزیره‌ای ناشناخته هدایت می‌کند که گفته می‌شود گنج کاپیتان بلک‌هارت در آن پنهان است." },
+    ],
+    'ترسناک': [
+        { title: "عمارت تسخیر شده", description: "شما به عنوان یک محقق پدیده‌های فراطبیعی وارد عمارتی می‌شوید که گفته می‌شود توسط روحی سرگردان تسخیر شده است." },
+        { title: "جنگل بی‌پایان", description: "ماشین شما در کنار جاده‌ای در اعماق یک جنگل مه‌آلود خراب می‌شود. با هر قدمی که در جنگل برمی‌دارید، بیشتر گم می‌شوید." },
+    ],
+    'معمایی': [
+        { title: "پرونده جواهرات دزدیده شده", description: "یک مجموعه جواهرات گران‌بها از موزه‌ای امن به سرقت رفته و شما بهترین کارآگاه شهر برای حل این معما هستید." },
+        { title: "ناپدید شدن نویسنده", description: "یک نویسنده مشهور داستان‌های جنایی در کلبه دورافتاده‌اش ناپدید شده و شما برای تحقیق به آنجا فرستاده شده‌اید." },
+    ],
+    'پسا-آخرالزمانی': [
+        { title: "پناهگاه آخر", description: "پس از یک فاجعه جهانی، شما یکی از معدود بازماندگان هستید و باید برای رسیدن به یک پناهگاه امن از میان خرابه‌ها عبور کنید." },
+        { title: "تاجر بیابان", description: "در دنیایی خشک و بی‌رحم، شما یک تاجر دوره‌گرد هستید که بین سکونتگاه‌های کوچک برای زنده ماندن معامله می‌کنید." },
     ]
 };
 
@@ -95,7 +110,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const renderStep = () => {
         switch (step) {
             case 1: return <Step title="۱. انتخاب ژانر" description="سبک و دنیای کلی ماجراجویی خود را مشخص کنید.">
-                <SelectionGrid items={genres} selected={genre} onSelect={setGenre} />
+                <SelectionGrid items={genres} selected={genre} onSelect={(key) => { setGenre(key as keyof typeof genres); setSelectedScenario(null); }} columns={3} />
             </Step>
             case 2: return <Step title="۲. انتخاب کهن‌الگو" description="کلاس و هویت اصلی شخصیت خود را انتخاب کنید.">
                 <SelectionGrid items={archetypes} selected={archetype} onSelect={setArchetype} />
@@ -265,5 +280,7 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
         ))}
     </div>
 );
+
+    
 
     
