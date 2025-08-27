@@ -1,5 +1,8 @@
 "use client";
 
+// THIS COMPONENT IS DEPRECATED AND WILL BE REPLACED BY NewGameCreator.tsx
+// It is kept for now to avoid breaking changes during transition.
+
 import {
   Dialog,
   DialogContent,

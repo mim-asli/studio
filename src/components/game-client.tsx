@@ -10,13 +10,13 @@ import { PlayerHud } from "@/components/player-hud";
 import { InteractionPanel } from "@/components/interaction-panel";
 import { SidebarTabs } from "@/components/sidebar-tabs";
 import { SceneDisplay } from "@/components/scene-display";
-import { NewGameModal } from "@/components/new-game-modal";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save, FilePlus, AlertTriangle, Volume2, VolumeX } from "lucide-react";
+import { Loader2, Save, FilePlus, AlertTriangle } from "lucide-react";
+import { StartScreen } from "./screens/start-screen";
 
 const SAVE_GAME_KEY = "dastan-savegame";
 
-const initialGameState: GameState = {
+export const initialGameState: GameState = {
   story: "به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید.",
   playerState: { health: 100, sanity: 100 },
   inventory: [],
@@ -34,7 +34,6 @@ const initialGameState: GameState = {
 
 export function GameClient() {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
-  const [showNewGameModal, setShowNewGameModal] = useState(false);
   const { toast } = useToast();
 
   const handleLowSanityEffect = useCallback(() => {
@@ -86,7 +85,7 @@ export function GameClient() {
       const savedGameJson = localStorage.getItem(SAVE_GAME_KEY);
       if (savedGameJson) {
         const saveFile: SaveFile = JSON.parse(savedGameJson);
-        setGameState({ ...saveFile.gameState, isLoading: false });
+        setGameState({ ...saveFile.gameState, isLoading: false, gameStarted: true });
         toast({
           title: "بازی بارگذاری شد",
           description: "ماجراجویی شما ادامه می‌یابد!",
@@ -106,6 +105,7 @@ export function GameClient() {
         description: "فایل ذخیره ممکن است خراب باشد.",
       });
     }
+    return null;
   }, [toast]);
   
   const processPlayerAction = async (playerAction: string) => {
@@ -158,31 +158,22 @@ export function GameClient() {
       };
 
       setGameState(freshGameState);
-      setShowNewGameModal(false);
       processPlayerAction(playerAction);
   };
 
+  const resetGame = () => {
+    setGameState(initialGameState);
+  }
+
   if (!gameState.gameStarted) {
     return (
-      <>
-        <NewGameModal 
-            open={showNewGameModal} 
-            onOpenChange={setShowNewGameModal} 
-            onStartGame={startNewGame}
-        />
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
-          <h1 className="text-6xl font-headline text-accent mb-2 tracking-widest">داستان</h1>
-          <p className="text-xl text-muted-foreground mb-8">یک بازی نقش‌آفرینی بی‌پایان با هوش مصنوعی</p>
-          <div className="flex gap-4">
-            <Button size="lg" onClick={() => setShowNewGameModal(true)}>
-              <FilePlus className="ml-2" /> بازی جدید
-            </Button>
-            <Button size="lg" variant="secondary" onClick={loadGame}>
-              <Save className="ml-2" /> بارگذاری بازی
-            </Button>
-          </div>
-        </div>
-      </>
+      <StartScreen 
+        onNewGame={() => setGameState(prev => ({...prev, gameStarted: true}))} // This will likely change to a wizard
+        onLoadGame={loadGame}
+        onCustomScenario={() => { /* Navigate to custom scenario creator */ }}
+        onSettings={() => { /* Navigate to settings */ }}
+        onScoreboard={() => { /* Navigate to scoreboard */ }}
+      />
     );
   }
 
@@ -192,7 +183,7 @@ export function GameClient() {
             <AlertTriangle className="w-24 h-24 text-destructive mb-4" />
             <h1 className="text-6xl font-headline text-destructive mb-2">بازی تمام شد</h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl">{gameState.story}</p>
-            <Button size="lg" onClick={() => setGameState(initialGameState)}>
+            <Button size="lg" onClick={resetGame}>
                 <FilePlus className="ml-2" /> شروع یک افسانه جدید
             </Button>
       </div>
@@ -201,11 +192,6 @@ export function GameClient() {
 
   return (
     <>
-      <NewGameModal 
-        open={showNewGameModal} 
-        onOpenChange={setShowNewGameModal} 
-        onStartGame={startNewGame}
-      />
       <main className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen bg-background text-foreground font-body p-2 sm:p-4 gap-4">
         <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <div className="relative flex-grow border border-primary/20 rounded-lg shadow-inner bg-black/20 overflow-hidden flex flex-col">
