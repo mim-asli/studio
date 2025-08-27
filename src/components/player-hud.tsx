@@ -14,16 +14,28 @@ interface HudStatProps {
 }
 
 const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudStatProps) => {
-  // `percentage` represents how "full" the gauge should appear.
-  // For 'default' (health), 100 value = 100% full.
-  // For 'inverse' (hunger), 0 value = 100% full (not hungry).
-  const percentage = variant === 'inverse' ? 100 - (value / max * 100) : (value / max * 100);
+  let percentage, colorClass;
 
-  let colorClass = "text-green-500";
-  if (percentage < 30) {
-    colorClass = "text-red-500";
-  } else if (percentage < 60) {
-    colorClass = "text-yellow-500";
+  if (variant === 'inverse') {
+    // For hunger, thirst. Higher value is worse.
+    percentage = (value / max) * 100;
+    if (value > 70) {
+      colorClass = "text-red-500";
+    } else if (value > 40) {
+      colorClass = "text-yellow-500";
+    } else {
+      colorClass = "text-green-500";
+    }
+  } else {
+    // For health, sanity, stamina, mana. Lower value is worse.
+    percentage = (value / max) * 100;
+    if (value < 30) {
+      colorClass = "text-red-500";
+    } else if (value < 60) {
+      colorClass = "text-yellow-500";
+    } else {
+      colorClass = "text-green-500";
+    }
   }
 
 
@@ -32,7 +44,7 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
       <div
         className="relative flex h-16 w-16 items-center justify-center rounded-full"
       >
-        <svg className="w-full h-full" viewBox="0 0 36 36">
+        <svg className="w-full h-full" viewBox="0 0 36 36" transform="rotate(-90)">
           <path
             d="M18 2.0845
               a 15.9155 15.9155 0 0 1 0 31.831
