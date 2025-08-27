@@ -23,22 +23,33 @@ const EnemySchema = z.object({
     health: z.number().describe("The current health of the enemy."),
 });
 
+const PlayerStateSchema = z.object({
+  health: z.number().describe("Player's current health. Max 100."),
+  sanity: z.number().describe("Player's current sanity. Max 100. Low sanity can cause hallucinations or negative effects."),
+  hunger: z.number().describe("Player's current hunger level. 0 is not hungry, 100 is starving."),
+  thirst: z.number().describe("Player's current thirst level. 0 is not thirsty, 100 is dehydrated."),
+});
+
+const WorldStateSchema = z.object({
+    day: z.number().describe("The current day number in the game world."),
+    time: z.string().describe("The current time of day. Be descriptive (e.g., 'Early Morning', 'Noon', 'Late Afternoon', 'Midnight')."),
+    weather: z.string().optional().describe("The current weather (e.g., 'Sunny', 'Raining', 'Foggy').")
+});
+
 const GenerateNextTurnOutputSchema = z.object({
   story: z.string().describe('The narrative text of the current events. This should be a single string.'),
-  playerState: z.any().describe('The state of the player (health, sanity, etc.).'),
-  inventory: z.array(z.string()).describe('A list of items in the player\'s inventory.'),
-  skills: z.array(z.string()).describe('A list of the player\'s skills.'),
-  quests: z.array(z.string()).describe('A list of the player\'s quests.'),
+  playerState: PlayerStateSchema.describe('The state of the player (health, sanity, etc.).'),
+  inventory: z.array(z.string()).describe("A list of items in the player's inventory. This should be the player's complete inventory."),
+  skills: z.array(z.string()).describe("A list of the player's skills."),
+  quests: z.array(z.string()).describe("A list of the player's quests."),
   choices: z.array(z.string()).describe('A list of choices the player can make.'),
-  worldState: z.object({
-    day: z.number().describe("The current day number in the game world."),
-    time: z.string().describe("The current time of day (e.g., 'Morning', 'Noon', 'Evening', 'Night').")
-  }).describe('The state of the game world (day, time, etc.).'),
+  worldState: WorldStateSchema.describe('The state of the game world (day, time, etc.).'),
   newCharacter: z.string().optional().describe('A new character introduced in this turn.'),
   newQuest: z.string().optional().describe('A new quest introduced in this turn.'),
   newLocation: z.string().optional().describe('A new location introduced in this turn.'),
   globalEvent: z.string().optional().describe('A global event that occurred in this turn.'),
-  sceneEntities: z.array(z.string()).describe('List of entities in the current scene.'),
+  sceneEntities: z.array(z.string()).describe('List of all entities in the current scene (player, companions, enemies, important objects).'),
+  companions: z.array(z.string()).optional().describe("A list of the player's current companions."),
   isCombat: z.boolean().optional().describe('Whether combat is active.'),
   enemies: z.array(EnemySchema).optional().describe('A list of enemies in the combat.'),
 });
@@ -55,30 +66,19 @@ const prompt = ai.definePrompt({
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.\n
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
-Enforce the following rules:\n- **State Synchronization Philosophy:** Any changes to the game world or player state MUST be reflected in the JSON output.\n- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n- **Persistent World Philosophy:** The game doesn\'t end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n- **Time Progression:** With every player action, time must progress. Update the day and time of day in the worldState. An action might take a few minutes or several hours. Be logical.
+Enforce the following rules:\n- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests) MUST be reflected in the JSON output. The inventory in the output must always be the complete inventory.
+- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n- **Persistent World Philosophy:** The game doesn\'t end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n- **Time and Resource Progression:** With every player action, time must progress logically. Update the day and time of day in the worldState. Actions also affect hunger and thirst; update them accordingly.
 Respond in the persona of the GM Personality specified in the story prompt.
 
 JSON Output Structure:
-ALWAYS return a JSON object with the following structure:\n{
-  "story": "string", // Narrative text of the current events.
-  "playerState": {}, // Player status (health, sanity, hunger, thirst, etc.).
-  "inventory": [], // List of items.
-  "skills": [], // List of skills.
-  "quests": [], // List of quests.
-  "choices": [], // List of choices the player can make.
-  "worldState": {"day": 1, "time": "Morning"}, // Game world state (day, time).
-  "newCharacter": "string", // (Optional) New character introduced.
-  "newQuest": "string", // (Optional) New quest introduced.
-  "newLocation": "string", // (Optional) New location discovered.
-  "globalEvent": "string", // (Optional) Global event occurring.
-  "sceneEntities": ["entity1", "entity2"] // (Optional) List of entities in the current scene.
-}
+ALWAYS return a JSON object with the specified structure. Ensure all fields are populated correctly based on the current turn.
 
 Turn-Based Combat:
-If combat starts, create the isCombat field and populate enemies with their stats. Player choices should be [COMBAT: ATTACK] enemyId.  Manage turns.
+If combat starts, set isCombat to true and populate the 'enemies' array with their stats. Player choices should include combat actions like [COMBAT: ATTACK] enemyId.
 
 Scene Composition:
-Populate sceneEntities with all entities in the scene (player, companions, enemies, objects).
+Populate 'sceneEntities' with all entities in the scene (player, companions, enemies, objects).
+Populate the 'companions' array with the names of any allies currently with the player.
 
 \nUse the current game state and player action to generate the next turn of the story. Adhere to the rules and output structure above.\n\nCurrent Game State:\n{{{gameState}}}
 \nPlayer Action:\n{{{playerAction}}}

@@ -36,13 +36,14 @@ export const PLAYER_ACTION_PREFIX = "> ";
 export const initialGameState: GameState = {
   id: '',
   story: ["به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید."],
-  playerState: { health: 100, sanity: 100 },
+  playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0 },
   inventory: [],
   skills: [],
   quests: [],
   choices: [],
-  worldState: { day: 1, time: "صبح" },
+  worldState: { day: 1, time: "صبح", weather: "آفتابی" },
   sceneEntities: [],
+  companions: [],
   isCombat: false,
   enemies: [],
   isGameOver: false,
@@ -151,6 +152,8 @@ export function GameClient() {
   
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
+    
+    const currentState = {...gameState};
 
     setGameState(prev => ({ 
       ...prev, 
@@ -158,44 +161,45 @@ export function GameClient() {
       isLoading: true, 
       choices: [] 
     }));
-
-    const currentGameStateForAI = { ...gameState };
     
     // Create a summarized version of the story for the AI prompt.
-    // The AI will still have the full, structured game state.
-    // @ts-ignore
-    currentGameStateForAI.story = gameState.story.slice(-10).join('\n\n');
+    const storyHistory = currentState.story.slice(-10).join('\n\n');
+    
+    // Create the gameState payload for the AI, ensuring it has the full state but a summarized story.
+    const gameStateForAI = {
+        ...currentState,
+        story: storyHistory,
+    };
     
     // Remove client-side only state properties from the object sent to the AI
     // @ts-ignore
-    delete currentGameStateForAI.isLoading; 
+    delete gameStateForAI.isLoading; 
     // @ts-ignore
-    delete currentGameStateForAI.gameStarted;
+    delete gameStateForAI.gameStarted;
     // @ts-ignore
-    delete currentGameStateForAI.isGameOver;
+    delete gameStateForAI.isGameOver;
     // @ts-ignore
-    delete currentGameStateForAI.id;
+    delete gameStateForAI.id;
 
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
         // We send the player action without the prefix to the AI.
-        gameState: currentGameStateForAI,
+        gameState: gameStateForAI,
         playerAction,
       });
       
       setGameState(prevGameState => {
-        // Correctly separate the new story string from the rest of the updated state.
         const { story: newStory, ...restOfNextTurn } = nextTurn;
 
         const updatedGameState: GameState = {
             ...prevGameState,
             ...restOfNextTurn,
-            // Append the new story string to the existing story array.
-            story: [...prevGameState.story.slice(0,-1), newStory],
+            story: [...prevGameState.story, newStory],
             gameStarted: true,
             isLoading: false,
         };
+
         saveGame(updatedGameState); // Auto-save after each turn
         return updatedGameState;
       });
@@ -221,7 +225,7 @@ export function GameClient() {
       ...initialGameState,
       id: gameId,
       story: [], // Start with an empty story array
-      playerState: { health: 100, sanity: 100 },
+      playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0 },
       inventory: scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
       skills: scenario.character.split(',').map(s => s.trim()),
       gameStarted: true,
@@ -335,7 +339,7 @@ export function GameClient() {
           <div className="flex-grow flex flex-col gap-4 overflow-y-auto pr-2">
             <PlayerHud playerState={gameState.playerState} />
             <WorldStateDisplay worldState={gameState.worldState} />
-            <SceneDisplay entities={gameState.sceneEntities} />
+            <SceneDisplay entities={gameState.sceneEntities || []} companions={gameState.companions || []} />
             <div className="flex-grow">
               <SidebarTabs inventory={gameState.inventory} skills={gameState.skills} quests={gameState.quests}/>
             </div>

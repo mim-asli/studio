@@ -11,8 +11,6 @@ export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {
     isGameOver: boolean;
     gameStarted: boolean;
     isLoading: boolean;
-    isCombat: boolean;
-    enemies: any[];
     characterName: string;
     scenarioTitle: string;
 };
