@@ -362,10 +362,8 @@ export function GameClient() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>لغو</AlertDialogCancel>
-                    <AlertDialogAction asChild>
-                      <Button onClick={resetGame} variant="destructive">
-                          خروج
-                      </Button>
+                    <AlertDialogAction onClick={resetGame} className="bg-destructive hover:bg-destructive/90">
+                      خروج
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
