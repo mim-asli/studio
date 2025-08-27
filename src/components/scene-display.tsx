@@ -3,12 +3,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Bot, Box, User, Sun, Moon, Cloud, Snowflake, Leaf } from "lucide-react";
 import type { GameState } from "@/lib/types";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+const getEntityClassification = (entity: string, companions: string[]): string => {
+    const lowerEntity = entity.toLowerCase();
+    if (lowerEntity.includes('player') || lowerEntity.includes('بازیکن')) return "بازیکن";
+    if (companions.some(c => lowerEntity.includes(c.toLowerCase()))) return "همراه";
+    const enemyKeywords = ['enemy', 'goblin', 'orc', 'bandit', 'دشمن', 'راهزن', 'اورک', 'گابلین'];
+    if (enemyKeywords.some(keyword => lowerEntity.includes(keyword))) return "دشمن";
+    return "شیء";
+};
+
 
 const getEntityIcon = (entity: string, companions: string[]) => {
     const lowerEntity = entity.toLowerCase();
     if (lowerEntity.includes('player') || lowerEntity.includes('بازیکن')) return <User className="w-6 h-6 text-foreground"/>;
     if (companions.some(c => lowerEntity.includes(c.toLowerCase()))) return <Users className="w-6 h-6 text-green-500"/>
-    if (lowerEntity.includes('enemy') || lowerEntity.includes('goblin') || lowerEntity.includes('orc') || lowerEntity.includes('bandit') || lowerEntity.includes('دشمن')) return <Bot className="w-6 h-6 text-destructive"/>;
+    const enemyKeywords = ['enemy', 'goblin', 'orc', 'bandit', 'دشمن', 'راهزن', 'اورک', 'گابلین'];
+    if (enemyKeywords.some(keyword => lowerEntity.includes(keyword))) return <Bot className="w-6 h-6 text-destructive"/>;
     return <Box className="w-6 h-6 text-muted-foreground"/>
 }
 
@@ -22,10 +39,17 @@ export function SceneDisplay({ entities, companions }: { entities: string[], com
             {entities && entities.length > 0 ? (
                 <div className="flex flex-wrap gap-3">
                     {entities.map((entity, index) => (
-                        <div key={index} className="flex flex-col items-center justify-start gap-2 p-2 rounded-md bg-muted/50 w-20 h-24 text-center border">
-                            {getEntityIcon(entity, companions)}
-                            <p className="text-xs break-words leading-tight font-code">{entity}</p>
-                        </div>
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <div className="flex flex-col items-center justify-start gap-2 p-2 rounded-md bg-muted/50 w-20 h-24 text-center border">
+                              {getEntityIcon(entity, companions)}
+                              <p className="text-xs break-words leading-tight font-code">{entity}</p>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{getEntityClassification(entity, companions)}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     ))}
                 </div>
             ) : (
@@ -68,9 +92,16 @@ export function WorldStateDisplay({ worldState }: { worldState: GameState['world
                  {weatherIcon && (
                     <>
                         <div className="border-l h-10 border-border/50"></div>
-                        <div className="flex items-center gap-2" title={worldState.weather}>
-                            {weatherIcon}
-                        </div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="flex items-center gap-2">
+                                    {weatherIcon}
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{worldState.weather}</p>
+                            </TooltipContent>
+                        </Tooltip>
                     </>
                  )}
             </CardContent>
