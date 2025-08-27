@@ -39,7 +39,7 @@ export const initialGameState: GameState = {
   inventory: [],
   skills: [],
   quests: [],
-  choices: ["کاوش در اطراف", "بررسی کوله‌پشتی", "صبر کردن", "فریاد زدن برای کمک"],
+  choices: [],
   worldState: {},
   sceneEntities: [],
   isCombat: false,
@@ -149,8 +149,7 @@ export function GameClient() {
   }, [toast]);
   
   const processPlayerAction = async (playerAction: string) => {
-    setGameState(prev => ({ ...prev, isLoading: true, gameStarted: true, choices: [] }));
-    setView("game");
+    setGameState(prev => ({ ...prev, isLoading: true, choices: [] }));
 
     const { story, ...restOfState } = gameState;
     const currentGameStateForAI = { 
@@ -187,7 +186,7 @@ export function GameClient() {
 
     } catch (error) {
       console.error("Error generating next turn:", error);
-      setGameState(prev => ({ ...prev, isLoading: false }));
+      setGameState(prev => ({ ...prev, isLoading: false, choices: prev.choices.length > 0 ? prev.choices : ["دوباره تلاش کن"] }));
       toast({
         variant: "destructive",
         title: "خطای هوش مصنوعی",
@@ -201,20 +200,23 @@ export function GameClient() {
     const freshGameState: GameState = {
       ...initialGameState,
       id: gameId,
-      story: [`دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}`],
+      story: [], // Start with an empty story
       playerState: { health: 100, sanity: 100 },
       inventory: scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
       skills: scenario.character.split(',').map(s => s.trim()),
       gameStarted: true,
-      isLoading: false,
-      choices: ["بازی را شروع کن و اولین صحنه را با جزئیات توصیف کن."],
+      isLoading: true,
+      choices: [],
       characterName: characterName,
       scenarioTitle: scenario.title,
     };
     
     setGameState(freshGameState);
     setView("game");
-    processPlayerAction(freshGameState.choices[0]);
+    
+    const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
+    
+    processPlayerAction(startPrompt);
   };
 
 
