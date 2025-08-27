@@ -58,7 +58,7 @@ const flaws = {
     'ترسو': { icon: HeartCrack, description: "در موقعیت‌های خطرناک دچار استرس و وحشت می‌شود." },
     'بدشانس': { icon: Moon, description: "همیشه بدترین اتفاق ممکن برایش رخ می‌دهد." },
     'مغرور': { icon: Sun, description: "اعتماد به نفس بیش از حد، گاهی کار دستش می‌دهد." },
-    'دست و پا چلفتی': { icon: Wind, description: "مستعد خرابکاری و انداختن وسایل در حساس‌ترین لحظات." }, // Placeholder Icon
+    'دست و پا چلفتی': { icon: Wind, description: "مستعد خرابکاری و انداختن وسایل در حساس‌ترین لحظات." },
     'کله‌شق': { icon: Angry, description: "به سختی نظرش را عوض می‌کند و اغلب راه اشتباه را می‌رود." },
     'زودباور': { icon: Shell, description: "به راحتی حرف دیگران را باور می‌کند و فریب می‌خورد." },
     'فراموشکار': { icon: Puzzle, description: "جزئیات مهم را فراموش می‌کند و سرنخ‌ها را از دست می‌دهد." },
@@ -70,7 +70,7 @@ const flaws = {
 };
 
 
-const scenarios = {
+const scenarios: Record<keyof typeof genres, { title: string; description: string }[]> = {
     'فانتزی': [
         { title: "آخرین نگهبان فانوس دریایی", description: "شما تنها نگهبان یک فانوس دریایی باستانی هستید که بر روی صخره‌ای در میان دریایی طوفانی قرار دارد. گفته می‌شود نور این فانوس، هیولاهای اعماق را دور نگه می‌دارد. امشب، نور فانوس برای اولین بار در هزار سال گذشته، خاموش شده است." },
     ],
@@ -301,5 +301,7 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
         ))}
     </div>
 );
+
+    
 
     
