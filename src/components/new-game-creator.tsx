@@ -161,10 +161,10 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const renderStep = () => {
         switch (step) {
             case 1: return <Step title="۱. انتخاب ژانر" description="سبک و دنیای کلی ماجراجویی خود را مشخص کنید.">
-                <SelectionGrid items={genres} selected={genre} onSelect={(key) => { setGenre(key as keyof typeof genres); setSelectedScenario(null); }} columns={3} />
+                <SelectionGrid items={genres} selected={genre} onSelect={(key) => { setGenre(key as keyof typeof genres); setSelectedScenario(null); }} columns="3" />
             </Step>
             case 2: return <Step title="۲. انتخاب کهن‌الگو" description="کلاس و هویت اصلی شخصیت خود را انتخاب کنید.">
-                <SelectionGrid items={archetypes} selected={archetype} onSelect={setArchetype} columns={4} />
+                <SelectionGrid items={archetypes} selected={archetype} onSelect={setArchetype} columns="4" />
             </Step>
             case 3: return <Step title="۳. جزئیات شخصیت" description="به قهرمان خود یک نام و یک پیشینه (اختیاری) بدهید.">
                 <div className="space-y-4">
@@ -262,7 +262,7 @@ const Step = ({ title, description, children }: { title: string, description: st
     </Card>
 );
 
-const SelectionGrid = ({ items, selected, onSelect, columns = 3 }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: number }) => (
+const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: string }) => (
     <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", `md:grid-cols-${columns}`)}>
         {Object.entries(items).map(([key, value]: [string, any]) => (
             <Card 
@@ -337,4 +337,5 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
     
 
     
+
 
