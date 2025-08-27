@@ -30,7 +30,10 @@ const GenerateNextTurnOutputSchema = z.object({
   skills: z.array(z.string()).describe('A list of the player\'s skills.'),
   quests: z.array(z.string()).describe('A list of the player\'s quests.'),
   choices: z.array(z.string()).describe('A list of choices the player can make.'),
-  worldState: z.any().describe('The state of the game world (day, time, etc.).'),
+  worldState: z.object({
+    day: z.number().describe("The current day number in the game world."),
+    time: z.string().describe("The current time of day (e.g., 'Morning', 'Noon', 'Evening', 'Night').")
+  }).describe('The state of the game world (day, time, etc.).'),
   newCharacter: z.string().optional().describe('A new character introduced in this turn.'),
   newQuest: z.string().optional().describe('A new quest introduced in this turn.'),
   newLocation: z.string().optional().describe('A new location introduced in this turn.'),
@@ -52,8 +55,9 @@ const prompt = ai.definePrompt({
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.\n
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
-Enforce the following rules:\n- **State Synchronization Philosophy:** Any changes to the game world or player state MUST be reflected in the JSON output.\n- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n- **Persistent World Philosophy:** The game doesn\'t end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n
+Enforce the following rules:\n- **State Synchronization Philosophy:** Any changes to the game world or player state MUST be reflected in the JSON output.\n- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n- **Persistent World Philosophy:** The game doesn\'t end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n- **Time Progression:** With every player action, time must progress. Update the day and time of day in the worldState. An action might take a few minutes or several hours. Be logical.
 Respond in the persona of the GM Personality specified in the story prompt.
+
 JSON Output Structure:
 ALWAYS return a JSON object with the following structure:\n{
   "story": "string", // Narrative text of the current events.
@@ -62,7 +66,7 @@ ALWAYS return a JSON object with the following structure:\n{
   "skills": [], // List of skills.
   "quests": [], // List of quests.
   "choices": [], // List of choices the player can make.
-  "worldState": {}, // Game world state (day, time).
+  "worldState": {"day": 1, "time": "Morning"}, // Game world state (day, time).
   "newCharacter": "string", // (Optional) New character introduced.
   "newQuest": "string", // (Optional) New quest introduced.
   "newLocation": "string", // (Optional) New location discovered.
@@ -76,7 +80,7 @@ If combat starts, create the isCombat field and populate enemies with their stat
 Scene Composition:
 Populate sceneEntities with all entities in the scene (player, companions, enemies, objects).
 
-\nUse the current game state and player action to generate the next turn of the story.  Adhere to the rules and output structure above.\n\nCurrent Game State:\n{{{gameState}}}
+\nUse the current game state and player action to generate the next turn of the story. Adhere to the rules and output structure above.\n\nCurrent Game State:\n{{{gameState}}}
 \nPlayer Action:\n{{{playerAction}}}
 `,
   config: {

@@ -9,7 +9,7 @@ import { StoryDisplay } from "@/components/story-display";
 import { PlayerHud } from "@/components/player-hud";
 import { InteractionPanel } from "@/components/interaction-panel";
 import { SidebarTabs } from "@/components/sidebar-tabs";
-import { SceneDisplay } from "@/components/scene-display";
+import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
 import { Button } from "@/components/ui/button";
 import { Loader2, FilePlus, AlertTriangle, LogOut } from "lucide-react";
 import { StartScreen } from "./screens/start-screen";
@@ -41,7 +41,7 @@ export const initialGameState: GameState = {
   skills: [],
   quests: [],
   choices: [],
-  worldState: {},
+  worldState: { day: 1, time: "صبح" },
   sceneEntities: [],
   isCombat: false,
   enemies: [],
@@ -152,7 +152,6 @@ export function GameClient() {
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
 
-    // Immediately update the UI with the player's action.
     setGameState(prev => ({ 
       ...prev, 
       story: [...prev.story, formattedPlayerAction],
@@ -160,10 +159,9 @@ export function GameClient() {
       choices: [] 
     }));
 
-    // Create a copy of the current state to pass to the AI.
     const currentGameStateForAI = { ...gameState };
-
-    // Replace the full story with a summarized version for the AI prompt.
+    
+    // Create a summarized version of the story for the AI prompt.
     // The AI will still have the full, structured game state.
     // @ts-ignore
     currentGameStateForAI.story = gameState.story.slice(-10).join('\n\n');
@@ -173,6 +171,10 @@ export function GameClient() {
     delete currentGameStateForAI.isLoading; 
     // @ts-ignore
     delete currentGameStateForAI.gameStarted;
+    // @ts-ignore
+    delete currentGameStateForAI.isGameOver;
+    // @ts-ignore
+    delete currentGameStateForAI.id;
 
 
     try {
@@ -190,7 +192,7 @@ export function GameClient() {
             ...prevGameState,
             ...restOfNextTurn,
             // Append the new story string to the existing story array.
-            story: [...prevGameState.story, newStory],
+            story: [...prevGameState.story.slice(0,-1), newStory],
             gameStarted: true,
             isLoading: false,
         };
@@ -332,6 +334,7 @@ export function GameClient() {
           </div>
           <div className="flex-grow flex flex-col gap-4 overflow-y-auto pr-2">
             <PlayerHud playerState={gameState.playerState} />
+            <WorldStateDisplay worldState={gameState.worldState} />
             <SceneDisplay entities={gameState.sceneEntities} />
             <div className="flex-grow">
               <SidebarTabs inventory={gameState.inventory} skills={gameState.skills} quests={gameState.quests}/>

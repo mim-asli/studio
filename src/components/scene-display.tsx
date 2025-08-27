@@ -1,7 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Bot, Box, User } from "lucide-react";
+import { Users, Bot, Box, User, Sun, Moon } from "lucide-react";
+import type { GameState } from "@/lib/types";
 
 const getEntityIcon = (entity: string) => {
     const lowerEntity = entity.toLowerCase();
@@ -33,4 +34,27 @@ export function SceneDisplay({ entities }: { entities: string[] }) {
         </CardContent>
     </Card>
   )
+}
+
+export function WorldStateDisplay({ worldState }: { worldState: GameState['worldState'] }) {
+    if (!worldState) return null;
+    const isNight = worldState.time?.toLowerCase().includes('شب');
+
+    return (
+        <Card className="bg-transparent border">
+            <CardContent className="p-4 flex justify-around items-center text-center">
+                 <div className="flex items-center gap-2">
+                    {isNight ? <Moon className="w-6 h-6 text-yellow-300" /> : <Sun className="w-6 h-6 text-yellow-500" />}
+                    <div>
+                        <p className="font-headline text-xl">{worldState.time}</p>
+                        <p className="text-xs text-muted-foreground">زمان</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-2">
+                     <p className="font-headline text-3xl">{worldState.day}</p>
+                     <p className="text-xs text-muted-foreground mt-2">روز</p>
+                 </div>
+            </CardContent>
+        </Card>
+    )
 }
