@@ -5,6 +5,8 @@ export type GameState = GenerateNextTurnOutput & {
     isGameOver: boolean;
     gameStarted: boolean;
     isLoading: boolean;
+    isCombat: boolean;
+    enemies: any[];
 };
 
 // This represents a saved game file

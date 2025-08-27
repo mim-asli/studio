@@ -17,7 +17,7 @@ import { Loader2, Save, FilePlus, AlertTriangle, Volume2, VolumeX } from "lucide
 const SAVE_GAME_KEY = "dastan-savegame";
 
 const initialGameState: GameState = {
-  story: "Welcome to Dastan. Your adventure awaits. Create a new world or load a previous journey.",
+  story: "به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید.",
   playerState: { health: 100, sanity: 100 },
   inventory: [],
   skills: [],
@@ -68,15 +68,15 @@ export function GameClient() {
       };
       localStorage.setItem(SAVE_GAME_KEY, JSON.stringify(saveFile));
       toast({
-        title: "Game Saved",
-        description: "Your progress has been saved to this device.",
+        title: "بازی ذخیره شد",
+        description: "پیشرفت شما در این دستگاه ذخیره شد.",
       });
     } catch (error) {
       console.error("Failed to save game:", error);
       toast({
         variant: "destructive",
-        title: "Save Failed",
-        description: "Could not save your game.",
+        title: "ذخیره ناموفق بود",
+        description: "بازی شما ذخیره نشد.",
       });
     }
   }, [gameState, toast]);
@@ -88,22 +88,22 @@ export function GameClient() {
         const saveFile: SaveFile = JSON.parse(savedGameJson);
         setGameState({ ...saveFile.gameState, isLoading: false });
         toast({
-          title: "Game Loaded",
-          description: "Your adventure continues!",
+          title: "بازی بارگذاری شد",
+          description: "ماجراجویی شما ادامه می‌یابد!",
         });
       } else {
         toast({
           variant: "destructive",
-          title: "No Save File Found",
-          description: "Start a new game to create a save file.",
+          title: "فایل ذخیره‌ای یافت نشد",
+          description: "برای ایجاد فایل ذخیره، یک بازی جدید شروع کنید.",
         });
       }
     } catch (error) {
       console.error("Failed to load game:", error);
       toast({
         variant: "destructive",
-        title: "Load Failed",
-        description: "The save file might be corrupted.",
+        title: "بارگذاری ناموفق بود",
+        description: "فایل ذخیره ممکن است خراب باشد.",
       });
     }
   }, [toast]);
@@ -130,17 +130,17 @@ export function GameClient() {
         isLoading: false,
       }));
 
-      if (nextTurn.newCharacter) toast({ title: "New Character", description: `You met ${nextTurn.newCharacter}.` });
-      if (nextTurn.newQuest) toast({ title: "New Quest", description: nextTurn.newQuest });
-      if (nextTurn.newLocation) toast({ title: "Location Discovered", description: `You have found ${nextTurn.newLocation}.` });
+      if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
+      if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
+      if (nextTurn.newLocation) toast({ title: "مکان جدید کشف شد", description: `شما ${nextTurn.newLocation} را پیدا کردید.` });
 
     } catch (error) {
       console.error("Error generating next turn:", error);
       setGameState(prev => ({ ...prev, isLoading: false }));
       toast({
         variant: "destructive",
-        title: "AI Error",
-        description: "The story could not proceed. Please try a different action.",
+        title: "خطای هوش مصنوعی",
+        description: "داستان نتوانست ادامه یابد. لطفاً یک اقدام متفاوت را امتحان کنید.",
       });
     }
   };
@@ -171,14 +171,14 @@ export function GameClient() {
             onStartGame={startNewGame}
         />
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
-          <h1 className="text-6xl font-headline text-accent mb-2 tracking-widest">DASTAN</h1>
-          <p className="text-xl text-muted-foreground mb-8">An Endless AI Role-Playing Game</p>
+          <h1 className="text-6xl font-headline text-accent mb-2 tracking-widest">داستان</h1>
+          <p className="text-xl text-muted-foreground mb-8">یک بازی نقش‌آفرینی بی‌پایان با هوش مصنوعی</p>
           <div className="flex gap-4">
             <Button size="lg" onClick={() => setShowNewGameModal(true)}>
-              <FilePlus className="mr-2" /> New Game
+              <FilePlus className="ml-2" /> بازی جدید
             </Button>
             <Button size="lg" variant="secondary" onClick={loadGame}>
-              <Save className="mr-2" /> Load Game
+              <Save className="ml-2" /> بارگذاری بازی
             </Button>
           </div>
         </div>
@@ -190,10 +190,10 @@ export function GameClient() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 text-center">
             <AlertTriangle className="w-24 h-24 text-destructive mb-4" />
-            <h1 className="text-6xl font-headline text-destructive mb-2">Game Over</h1>
+            <h1 className="text-6xl font-headline text-destructive mb-2">بازی تمام شد</h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl">{gameState.story}</p>
             <Button size="lg" onClick={() => setGameState(initialGameState)}>
-                <FilePlus className="mr-2" /> Start a New Legend
+                <FilePlus className="ml-2" /> شروع یک افسانه جدید
             </Button>
       </div>
     );
@@ -221,7 +221,7 @@ export function GameClient() {
 
         <div className="flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-headline text-accent tracking-widest">DASTAN</h1>
+            <h1 className="text-2xl font-headline text-accent tracking-widest">داستان</h1>
             <Button size="icon" variant="outline" onClick={saveGame} disabled={gameState.isLoading}><Save /></Button>
           </div>
           <div className="flex-grow flex flex-col gap-4 overflow-y-auto pr-2">

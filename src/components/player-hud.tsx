@@ -35,17 +35,17 @@ export function PlayerHud({ playerState }: { playerState: any }) {
   return (
     <Card className="border-primary/20 bg-transparent">
       <CardHeader className="pb-4 pt-4">
-        <CardTitle className="text-accent font-headline">Vitals</CardTitle>
+        <CardTitle className="text-accent font-headline">علائم حیاتی</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-4">
         <HudGauge 
-            label="Health" 
+            label="سلامتی" 
             value={playerState?.health ?? 100} 
             color="hsl(var(--chart-2))" 
             icon={<HeartPulse />}
         />
         <HudGauge 
-            label="Sanity" 
+            label="عقلانیت" 
             value={playerState?.sanity ?? 100} 
             color="hsl(var(--chart-4))" 
             icon={<BrainCircuit />}

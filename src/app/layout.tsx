@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Dastan AI RPG',
-  description: 'An Endless AI Role-Playing Game',
+  title: 'داستان - یک بازی نقش‌آفرینی با هوش مصنوعی',
+  description: 'یک بازی نقش‌آفرینی بی‌پایان با هوش مصنوعی',
 };
 
 export default function RootLayout({
@@ -13,11 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="fa" dir="rtl" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300..700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
         {children}
