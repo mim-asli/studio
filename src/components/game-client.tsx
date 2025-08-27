@@ -153,7 +153,8 @@ export function GameClient() {
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
     
-    const currentState = {...gameState};
+    // We capture the full state before setting loading to true.
+    const currentFullState = {...gameState};
 
     setGameState(prev => ({ 
       ...prev, 
@@ -163,11 +164,11 @@ export function GameClient() {
     }));
     
     // Create a summarized version of the story for the AI prompt.
-    const storyHistory = currentState.story.slice(-10).join('\n\n');
+    const storyHistory = currentFullState.story.slice(-10).join('\n\n');
     
     // Create the gameState payload for the AI, ensuring it has the full state but a summarized story.
     const gameStateForAI = {
-        ...currentState,
+        ...currentFullState,
         story: storyHistory,
     };
     
@@ -200,6 +201,12 @@ export function GameClient() {
             isLoading: false,
         };
 
+        // Check for game over condition
+        if (updatedGameState.playerState.health <= 0) {
+            updatedGameState.isGameOver = true;
+            updatedGameState.story.push("شما مرده‌اید. داستان شما در اینجا به پایان می‌رسد.");
+        }
+
         saveGame(updatedGameState); // Auto-save after each turn
         return updatedGameState;
       });
@@ -226,8 +233,8 @@ export function GameClient() {
       id: gameId,
       story: [], // Start with an empty story array
       playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0 },
-      inventory: scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
-      skills: scenario.character.split(',').map(s => s.trim()),
+      inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
+      skills: Array.isArray(scenario.character) ? scenario.character : scenario.character.split(',').map(s => s.trim()),
       gameStarted: true,
       isLoading: true, // We will be loading the first turn
       choices: [],

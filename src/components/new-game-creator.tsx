@@ -8,7 +8,6 @@ import { Input } from './ui/input';
 import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
 import type { CustomScenario } from '@/lib/types';
-import { Label } from './ui/label';
 
 const TOTAL_STEPS = 3;
 
@@ -46,12 +45,12 @@ const genres = {
 };
 
 const archetypes = {
-    'جنگجو': { icon: Swords, description: "استاد نبردهای تن به تن.", items: "شمشیر بلند و زره زنجیری" },
-    'جادوگر': { icon: Wand, description: "کنترل‌کننده نیروهای جادویی.", items: "عصای چوبی و کتاب طلسم" },
-    'مخفی‌کار': { icon: Ghost, description: "قاتلی خاموش در سایه‌ها.", items: "خنجر و لباس تیره" },
-    'دانشمند': { icon: FlaskConical, description: "متخصص فناوری و گجت‌ها.", items: "آچار فرانسه و عینک محافظ" },
-    'پهلوان': { icon: ShieldCheck, description: "مبارزی مقدس و مدافع.", items: "پتک و سپر مقدس" },
-    'کماندار': { icon: Crosshair, description: "استاد تیراندازی از راه دور.", items: "کمان بلند و یک ترکش تیر" },
+    'جنگجو': { icon: Swords, description: "استاد نبردهای تن به تن.", items: "شمشیر بلند\nزره زنجیری" },
+    'جادوگر': { icon: Wand, description: "کنترل‌کننده نیروهای جادویی.", items: "عصای چوبی\nکتاب طلسم" },
+    'مخفی‌کار': { icon: Ghost, description: "قاتلی خاموش در سایه‌ها.", items: "خنجر\nلباس تیره" },
+    'دانشمند': { icon: FlaskConical, description: "متخصص فناوری و گجت‌ها.", items: "آچار فرانسه\nعینک محافظ" },
+    'پهلوان': { icon: ShieldCheck, description: "مبارزی مقدس و مدافع.", items: "پتک\nسپر مقدس" },
+    'کماندار': { icon: Crosshair, description: "استاد تیراندازی از راه دور.", items: "کمان بلند\nیک ترکش تیر" },
 };
 
 
@@ -63,7 +62,6 @@ interface NewGameCreatorProps {
 export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const [step, setStep] = useState(1);
     
-    // State for all selections
     const [genre, setGenre] = useState<keyof typeof genres>('فانتزی');
     const [archetype, setArchetype] = useState<keyof typeof archetypes>('جنگجو');
     const [characterName, setCharacterName] = useState('');
@@ -100,8 +98,8 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
 
         const customScenario: CustomScenario = {
             title: selectedScenario.title,
-            character: `نام: ${characterName}, کهن‌الگو: ${archetype}`,
-            initialItems: archetypes[archetype].items,
+            character: [`نام: ${characterName}`, `کهن‌الگو: ${archetype}`],
+            initialItems: archetypes[archetype].items.split('\n'),
             storyPrompt: fullStoryPrompt,
         };
         onStartGame(customScenario, characterName);
@@ -116,7 +114,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                     onSelect={(key) => { 
                         const newGenre = key as keyof typeof genres;
                         setGenre(newGenre); 
-                        // Reset scenario when genre changes
                         setSelectedScenario(genres[newGenre].scenarios[0]);
                     }} 
                     columns="3" 
@@ -175,8 +172,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
         </div>
     );
 }
-
-// Sub-components for steps
 
 const Step = ({ title, description, children }: { title: string, description: string, children: React.ReactNode }) => (
     <Card className="border-none shadow-none">
@@ -240,5 +235,3 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
         ))}
     </div>
 );
-
-    
