@@ -67,6 +67,11 @@ const prompt = ai.definePrompt({
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.\n
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
+The user has specified a difficulty level. You MUST adjust the game's challenges accordingly:
+- **آسان (Easy):** Resources are more abundant. Enemies are less frequent and weaker. NPCs are generally more helpful.
+- **معمولی (Normal):** A balanced experience with standard challenges and rewards.
+- **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
+
 Enforce the following rules:\n
 - **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests) MUST be reflected in the JSON output. The inventory in the output must always be the complete inventory.
 - **Treasure and Economy:** The world contains valuable items. Players can find Bronze, Silver, and Gold Coins, as well as precious gems like Rubies, Sapphires, and Diamonds as loot, in chests, or as rewards. Make sure to include these as part of the story and inventory when appropriate.
@@ -133,3 +138,5 @@ const generateNextTurnFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
