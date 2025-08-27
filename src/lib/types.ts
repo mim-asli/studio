@@ -70,5 +70,3 @@ export type AppSettings = {
   localLlm: LocalLlmSettings;
   audio: AudioSettings;
 };
-
-    
