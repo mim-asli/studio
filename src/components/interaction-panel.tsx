@@ -24,9 +24,9 @@ export function InteractionPanel({ choices, onAction, isLoading }: InteractionPa
   };
 
   return (
-    <Card className="border-accent/20 bg-transparent flex flex-col">
+    <Card className="bg-transparent border">
       <CardHeader className="pb-2 pt-4">
-        <CardTitle className="text-accent font-headline">اقدامات</CardTitle>
+        <CardTitle className="font-headline text-2xl tracking-wider">اقدامات</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col flex-grow gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -50,9 +50,9 @@ export function InteractionPanel({ choices, onAction, isLoading }: InteractionPa
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
                     disabled={isLoading}
-                    className="bg-background/50 focus:ring-accent"
+                    className="bg-background/50 focus:ring-primary"
                 />
-                <Button type="submit" size="icon" disabled={isLoading} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <Button type="submit" size="icon" disabled={isLoading} variant="default">
                     <Send className="w-4 h-4" />
                 </Button>
             </form>

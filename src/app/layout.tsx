@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
+import { Inter, VT323 } from 'next/font/google'
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -7,18 +8,24 @@ export const metadata: Metadata = {
   description: 'یک بازی نقش‌آفرینی بی‌پایان با هوش مصنوعی',
 };
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const vt323 = VT323({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-vt323',
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fa" dir="rtl" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300..700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="fa" dir="rtl" className={`dark ${inter.variable} ${vt323.variable}`}>
       <body className="font-body antialiased">
         {children}
         <Toaster />

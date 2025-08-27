@@ -17,9 +17,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['"Vazirmatn"', 'sans-serif'],
-        headline: ['"Vazirmatn"', 'sans-serif'],
-        code: ['monospace'],
+        body: ['var(--font-inter)', 'sans-serif'],
+        headline: ['var(--font-vt323)', 'monospace'],
+        code: ['var(--font-vt323)', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",

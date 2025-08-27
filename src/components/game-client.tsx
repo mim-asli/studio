@@ -77,7 +77,7 @@ export function GameClient() {
   useEffect(() => {
     handleLowSanityEffect();
     handleLowHealthEffect();
-  }, [handleLowHealthEffect, handleLowSanityEffect]);
+  }, [handleLowHealthEffect, handleLowHealthEffect]);
 
   const saveGame = useCallback((stateToSave: GameState) => {
     if (!stateToSave.gameStarted || !stateToSave.id) return;
@@ -199,50 +199,15 @@ export function GameClient() {
       inventory: [scenario.initialItems],
       skills: [scenario.character],
       gameStarted: true,
-      isLoading: true,
-      choices: [],
+      isLoading: false,
+      choices: ["بازی را شروع کن و اولین صحنه را با جزئیات توصیف کن."],
       characterName: characterName,
       scenarioTitle: scenario.title,
     };
     
     setGameState(freshGameState);
-
-    const startAction = "بازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.";
-    
-    const processFirstTurn = async () => {
-      try {
-          const firstTurn = await generateNextTurn({
-              gameState: {
-                  ...freshGameState,
-                  isGameOver: false, 
-                  gameStarted: true, 
-                  isLoading: false,
-              },
-              playerAction: startAction,
-          });
-
-          const updatedGameState: GameState = {
-              ...freshGameState,
-              ...firstTurn,
-              story: `${freshGameState.story}\n\n${firstTurn.story}`,
-              isLoading: false,
-          };
-
-          setGameState(updatedGameState);
-          saveGame(updatedGameState);
-      } catch (error) {
-          console.error("Error generating first turn:", error);
-          setGameState(prev => ({ ...prev, isLoading: false, story: "خطا در شروع داستان. لطفاً دوباره تلاش کنید." }));
-          toast({
-              variant: "destructive",
-              title: "خطای هوش مصنوعی",
-              description: "داستان نتوانست شروع شود. لطفاً یک بازی جدید را امتحان کنید.",
-          });
-      }
-    }
-
-    processFirstTurn();
     setView("game");
+    saveGame(freshGameState);
   };
 
   const resetGame = () => {
@@ -300,11 +265,11 @@ export function GameClient() {
     <>
       <main className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen bg-background text-foreground font-body p-2 sm:p-4 gap-4">
         <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
-          <div className="relative flex-grow border border-primary/20 rounded-lg shadow-inner bg-black/20 overflow-hidden flex flex-col">
+          <div className="relative flex-grow border rounded-md shadow-inner bg-card overflow-hidden flex flex-col">
             <StoryDisplay story={gameState.story} />
             {gameState.isLoading && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-                <Loader2 className="w-16 h-16 text-accent animate-spin" />
+                <Loader2 className="w-16 h-16 text-primary animate-spin" />
               </div>
             )}
           </div>
@@ -313,11 +278,11 @@ export function GameClient() {
 
         <div className="flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-headline text-accent tracking-widest">داستان</h1>
+            <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
             <div className="flex items-center gap-2">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="icon" variant="destructive_outline"><LogOut/></Button>
+                  <Button size="icon" variant="ghost"><LogOut/></Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -328,7 +293,7 @@ export function GameClient() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>لغو</AlertDialogCancel>
-                    <AlertDialogAction onClick={resetGame} className="bg-destructive hover:bg-destructive/90">
+                    <AlertDialogAction onClick={resetGame} variant="destructive">
                         خروج
                     </AlertDialogAction>
                   </AlertDialogFooter>
