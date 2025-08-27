@@ -12,20 +12,24 @@ import {
 
 const getEntityClassification = (entity: string, companions: string[]): string => {
     const lowerEntity = entity.toLowerCase();
-    if (lowerEntity.includes('player') || lowerEntity.includes('بازیکن')) return "بازیکن";
-    if (companions.some(c => lowerEntity.includes(c.toLowerCase()))) return "همراه";
-    const enemyKeywords = ['enemy', 'goblin', 'orc', 'bandit', 'دشمن', 'راهزن', 'اورک', 'گابلین'];
-    if (enemyKeywords.some(keyword => lowerEntity.includes(keyword))) return "دشمن";
-    return "شیء";
+    if (lowerEntity.includes('player') || lowerEntity.includes('بازیکن')) return "این شما هستید، قهرمان داستان.";
+    if (companions.some(c => lowerEntity.toLowerCase().includes(c.toLowerCase()))) return "یکی از همراهان وفادار شما در این ماجراجویی.";
+    
+    const enemyKeywords = ['enemy', 'goblin', 'orc', 'bandit', 'دشمن', 'راهزن', 'اورک', 'گابلین', 'گرگ'];
+    if (enemyKeywords.some(keyword => lowerEntity.includes(keyword))) return "یک دشمن متخاصم. برای نبرد آماده شوید!";
+
+    return "یک شیء قابل تعامل در محیط. شاید ارزش بررسی را داشته باشد.";
 };
 
 
 const getEntityIcon = (entity: string, companions: string[]) => {
     const lowerEntity = entity.toLowerCase();
     if (lowerEntity.includes('player') || lowerEntity.includes('بازیکن')) return <User className="w-6 h-6 text-foreground"/>;
-    if (companions.some(c => lowerEntity.includes(c.toLowerCase()))) return <Users className="w-6 h-6 text-green-500"/>
-    const enemyKeywords = ['enemy', 'goblin', 'orc', 'bandit', 'دشمن', 'راهزن', 'اورک', 'گابلین'];
+    if (companions.some(c => lowerEntity.toLowerCase().includes(c.toLowerCase()))) return <Users className="w-6 h-6 text-green-500"/>
+    
+    const enemyKeywords = ['enemy', 'goblin', 'orc', 'bandit', 'دشمن', 'راهزن', 'اورک', 'گابلین', 'گرگ'];
     if (enemyKeywords.some(keyword => lowerEntity.includes(keyword))) return <Bot className="w-6 h-6 text-destructive"/>;
+    
     return <Box className="w-6 h-6 text-muted-foreground"/>
 }
 
