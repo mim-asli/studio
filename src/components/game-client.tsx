@@ -162,8 +162,8 @@ export function GameClient() {
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
     
-    // We capture the full state before setting loading to true.
-    const currentFullState = {...gameState};
+    // Capture the state *before* updating the UI for the loading state.
+    const stateBeforeAction = { ...gameState };
 
     setGameState(prev => ({ 
       ...prev, 
@@ -172,21 +172,23 @@ export function GameClient() {
       choices: [] 
     }));
     
-    // Create a summarized version of the story for the AI prompt.
-    const storyHistory = currentFullState.story.slice(-10).join('\n\n');
-    
-    // Create the gameState payload for the AI, ensuring it has the full state but a summarized story.
+    // Create a clean, summarized state object for the AI prompt.
+    // This is more explicit and less error-prone than copying and deleting fields.
     const gameStateForAI = {
-        ...currentFullState,
-        story: storyHistory,
+      story: stateBeforeAction.story.slice(-10).join('\n\n'), // Use a summary of the story
+      playerState: stateBeforeAction.playerState,
+      inventory: stateBeforeAction.inventory,
+      skills: stateBeforeAction.skills,
+      quests: stateBeforeAction.quests,
+      choices: stateBeforeAction.choices,
+      worldState: stateBeforeAction.worldState,
+      sceneEntities: stateBeforeAction.sceneEntities,
+      companions: stateBeforeAction.companions,
+      isCombat: stateBeforeAction.isCombat,
+      enemies: stateBeforeAction.enemies,
+      characterName: stateBeforeAction.characterName,
+      scenarioTitle: stateBeforeAction.scenarioTitle,
     };
-    
-    // Remove client-side only state properties from the object sent to the AI
-    // @ts-ignore
-    delete gameStateForAI.isLoading; 
-    // @ts-ignore
-    delete gameStateForAI.gameStarted;
-
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
@@ -198,10 +200,11 @@ export function GameClient() {
       setGameState(prevGameState => {
         const { story: newStory, ...restOfNextTurn } = nextTurn;
 
+        // Construct the new state based on the previous state and AI output.
         const updatedGameState: GameState = {
             ...prevGameState,
             ...restOfNextTurn,
-            story: [...prevGameState.story, newStory],
+            story: [...prevGameState.story, newStory], // Add new story segment
             gameStarted: true,
             isLoading: false,
         };
@@ -222,7 +225,12 @@ export function GameClient() {
 
     } catch (error) {
       console.error("Error generating next turn:", error);
-      setGameState(prev => ({ ...prev, isLoading: false, choices: prev.choices.length > 0 ? prev.choices : ["دوباره تلاش کن"] }));
+      // Restore previous choices if the AI call fails
+      setGameState(prev => ({ 
+          ...prev, 
+          isLoading: false, 
+          choices: stateBeforeAction.choices.length > 0 ? stateBeforeAction.choices : ["دوباره تلاش کن"] 
+      }));
       toast({
         variant: "destructive",
         title: "خطای هوش مصنوعی",
