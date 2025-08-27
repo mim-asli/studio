@@ -21,11 +21,11 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
     // For hunger, thirst. Higher value is worse.
     percentage = (value / max) * 100;
     if (percentage > 70) {
-      colorClass = "text-red-500"; // Very hungry/thirsty
+      colorClass = "text-red-500"; // Dangerously high
     } else if (percentage > 40) {
-      colorClass = "text-yellow-500"; // hungry/thirsty
+      colorClass = "text-yellow-500"; // Getting high
     } else {
-      colorClass = "text-green-500"; // Full
+      colorClass = "text-green-500"; // Low and healthy
     }
   } else {
     // For health, sanity, stamina, mana. Lower value is worse.
@@ -106,7 +106,7 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
             icon={<Droplets />}
             variant="inverse"
         />
-        {stamina !== undefined && (
+        {stamina != null && (
           <HudGauge 
               label="انرژی" 
               value={stamina} 
@@ -114,7 +114,7 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
               variant="default"
           />
         )}
-        {mana !== undefined && (
+        {mana != null && (
            <HudGauge 
               label="مانا" 
               value={mana} 
