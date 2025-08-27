@@ -17,6 +17,7 @@ import { LoadGame } from "./load-game";
 import { SettingsPage } from "./screens/settings-page";
 import { Scoreboard } from "./screens/scoreboard";
 import { NewGameCreator } from "./new-game-creator";
+import { GameDirectorChat } from "./game-director-chat";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,6 +58,7 @@ type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboa
 export function GameClient() {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
   const [view, setView] = useState<View>("start");
+  const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
   const { toast } = useToast();
 
   const handleLowSanityEffect = useCallback(() => {
@@ -295,6 +297,11 @@ export function GameClient() {
 
   return (
     <>
+      <GameDirectorChat 
+        isOpen={isDirectorChatOpen}
+        onClose={() => setIsDirectorChatOpen(false)}
+        gameState={gameState}
+      />
       <main className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen bg-background text-foreground font-body p-2 sm:p-4 gap-4">
         <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <div className="relative flex-grow border rounded-md shadow-inner bg-card overflow-hidden flex flex-col">
@@ -305,7 +312,12 @@ export function GameClient() {
               </div>
             )}
           </div>
-          <InteractionPanel choices={gameState.choices} onAction={processPlayerAction} isLoading={gameState.isLoading} />
+          <InteractionPanel 
+            choices={gameState.choices} 
+            onAction={processPlayerAction} 
+            isLoading={gameState.isLoading}
+            onDirectorChat={() => setIsDirectorChatOpen(true)}
+          />
         </div>
 
         <div className="flex flex-col gap-4 h-[calc(100vh-2rem)]">

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, ChevronsLeft, Mic, MicOff } from 'lucide-react';
+import { Send, ChevronsLeft, Mic, MicOff, Bot } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
 import { cn } from '@/lib/utils';
 
@@ -12,9 +12,10 @@ interface InteractionPanelProps {
   choices: string[];
   onAction: (action: string) => void;
   isLoading: boolean;
+  onDirectorChat: () => void;
 }
 
-export function InteractionPanel({ choices, onAction, isLoading }: InteractionPanelProps) {
+export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat }: InteractionPanelProps) {
   const [customInput, setCustomInput] = useState('');
   const {
     transcript,
@@ -70,6 +71,17 @@ export function InteractionPanel({ choices, onAction, isLoading }: InteractionPa
         </div>
         <div className="mt-auto pt-2">
             <form onSubmit={handleCustomSubmit} className="flex gap-2">
+                <Button
+                    type="button"
+                    size="icon"
+                    onClick={onDirectorChat}
+                    disabled={isLoading}
+                    variant="outline"
+                    title="گفتگو با کارگردان بازی"
+                >
+                    <Bot />
+                    <span className="sr-only">گفتگو با کارگردان</span>
+                </Button>
                 <Input
                     placeholder={listening ? "در حال گوش دادن..." : "چه کار می‌کنی؟"}
                     value={customInput}
