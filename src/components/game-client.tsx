@@ -314,5 +314,3 @@ export function GameClient() {
     </>
   );
 }
-
-    
