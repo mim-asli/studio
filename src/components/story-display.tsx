@@ -9,15 +9,14 @@ interface StoryDisplayProps {
   storySegments: string[];
 }
 
-const parseSegment = (text: string) => {
+const parseSegment = (text: string, isPlayerAction: boolean) => {
     if (!text) return null;
 
-    const isPlayerAction = text.startsWith(PLAYER_ACTION_PREFIX);
     const contentToParse = isPlayerAction ? text.substring(PLAYER_ACTION_PREFIX.length) : text;
 
-    // A helper function to parse for the keyword "داستان" and other keywords
+    // A helper function to parse for the keyword "داستان"
     const parseForKeywords = (str: string) => {
-        // This regex will split the string by the keywords, keeping the keywords.
+        // This regex will split the string by the keyword, keeping the keyword.
         const parts = str.split(/(داستان)/g); 
         return parts.map((part, index) => {
             if (part === 'داستان') {
@@ -30,8 +29,7 @@ const parseSegment = (text: string) => {
     if (isPlayerAction) {
         return (
             <span className="text-player-action font-bold">
-                {PLAYER_ACTION_PREFIX}
-                {parseForKeywords(contentToParse)}
+                {PLAYER_ACTION_PREFIX}{contentToParse}
             </span>
         );
     }
@@ -66,17 +64,20 @@ export function StoryDisplay({ storySegments = [] }: StoryDisplayProps) {
     return null;
   }
   
-  const finalLastSegment = isLastSegmentPlayerAction ? parseSegment(lastSegment) : parseSegment(typedStory);
+  const finalLastSegment = isLastSegmentPlayerAction ? parseSegment(lastSegment, true) : parseSegment(typedStory, false);
 
   return (
     <ScrollArea className="h-full w-full" viewportRef={scrollViewportRef}>
         <div className="p-4 sm:p-6 font-code text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap">
-          {previousSegments.map((segment, index) => (
-            <p key={index}>
-              {parseSegment(segment)}
-              <br/><br/>
-            </p>
-          ))}
+          {previousSegments.map((segment, index) => {
+            const isPlayer = segment.startsWith(PLAYER_ACTION_PREFIX);
+            return (
+              <p key={index}>
+                {parseSegment(segment, isPlayer)}
+                <br/><br/>
+              </p>
+            )
+           })}
           {lastSegment && <p>{finalLastSegment}</p>}
         </div>
     </ScrollArea>
