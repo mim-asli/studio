@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,25 +41,27 @@ export function SceneDisplay({ entities, companions }: { entities: string[], com
             <CardTitle className="font-headline text-2xl tracking-wider">صحنه</CardTitle>
         </CardHeader>
         <CardContent>
-            {entities && entities.length > 0 ? (
-                <div className="flex flex-wrap gap-3">
-                    {entities.map((entity, index) => (
-                      <Tooltip key={index}>
-                        <TooltipTrigger asChild>
-                          <div className="flex flex-col items-center justify-start gap-2 p-2 rounded-md bg-muted/50 w-20 h-24 text-center border">
-                              {getEntityIcon(entity, companions)}
-                              <p className="text-xs break-words leading-tight font-code">{entity}</p>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{getEntityClassification(entity, companions)}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
-                </div>
-            ) : (
-                <p className="text-muted-foreground text-sm">صحنه آرام است.</p>
-            )}
+            <TooltipProvider>
+                {entities && entities.length > 0 ? (
+                    <div className="flex flex-wrap gap-3">
+                        {entities.map((entity, index) => (
+                          <Tooltip key={index}>
+                            <TooltipTrigger asChild>
+                              <div className="flex flex-col items-center justify-start gap-2 p-2 rounded-md bg-muted/50 w-20 h-24 text-center border">
+                                  {getEntityIcon(entity, companions)}
+                                  <p className="text-xs break-words leading-tight font-code">{entity}</p>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{getEntityClassification(entity, companions)}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground text-sm">صحنه آرام است.</p>
+                )}
+            </TooltipProvider>
         </CardContent>
     </Card>
   )
@@ -93,19 +96,21 @@ export function WorldStateDisplay({ worldState }: { worldState: GameState['world
                     <div className="font-headline text-3xl">{worldState.day}</div>
                     <p className="text-xs text-muted-foreground mt-2">روز</p>
                  </div>
-                 {weatherIcon && (
+                 {worldState.weather && weatherIcon && (
                     <>
                         <div className="border-l h-10 border-border/50"></div>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className="flex items-center gap-2">
-                                    {weatherIcon}
-                                </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>{worldState.weather}</p>
-                            </TooltipContent>
-                        </Tooltip>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-2">
+                                        {weatherIcon}
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{worldState.weather}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </>
                  )}
             </CardContent>

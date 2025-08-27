@@ -14,29 +14,16 @@ interface HudStatProps {
 }
 
 const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudStatProps) => {
-  let percentage: number;
-  let colorClass: string;
+  const percentage = (value / max) * 100;
+  let colorClass = "text-green-500"; // Default healthy color
 
-  if (variant === 'inverse') {
-    // For hunger, thirst. Higher value is worse.
-    percentage = (value / max) * 100;
-    if (percentage > 70) {
-      colorClass = "text-red-500"; // Dangerously high
-    } else if (percentage > 40) {
-      colorClass = "text-yellow-500"; // Getting high
-    } else {
-      colorClass = "text-green-500"; // Low and healthy
-    }
-  } else {
-    // For health, sanity, stamina, mana. Lower value is worse.
-    percentage = (value / max) * 100;
-    if (percentage < 30) {
-      colorClass = "text-red-500"; // Dangerously low
-    } else if (percentage < 60) {
-      colorClass = "text-yellow-500"; // Low
-    } else {
-      colorClass = "text-green-500"; // Healthy
-    }
+  const isDanger = variant === 'inverse' ? percentage > 70 : percentage < 30;
+  const isWarning = variant === 'inverse' ? percentage > 40 : percentage < 60;
+
+  if (isDanger) {
+    colorClass = "text-red-500";
+  } else if (isWarning) {
+    colorClass = "text-yellow-500";
   }
 
   return (
@@ -74,7 +61,7 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
 };
 
 export function PlayerHud({ playerState }: { playerState: GameState['playerState'] }) {
-  const { health = 100, sanity = 100, hunger = 0, thirst = 0, stamina, mana } = playerState || {};
+  const { health, sanity, hunger, thirst, stamina, mana } = playerState || {};
   
   return (
     <Card className="bg-transparent border">
@@ -84,25 +71,25 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
       <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
         <HudGauge 
             label="سلامتی" 
-            value={health} 
+            value={health ?? 100} 
             icon={<HeartPulse />}
             variant="default"
         />
         <HudGauge 
             label="عقلانیت" 
-            value={sanity} 
+            value={sanity ?? 100} 
             icon={<BrainCircuit />}
             variant="default"
         />
         <HudGauge 
             label="گرسنگی" 
-            value={hunger} 
+            value={hunger ?? 0} 
             icon={<Wheat />}
             variant="inverse"
         />
         <HudGauge 
             label="تشنگی" 
-            value={thirst} 
+            value={thirst ?? 0} 
             icon={<Droplets />}
             variant="inverse"
         />
