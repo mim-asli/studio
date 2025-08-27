@@ -282,7 +282,7 @@ const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: an
             >
                 <CardHeader className="items-center text-center p-4">
                     <div className="p-3 bg-muted rounded-full mb-2">
-                        <value.icon className="w-7 h-7 text-accent" />
+                        <value.icon className="w-7 h-7 text-foreground" />
                     </div>
                     <CardTitle className="text-base">{key}</CardTitle>
                     {value.description && <CardDescription className="text-xs">{value.description}</CardDescription>}
