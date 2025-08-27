@@ -31,7 +31,7 @@ export function StartScreen({
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 overflow-hidden">
       <div className="text-center mb-12">
-        <h1 className="text-8xl md:text-9xl font-headline text-foreground mb-2 tracking-widest">
+        <h1 className="text-8xl md:text-9xl font-headline text-primary mb-2 tracking-widest">
           داستان
         </h1>
         <p className="text-lg text-muted-foreground font-body">
