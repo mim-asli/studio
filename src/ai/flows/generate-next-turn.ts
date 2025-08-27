@@ -17,6 +17,12 @@ const GenerateNextTurnInputSchema = z.object({
 });
 export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
 
+const EnemySchema = z.object({
+    id: z.string().describe("A unique identifier for the enemy in this combat scene."),
+    name: z.string().describe("The name of the enemy."),
+    health: z.number().describe("The current health of the enemy."),
+});
+
 const GenerateNextTurnOutputSchema = z.object({
   story: z.string().describe('The narrative text of the current events. This should be a single string.'),
   playerState: z.any().describe('The state of the player (health, sanity, etc.).'),
@@ -31,7 +37,7 @@ const GenerateNextTurnOutputSchema = z.object({
   globalEvent: z.string().optional().describe('A global event that occurred in this turn.'),
   sceneEntities: z.array(z.string()).describe('List of entities in the current scene.'),
   isCombat: z.boolean().optional().describe('Whether combat is active.'),
-  enemies: z.array(z.any()).optional().describe('A list of enemies in the combat.'),
+  enemies: z.array(EnemySchema).optional().describe('A list of enemies in the combat.'),
 });
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
 
