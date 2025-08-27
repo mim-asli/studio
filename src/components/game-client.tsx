@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { GameState, SaveFile, CustomScenario } from "@/lib/types";
+import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput } from "@/lib/types";
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { useToast } from "@/hooks/use-toast";
 
@@ -151,27 +151,32 @@ export function GameClient() {
   const processPlayerAction = async (playerAction: string) => {
     setGameState(prev => ({ ...prev, isLoading: true, choices: [] }));
 
+    // Destructure to separate story from the rest of the state
     const { story, ...restOfState } = gameState;
+    
+    // Create the game state object for the AI, ensuring `story` is a string
     const currentGameStateForAI = { 
         ...restOfState, 
         story: story.slice(-5).join('\n\n') // Send last 5 story parts for context
     };
 
+    // Remove client-side only state properties
     // @ts-ignore
     delete currentGameStateForAI.isLoading; 
     // @ts-ignore
     delete currentGameStateForAI.gameStarted;
 
     try {
-      const nextTurn = await generateNextTurn({
-        // @ts-ignore
+      const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
+        // @ts-ignore - The AI function expects `story` to be a string
         gameState: currentGameStateForAI,
         playerAction,
       });
 
-      const updatedGameState = {
+      const updatedGameState: GameState = {
         ...gameState,
         ...nextTurn,
+        // Add the new story segment to the existing story array
         story: [...gameState.story, nextTurn.story],
         gameStarted: true,
         isLoading: false,
@@ -200,12 +205,12 @@ export function GameClient() {
     const freshGameState: GameState = {
       ...initialGameState,
       id: gameId,
-      story: [], // Start with an empty story
+      story: [], // Start with an empty story array
       playerState: { health: 100, sanity: 100 },
       inventory: scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
       skills: scenario.character.split(',').map(s => s.trim()),
       gameStarted: true,
-      isLoading: true,
+      isLoading: true, // We will be loading the first turn
       choices: [],
       characterName: characterName,
       scenarioTitle: scenario.title,
@@ -214,9 +219,57 @@ export function GameClient() {
     setGameState(freshGameState);
     setView("game");
     
+    // The initial prompt for the AI to start the game
     const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
     
-    processPlayerAction(startPrompt);
+    // We call processPlayerAction, but we need to pass a valid GameState.
+    // Since the state update is async, we'll manually construct the required parts.
+    const tempStateForFirstTurn: GameState = {
+      ...freshGameState,
+      story: [], // On the very first turn, the story history is empty
+    };
+
+    const processFirstTurn = async () => {
+        setGameState(prev => ({...prev, isLoading: true, choices: []}));
+
+        const { story, ...restOfState } = tempStateForFirstTurn;
+        const gameStateForAI = { ...restOfState, story: '' }; // No story history for the first turn
+
+        // @ts-ignore
+        delete gameStateForAI.isLoading;
+        // @ts-ignore
+        delete gameStateForAI.gameStarted;
+
+        try {
+            const firstTurn: GenerateNextTurnOutput = await generateNextTurn({
+                // @ts-ignore
+                gameState: gameStateForAI,
+                playerAction: startPrompt,
+            });
+
+            const updatedGameState: GameState = {
+                ...tempStateForFirstTurn,
+                ...firstTurn,
+                story: [firstTurn.story], // Initialize story array with the first segment
+                gameStarted: true,
+                isLoading: false,
+            };
+
+            setGameState(updatedGameState);
+            saveGame(updatedGameState);
+
+        } catch (error) {
+            console.error("Error generating first turn:", error);
+            setGameState(prev => ({ ...prev, isLoading: false, choices: ["شروع مجدد"] }));
+            toast({
+                variant: "destructive",
+                title: "خطا در شروع بازی",
+                description: "هوش مصنوعی نتوانست بازی را شروع کند.",
+            });
+        }
+    };
+    
+    processFirstTurn();
   };
 
 
@@ -323,3 +376,5 @@ export function GameClient() {
     </>
   );
 }
+
+    

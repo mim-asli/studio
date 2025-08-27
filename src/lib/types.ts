@@ -1,6 +1,10 @@
-import type { GenerateNextTurnOutput } from '@/ai/flows/generate-next-turn';
+import type {z} from 'genkit';
+import type {GenerateNextTurnOutputSchema} from '@/ai/flows/generate-next-turn';
 
-// This will be the main state object for the game
+// This is the raw output from the AI flow. story is a single string.
+export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
+
+// This is the main state object for the game client. story is an array of strings.
 export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {
     id: string; // Unique ID for the game session
     story: string[]; // Keep a history of story segments
@@ -66,3 +70,5 @@ export type AppSettings = {
   localLlm: LocalLlmSettings;
   audio: AudioSettings;
 };
+
+    
