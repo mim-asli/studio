@@ -16,8 +16,6 @@ const parseSegment = (text: string) => {
     const isPlayerAction = text.startsWith(PLAYER_ACTION_PREFIX);
     
     if (isPlayerAction) {
-        // If it's a player action, wrap the whole thing in a styled span
-        // and then parse for the word "داستان" inside it.
         const content = text.substring(PLAYER_ACTION_PREFIX.length);
         const parts = content.split(/(داستان)/g);
         const nodes = parts.map((part, index) => 
@@ -28,7 +26,8 @@ const parseSegment = (text: string) => {
             )
         );
         return (
-            <span className="text-accent italic">
+            // Replaced italic with bold and opacity for better readability
+            <span className="text-accent font-bold opacity-80">
                 {PLAYER_ACTION_PREFIX}{nodes}
             </span>
         );
