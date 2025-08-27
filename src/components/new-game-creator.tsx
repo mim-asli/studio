@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell } from "lucide-react";
+import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -28,9 +29,15 @@ const archetypes = {
     'جنگجو': { icon: Swords, description: "استاد نبردهای تن به تن با قدرت بدنی بالا." },
     'جادوگر': { icon: Wand, description: "دانای اسرار کهن و کنترل‌کننده نیروهای جادویی." },
     'مخفی‌کار': { icon: Ghost, description: "قاتلی خاموش که در سایه‌ها حرکت می‌کند." },
-    'دانشمند': { icon: FlaskConical, description: "متخصص فناوری و گجت‌های پیشرفته در دنیای آینده." },
-    'پهلوان': { icon: ShieldCheck, description: "مبارزی مقدس که از بی‌گناهان دفاع می‌کند." },
     'کماندار': { icon: Crosshair, description: "متخصص استفاده از تیر و کمان و استاد بقا در طبیعت." },
+    'پهلوان': { icon: ShieldCheck, description: "مبارزی مقدس که از بی‌گناهان دفاع می‌کند." },
+    'دانشمند': { icon: FlaskConical, description: "متخصص فناوری و گجت‌های پیشرفته در دنیای آینده." },
+    'شفادهنده': { icon: HeartPulse, description: "استاد درمانگری و جادوی احیاکننده." },
+    'بربر': { icon: Zap, description: "جنگجویی وحشی که با خشم و قدرت خام می‌جنگد." },
+    'شاعر': { icon: Music, description: "هنرمندی که با کلام و موسیقی بر دیگران تأثیر می‌گذارد." },
+    'دروید': { icon: Leaf, description: "نگهبان طبیعت که با حیوانات و گیاهان ارتباط دارد." },
+    'مهندس': { icon: Wrench, description: "مخترعی که با ابزار و ماشین‌آلات پیچیده کار می‌کند." },
+    'بازرگان': { icon: Briefcase, description: "متخصص چانه‌زنی و تجارت که همیشه به دنبال سود است." },
 };
 
 const perks = {
@@ -38,8 +45,14 @@ const perks = {
     'مقاوم': { icon: Shield, description: "بدنی سرسخت که در برابر آسیب‌ها و بیماری‌ها مقاوم‌تر است." },
     'تیزهوش': { icon: Brain, description: "ذهنی خلاق و سریع برای حل معماها و یافتن راه‌حل‌های غیرمنتظره." },
     'چابک': { icon: Rabbit, description: "حرکت سریع و بی‌صدا، استاد فرار و جاخالی دادن." },
-    'حافظه قوی': { icon: Brain, description: "جزئیات و اطلاعات مهم را به راحتی به خاطر می‌سپارد." },
+    'حافظه قوی': { icon: BookOpen, description: "جزئیات و اطلاعات مهم را به راحتی به خاطر می‌سپارد." },
     'چشمان تیزبین': { icon: Eye, description: "قابلیت دیدن جزئیات پنهان و پیدا کردن سرنخ‌ها." },
+    'خوش‌شانس': { icon: Clover, description: "شانس و اقبال اغلب به طور غیرمنتظره‌ای به او رو می‌کند." },
+    'اراده آهنین': { icon: ShieldQuestion, description: "در برابر فشارهای روانی و جادوی کنترل ذهن مقاوم است." },
+    'قدرت بدنی بالا': { icon: Bone, description: "توانایی حمل بارهای سنگین و زورآزمایی‌های فیزیکی." },
+    'همدلی با حیوانات': { icon: PawPrint, description: "می‌تواند با حیوانات ارتباط برقرار کرده و آن‌ها را آرام کند." },
+    'استاد تقلید': { icon: VenetianMask, description: "در تغییر چهره و جعل هویت دیگران مهارت دارد." },
+    'کیمیاگر': { icon: TestTube, description: "دانش ساخت معجون‌ها و ترکیبات شیمیایی مختلف را دارد." },
 };
 
 const flaws = {
@@ -47,8 +60,14 @@ const flaws = {
     'بدشانس': { icon: Moon, description: "همیشه بدترین اتفاق ممکن برایش رخ می‌دهد." },
     'مغرور': { icon: Sun, description: "اعتماد به نفس بیش از حد، گاهی کار دستش می‌دهد." },
     'کله‌شق': { icon: Angry, description: "به سختی نظرش را عوض می‌کند و اغلب راه اشتباه را می‌رود." },
-    'زودباور': { icon: Shell, description: "به راحتی حرف دیگران را باور می‌کند و فریب می‌خورد." },
+    'زودباور': { icon: Handshake, description: "به راحتی حرف دیگران را باور می‌کند و فریب می‌خورد." },
     'طمع‌کار': { icon: Gem, description: "عشق به ثروت و اشیاء قیمتی او را به دردسر می‌اندازد." },
+    'اعتیاد': { icon: CircleDashed, description: "به یک ماده یا رفتار خاص اعتیاد دارد و ترک آن برایش دشوار است." },
+    'فوبیا': { icon: Bug, description: "ترسی شدید و غیرمنطقی از یک چیز خاص دارد (مثلاً عنکبوت، ارتفاع)." },
+    'فراموشکار': { icon: BrainCog, description: "اغلب قرارهای مهم و اطلاعات کلیدی را فراموش می‌کند." },
+    'ساده‌لوح': { icon: GhostIcon, description: "درک کمی از کنایه‌ها و پیچیدگی‌های اجتماعی دارد." },
+    'بی‌سواد': { icon: Book, description: "توانایی خواندن و نوشتن ندارد و این او را محدود می‌کند." },
+    'پارانویا': { icon: SkullIcon, description: "همیشه به دیگران مشکوک است و فکر می‌کند همه علیه او توطئه می‌کنند." },
 };
 
 const gmPersonalities = ['جدی و تاریک', 'شوخ و سرگرم‌کننده', 'روایی و سینمایی', 'واقع‌گرا و بی‌رحم', 'مینیمالیست و سریع'];
@@ -169,7 +188,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                                 setSelectedArchetype(key as keyof typeof archetypes);
                                 setCustomArchetype(''); 
                             }} 
-                            columns="3"
+                            columns="4"
                         />
                         <div className="flex items-center gap-4 my-4">
                             <hr className="flex-grow border-border/50"/>
@@ -196,7 +215,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 </div>
             </Step>
             case 4: return <Step title="۴. تجهیزات اولیه" description="شخصیت شما ماجراجویی را با چه آیتم‌هایی شروع می‌کند؟ (هر آیتم را در یک خط جدید بنویسید)">
-                 <Textarea placeholder="شمشیر بلند&#x0a;کوله پشتی چرمی&#x0a;3 سکه طلا" value={initialItems} onChange={e => setInitialItems(e.target.value)} rows={8} />
+                 <Textarea placeholder="شمشیر بلند\nکوله پشتی چرمی\n3 سکه طلا" value={initialItems} onChange={e => setInitialItems(e.target.value)} rows={8} />
             </Step>
             case 5: return <Step title="۵. صحنه افتتاحیه" description="متن شروع داستان را بنویسید. هرچه جزئیات بیشتری بدهید، هوش مصنوعی داستان بهتری خلق خواهد کرد.">
                  <Textarea placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آیید. آخرین چیزی که به یاد دارید، نور کورکننده یک طلسم است. اکنون تنها هستید و صدای زوزه‌ی گرگ‌ها از دور به گوش می‌رسد..." value={storyPrompt} onChange={e => setStoryPrompt(e.target.value)} rows={10} />
