@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Dna, Landmark, Wand, FlaskConical, Swords, User, Shield, HeartCrack, Rocket, Bot, Fingerprint, Ghost, Sun, Moon, Drama, Skull } from "lucide-react";
+import { ArrowLeft, Dna, Landmark, Wand, FlaskConical, Swords, User, Shield, HeartCrack, Rocket, Bot, Fingerprint, Ghost, Sun, Moon, Drama, Skull, ShieldCheck, Crosshair, Leaf, HandHeart, Hammer, Gem, Telescope, Briefcase, Handshake } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -29,6 +29,14 @@ const archetypes = {
     'جادوگر': { icon: Wand, description: "دانای اسرار کهن و کنترل‌کننده نیروهای جادویی." },
     'مخفی‌کار': { icon: Ghost, description: "قاتلی خاموش که در سایه‌ها حرکت می‌کند." },
     'دانشمند': { icon: FlaskConical, description: "متخصص فناوری و گجت‌های پیشرفته در دنیای آینده." },
+    'پهلوان': { icon: ShieldCheck, description: "مبارزی مقدس که از بی‌گناهان دفاع می‌کند." },
+    'کماندار': { icon: Crosshair, description: "متخصص استفاده از تیر و کمان و استاد بقا در طبیعت." },
+    'طبیعت‌گرد': { icon: Leaf, description: "محافظ طبیعت که با حیوانات و گیاهان ارتباط برقرار می‌کند." },
+    'شفابخش': { icon: HandHeart, description: "درمانگری که زخم‌ها را التیام می‌بخشد و نفرین‌ها را باطل می‌کند." },
+    'صنعتگر': { icon: Hammer, description: "استاد ساخت و ساز که می‌تواند سلاح‌ها و ابزارهای قدرتمند بسازد." },
+    'تاجر': { icon: Handshake, description: "متخصص چانه‌زنی و تجارت که می‌تواند هر چیزی را بخرد و بفروشد." },
+    'کاشف': { icon: Telescope, description: "ماجراجویی که به دنبال کشف سرزمین‌های ناشناخته و اسرار گمشده است." },
+    'دیپلمات': { icon: Briefcase, description: "سیاستمداری ماهر که با کلمات می‌جنگد، نه با شمشیر." },
 };
 
 const perks = {
@@ -45,7 +53,7 @@ const flaws = {
 
 const scenarios = {
     'فانتزی': [
-        { title: "بیداری در دخمه", description: "شما در یک دخمه سرد و تاریک به هوش می‌آیید، بدون هیچ خاطره‌ای از گذشته. تنها یک مشعل در دست دارید." },
+        { title: "بیداری در دخمه", description: "شما در یک دخمه سرد و تاریک به هوش می‌آyید، بدون هیچ خاطره‌ای از گذشته. تنها یک مشعل در دست دارید." },
         { title: "کاروان گمشده", description: "شما مسئول حفاظت از یک کاروان تجاری هستید که در جنگلی نفرین‌شده مسیر خود را گم کرده است." },
     ],
     'علمی-تخیلی': [
@@ -113,7 +121,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 <SelectionGrid items={genres} selected={genre} onSelect={(key) => { setGenre(key as keyof typeof genres); setSelectedScenario(null); }} columns={3} />
             </Step>
             case 2: return <Step title="۲. انتخاب کهن‌الگو" description="کلاس و هویت اصلی شخصیت خود را انتخاب کنید.">
-                <SelectionGrid items={archetypes} selected={archetype} onSelect={setArchetype} />
+                <SelectionGrid items={archetypes} selected={archetype} onSelect={setArchetype} columns={4} />
             </Step>
             case 3: return <Step title="۳. جزئیات شخصیت" description="به قهرمان خود یک نام و یک پیشینه (اختیاری) بدهید.">
                 <div className="space-y-4">
@@ -212,7 +220,7 @@ const Step = ({ title, description, children }: { title: string, description: st
 );
 
 const SelectionGrid = ({ items, selected, onSelect, columns = 3 }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: number }) => (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-${columns} gap-4`}>
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", `md:grid-cols-${columns}`)}>
         {Object.entries(items).map(([key, value]: [string, any]) => (
             <Card 
                 key={key}
@@ -222,12 +230,12 @@ const SelectionGrid = ({ items, selected, onSelect, columns = 3 }: { items: any,
                     selected === key ? "ring-2 ring-accent" : "border-primary/20"
                 )}
             >
-                <CardHeader className="items-center text-center">
-                    <div className="p-4 bg-muted rounded-full mb-2">
-                        <value.icon className="w-8 h-8 text-accent" />
+                <CardHeader className="items-center text-center p-4">
+                    <div className="p-3 bg-muted rounded-full mb-2">
+                        <value.icon className="w-7 h-7 text-accent" />
                     </div>
-                    <CardTitle>{key}</CardTitle>
-                    {value.description && <CardDescription>{value.description}</CardDescription>}
+                    <CardTitle className="text-base">{key}</CardTitle>
+                    {value.description && <CardDescription className="text-xs">{value.description}</CardDescription>}
                 </CardHeader>
             </Card>
         ))}
@@ -280,6 +288,12 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
         ))}
     </div>
 );
+
+    
+
+    
+
+    
 
     
 
