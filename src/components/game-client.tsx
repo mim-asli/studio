@@ -11,7 +11,7 @@ import { InteractionPanel } from "@/components/interaction-panel";
 import { SidebarTabs } from "@/components/sidebar-tabs";
 import { SceneDisplay } from "@/components/scene-display";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save, FilePlus, AlertTriangle, LogOut } from "lucide-react";
+import { Loader2, FilePlus, AlertTriangle, LogOut } from "lucide-react";
 import { StartScreen } from "./screens/start-screen";
 import { CustomScenarioCreator } from "./custom-scenario-creator";
 import { LoadGame } from "./load-game";
@@ -174,11 +174,54 @@ export function GameClient() {
         inventory: [scenario.initialItems],
         skills: [scenario.character],
         gameStarted: true,
-        isLoading: false,
+        isLoading: true, // Start loading for the first turn
+        choices: [],
       };
-
+      
       setGameState(freshGameState);
-      saveGame(freshGameState);
+
+      // We need to immediately process a "first turn" to get the story going
+      // We'll use a generic "start" action.
+      const startAction = `شروع ماجراجویی با این سناریو: ${scenario.title}. ${scenario.storyPrompt}`;
+      
+      const processFirstTurn = async () => {
+        try {
+            const nextTurn = await generateNextTurn({
+                gameState: {
+                    story: scenario.storyPrompt,
+                    playerState: { health: 100, sanity: 100 },
+                    inventory: [scenario.initialItems],
+                    skills: [scenario.character],
+                    worldState: {},
+                    sceneEntities: [],
+                    isCombat: false,
+                    enemies: [],
+                    quests: [],
+                    choices: []
+                },
+                playerAction: startAction,
+            });
+
+            const updatedGameState: GameState = {
+                ...freshGameState,
+                ...nextTurn,
+                isLoading: false,
+            };
+
+            setGameState(updatedGameState);
+            saveGame(updatedGameState);
+        } catch (error) {
+            console.error("Error generating first turn:", error);
+            setGameState(prev => ({ ...prev, isLoading: false, story: "خطا در شروع داستان. لطفاً دوباره تلاش کنید." }));
+            toast({
+                variant: "destructive",
+                title: "خطای هوش مصنوعی",
+                description: "داستان نتوانست شروع شود. لطفاً یک بازی جدید را امتحان کنید.",
+            });
+        }
+      }
+
+      processFirstTurn();
       setView("game");
   };
 
@@ -265,7 +308,7 @@ export function GameClient() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>بازگشت به منوی اصلی؟</AlertDialogTitle>
                     <AlertDialogDescription>
-                      آیا مطمئن هستید که می‌خواهید از بازی خارج شوید؟ هر پیشرفت ذخیره نشده‌ای از بین خواهد رفت.
+                      پیشرفت شما به صورت خودکار ذخیره شده است. آیا می‌خواهید به منوی اصلی بازگردید؟
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -290,5 +333,3 @@ export function GameClient() {
     </>
   );
 }
-
-    
