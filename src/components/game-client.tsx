@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -43,7 +44,7 @@ export const PLAYER_ACTION_PREFIX = "> ";
 export const initialGameState: GameState = {
   id: '',
   story: ["به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید."],
-  playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0 },
+  playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0, stamina: 100 },
   inventory: [],
   skills: [],
   quests: [],
@@ -232,13 +233,23 @@ export function GameClient() {
 
   const handleStartGame = (scenario: CustomScenario, characterName: string) => {
     const gameId = crypto.randomUUID();
+    const characterSkills = Array.isArray(scenario.character) ? scenario.character : scenario.character.split(',').map(s => s.trim());
+    const isMagical = characterSkills.some(skill => skill.toLowerCase().includes('جادوگر'));
+
     const freshGameState: GameState = {
       ...initialGameState,
       id: gameId,
       story: [], // Start with an empty story array
-      playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0 },
+      playerState: { 
+        health: 100, 
+        sanity: 100, 
+        hunger: 0, 
+        thirst: 0,
+        stamina: 100, // Always start with stamina
+        mana: isMagical ? 100 : undefined, // Only add mana for magical characters
+      },
       inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
-      skills: Array.isArray(scenario.character) ? scenario.character : scenario.character.split(',').map(s => s.trim()),
+      skills: characterSkills,
       gameStarted: true,
       isLoading: true, // We will be loading the first turn
       choices: [],
