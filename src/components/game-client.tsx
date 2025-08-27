@@ -151,16 +151,16 @@ export function GameClient() {
   const processPlayerAction = async (playerAction: string) => {
     setGameState(prev => ({ ...prev, isLoading: true, choices: [] }));
 
-    // Destructure to separate story from the rest of the state
     const { story, ...restOfState } = gameState;
     
-    // Create the game state object for the AI, ensuring `story` is a string
+    // Create a temporary state object for the AI, ensuring `story` is a single string
+    // containing the last 5 story parts for context.
     const currentGameStateForAI = { 
         ...restOfState, 
-        story: story.slice(-5).join('\n\n') // Send last 5 story parts for context
+        story: story.slice(-5).join('\n\n')
     };
 
-    // Remove client-side only state properties
+    // Remove client-side only state properties from the object sent to the AI
     // @ts-ignore
     delete currentGameStateForAI.isLoading; 
     // @ts-ignore
@@ -168,22 +168,23 @@ export function GameClient() {
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
-        // @ts-ignore - The AI function expects `story` to be a string
+        // The AI function expects `story` to be a string.
         gameState: currentGameStateForAI,
         playerAction,
       });
-
-      const updatedGameState: GameState = {
-        ...gameState,
-        ...nextTurn,
-        // Add the new story segment to the existing story array
-        story: [...gameState.story, nextTurn.story],
-        gameStarted: true,
-        isLoading: false,
-      };
-
-      setGameState(updatedGameState);
-      saveGame(updatedGameState); // Auto-save after each turn
+      
+      setGameState(prevGameState => {
+        const updatedGameState: GameState = {
+            ...prevGameState,
+            ...nextTurn,
+            // Add the new story segment to the existing story array
+            story: [...prevGameState.story, nextTurn.story],
+            gameStarted: true,
+            isLoading: false,
+        };
+        saveGame(updatedGameState); // Auto-save after each turn
+        return updatedGameState;
+      });
 
       if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
       if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
@@ -222,11 +223,9 @@ export function GameClient() {
     // The initial prompt for the AI to start the game
     const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
     
-    // We call processPlayerAction, but we need to pass a valid GameState.
-    // Since the state update is async, we'll manually construct the required parts.
     const tempStateForFirstTurn: GameState = {
       ...freshGameState,
-      story: [], // On the very first turn, the story history is empty
+      story: [],
     };
 
     const processFirstTurn = async () => {
@@ -376,5 +375,3 @@ export function GameClient() {
     </>
   );
 }
-
-    
