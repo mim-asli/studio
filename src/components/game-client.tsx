@@ -147,7 +147,7 @@ export function GameClient() {
 
   const startNewGame = (scenario: CustomScenario) => {
       const playerAction = `Start a new game.
-      Genre: ${scenario.genre}
+      Scenario Title: ${scenario.title}
       Character: ${scenario.character}
       Starting Items: ${scenario.initialItems}
       Opening Scene: ${scenario.storyPrompt}`;

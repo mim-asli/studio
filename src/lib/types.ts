@@ -18,7 +18,7 @@ export interface SaveFile {
 }
 
 export interface CustomScenario {
-    genre: string;
+    title: string;
     character: string;
     initialItems: string;
     storyPrompt: string;
