@@ -46,15 +46,6 @@ export function InteractionPanel({ choices, onAction, isLoading }: InteractionPa
     }
   };
   
-  useEffect(() => {
-      if (!listening && transcript.trim() && !isLoading) {
-          onAction(transcript.trim());
-          setCustomInput('');
-      }
-  // This should only run when listening stops
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listening]);
-
   return (
     <Card className="bg-transparent border">
       <CardHeader className="pb-2 pt-4">
