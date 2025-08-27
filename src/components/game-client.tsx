@@ -150,14 +150,13 @@ export function GameClient() {
   
   const processPlayerAction = async (playerAction: string) => {
     setGameState(prev => ({ ...prev, isLoading: true, choices: [] }));
-
-    const { story, ...restOfState } = gameState;
     
-    // Create a temporary state object for the AI, ensuring `story` is a single string
-    // containing the last 5 story parts for context.
+    // Create a temporary state object for the AI.
+    // This is crucial to avoid mutating the main gameState object.
+    const { story, ...restOfState } = gameState;
     const currentGameStateForAI = { 
         ...restOfState, 
-        story: story.slice(-5).join('\n\n')
+        story: Array.isArray(story) ? story.slice(-5).join('\n\n') : ""
     };
 
     // Remove client-side only state properties from the object sent to the AI
@@ -168,17 +167,19 @@ export function GameClient() {
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
-        // The AI function expects `story` to be a string.
         gameState: currentGameStateForAI,
         playerAction,
       });
       
       setGameState(prevGameState => {
+        // Correctly separate the new story string from the rest of the updated state.
+        const { story: newStory, ...restOfNextTurn } = nextTurn;
+
         const updatedGameState: GameState = {
             ...prevGameState,
-            ...nextTurn,
-            // Add the new story segment to the existing story array
-            story: [...prevGameState.story, nextTurn.story],
+            ...restOfNextTurn,
+            // **THE FIX**: Append the new story string to the existing story array.
+            story: [...prevGameState.story, newStory],
             gameStarted: true,
             isLoading: false,
         };
@@ -223,52 +224,7 @@ export function GameClient() {
     // The initial prompt for the AI to start the game
     const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
     
-    const tempStateForFirstTurn: GameState = {
-      ...freshGameState,
-      story: [],
-    };
-
-    const processFirstTurn = async () => {
-        setGameState(prev => ({...prev, isLoading: true, choices: []}));
-
-        const { story, ...restOfState } = tempStateForFirstTurn;
-        const gameStateForAI = { ...restOfState, story: '' }; // No story history for the first turn
-
-        // @ts-ignore
-        delete gameStateForAI.isLoading;
-        // @ts-ignore
-        delete gameStateForAI.gameStarted;
-
-        try {
-            const firstTurn: GenerateNextTurnOutput = await generateNextTurn({
-                // @ts-ignore
-                gameState: gameStateForAI,
-                playerAction: startPrompt,
-            });
-
-            const updatedGameState: GameState = {
-                ...tempStateForFirstTurn,
-                ...firstTurn,
-                story: [firstTurn.story], // Initialize story array with the first segment
-                gameStarted: true,
-                isLoading: false,
-            };
-
-            setGameState(updatedGameState);
-            saveGame(updatedGameState);
-
-        } catch (error) {
-            console.error("Error generating first turn:", error);
-            setGameState(prev => ({ ...prev, isLoading: false, choices: ["شروع مجدد"] }));
-            toast({
-                variant: "destructive",
-                title: "خطا در شروع بازی",
-                description: "هوش مصنوعی نتوانست بازی را شروع کند.",
-            });
-        }
-    };
-    
-    processFirstTurn();
+    processPlayerAction(startPrompt);
   };
 
 
@@ -375,3 +331,5 @@ export function GameClient() {
     </>
   );
 }
+
+    
