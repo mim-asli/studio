@@ -13,7 +13,6 @@ import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
 import { Button } from "@/components/ui/button";
 import { Loader2, FilePlus, AlertTriangle, LogOut } from "lucide-react";
 import { StartScreen } from "./screens/start-screen";
-import { CustomScenarioCreator } from "./custom-scenario-creator";
 import { LoadGame } from "./load-game";
 import { SettingsPage } from "./screens/settings-page";
 import { Scoreboard } from "./screens/scoreboard";
@@ -53,7 +52,7 @@ export const initialGameState: GameState = {
   scenarioTitle: '',
 };
 
-type View = "start" | "game" | "new-game" | "custom-scenario" | "load-game" | "settings" | "scoreboard";
+type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
 
 export function GameClient() {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
@@ -177,10 +176,6 @@ export function GameClient() {
     delete gameStateForAI.isLoading; 
     // @ts-ignore
     delete gameStateForAI.gameStarted;
-    // @ts-ignore
-    delete gameStateForAI.isGameOver;
-    // @ts-ignore
-    delete gameStateForAI.id;
 
 
     try {
@@ -262,7 +257,6 @@ export function GameClient() {
       <StartScreen 
         onNewGame={() => setView("new-game")}
         onLoadGame={() => setView("load-game")}
-        onCustomScenario={() => setView("custom-scenario")}
         onSettings={() => setView("settings")}
         onScoreboard={() => setView("scoreboard")}
       />
@@ -271,10 +265,6 @@ export function GameClient() {
 
   if (view === "new-game") {
     return <NewGameCreator onBack={() => setView("start")} onStartGame={handleStartGame} />;
-  }
-
-  if (view === "custom-scenario") {
-    return <CustomScenarioCreator onBack={() => setView("start")} onStartGame={handleStartGame}/>;
   }
   
   if (view === "load-game") {

@@ -2,57 +2,56 @@
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair } from "lucide-react";
+import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
+import { Textarea } from './ui/textarea';
 import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
 import type { CustomScenario } from '@/lib/types';
+import { Label } from './ui/label';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 6;
 
 const genres = {
-    'فانتزی': { icon: Wand, description: "شمشیر، جادو و ماجراجویی‌های حماسی در سرزمین‌های ناشناخته.", scenarios: [
-        { title: "آخرین نگهبان فانوس دریایی", prompt: "شما تنها نگهبان یک فانوس دریایی باستانی هستید که بر روی صخره‌ای در میان دریایی طوفانی قرار دارد. گفته می‌شود نور این فانوس، هیولاهای اعماق را دور نگه می‌دارد. امشب، نور فانوس برای اولین بار در هزار سال گذشته، خاموش شده است." },
-        { title: "بازار نیمه‌شب", prompt: "شما به طور اتفاقی وارد یک بازار مخفی می‌شوید که فقط در نیمه‌شب‌های مهتابی ظاهر می‌شود. در این بازار، ارواح، اجنه و موجودات جادویی، رویاها، خاطرات و سال‌های عمر را معامله می‌کنند." },
-        { title: "قلب جنگل سنگ‌شده", prompt: "در مرکز یک جنگل باستانی، تمام موجودات زنده به سنگ تبدیل شده‌اند. شما تنها کسی هستید که از این نفرین جان سالم به در برده‌اید. باید به قلب جنگل سفر کنید تا منبع این جادوی تاریک را پیدا کنید." },
-    ]},
-    'علمی-تخیلی': { icon: Rocket, description: "سفر در فضا، شهرهای سایبرپانک و تکنولوژی‌های آینده.", scenarios: [
-        { title: "پیام‌آور ستاره‌ها", prompt: "شما یک هوش مصنوعی هستید که در یک کاوشگر فضایی تنها، در حال سفر به سمت یک سیگنال ناشناخته از اعماق فضا هستید. خدمه انسانی شما قرن‌ها پیش از بین رفته‌اند." },
-        { title: "شهر نئونی گمشده", prompt: "شما یک کارآگاه خصوصی در یک کلان‌شهر سایبرپانکی هستید. یک دانشمند برجسته در زمینه حافظه دیجیتال ناپدید شده است. تحقیقات شما را به لایه‌های زیرین شهر می‌کشاند." },
-        { title: "کشتی نسل‌ها", prompt: "شما در یک کشتی فضایی غول‌پیکر به دنیا آمده‌اید که صدها سال است در حال سفر به یک سیاره جدید است. ناگهان، سیستم‌های حیاتی کشتی دچار نقص فنی می‌شوند." },
-    ]},
-    'ترسناک': { icon: Skull, description: "مواجهه با ناشناخته‌ها و تلاش برای بقا در دنیایی ترسناک.", scenarios: [
-        { title: "خوابگرد شهر متروکه", prompt: "شما در شهری از خواب بیدار می‌شوید که در آن زمان متوقف شده است. همه ساکنان در جای خود خشک شده‌اند و تنها شما می‌توانید حرکت کنید. یک صدای نجواگونه به دنبال شماست." },
-        { title: "خانه عروسک‌ها", prompt: "شما برای تعطیلات به یک خانه روستایی قدیمی می‌روید. در اتاق زیر شیروانی، یک خانه عروسکی پیدا می‌کنید که دقیقاً مشابه خانه واقعی است. هر تغییری که در خانه عروسکی ایجاد می‌کنید، در دنیای واقعی نیز اتفاق می‌افتد." },
-        { title: "ایستگاه رادیویی شماره صفر", prompt: "شما یک نگهبان شب در یک ایستگاه رادیویی دورافتاده هستید. در نیمه‌های شب، یک سیگنال عجیب از یک فرکانس مرده پخش می‌شود که وقایع وحشتناکی را که قرار است تا چند دقیقه دیگر رخ دهد، پیش‌بینی می‌کند." },
-    ]},
-    'معمایی': { icon: Fingerprint, description: "حل کردن جنایت‌ها و کشف اسرار پیچیده.", scenarios: [
-        { title: "قتل در کتابخانه بی‌نهایت", prompt: "در کتابخانه‌ای که گفته می‌شود تمام کتاب‌های نوشته شده و نانوشته جهان را در خود جای داده، کتابدار اعظم به قتل رسیده است. شما باید قاتل را پیدا کنید." },
-        { title: "ساعت‌ساز نابینا", prompt: "یک ساعت‌ساز نابینا که می‌توانست پیچیده‌ترین ساعت‌های جهان را بسازد، به قتل رسیده است. او قبل از مرگش، یک ساعت نیمه‌کاره از خود به جای گذاشته که به نظر می‌رسد زمان را به عقب نشان می‌دهد." },
-        { title: "قطار سریع‌السیر اورینت", prompt: "شما در یک قطار لوکس در حال سفر هستید که به دلیل طوفان برف متوقف می‌شود. صبح روز بعد، یکی از مسافران در کوپه قفل‌شده خود به قتل رسیده است." },
-    ]},
-    'پسا-آخرالزمانی': { icon: Bot, description: "تلاش برای بقا در دنیایی ویران پس از یک فاجعه.", scenarios: [
-        { title: "باغبان آخرین باغ", prompt: "در دنیایی که توسط غبار خاکستری پوشانده شده، شما از آخرین باغ زمین که در یک گنبد شیشه‌ای محافظت می‌شود، نگهداری می‌کنید. منابع گنبد رو به اتمام است." },
-        { title: "پیک رادیویی", prompt: "در دنیایی که شهرها از هم جدا افتاده‌اند، شما یک پیک هستید که پیام‌های رادیویی ضبط شده را بین سکونتگاه‌ها حمل می‌کنید. یک نوار مرموز به دست شما می‌رسد که می‌تواند سرنوشت بشریت را تغییر دهد." },
-        { title: "شکارچی ماشین‌ها", prompt: "در آینده‌ای که ماشین‌های هوشمند علیه انسان‌ها شورش کرده‌اند، شما یک شکارچی هستید که ربات‌های سرکش را برای قطعاتشان شکار می‌کنید." },
-    ]},
-    'کلاسیک': { icon: Landmark, description: "ماجراجویی در دوران‌های تاریخی مانند دزدان دریایی یا ژاپن فئودال.", scenarios: [
-        { title: "دزدان دریایی کارائیب", prompt: "شما کاپیتان یک کشتی دزدان دریایی هستید. نقشه‌ای به دست شما افتاده که محل گنج یک دزد دریایی افسانه‌ای را نشان می‌دهد. اما این نقشه نفرین شده است." },
-        { title: "سامورایی بی‌ارباب (رونین)", prompt: "در دوره فئودالی ژاپن، ارباب شما به ناحق متهم به خیانت شده و مجبور به خودکشی شده است. شما به عنوان یک رونین، قسم خورده‌اید که انتقام او را بگیرید." },
-        { title: "جاده ابریشم", prompt: "شما یک تاجر در مسیر جاده ابریشم هستید. کاروان شما حامل یک محموله بسیار با ارزش و سری است که توسط امپراتور چین به خلیفه بغداد فرستاده شده." },
-    ]}
+    'فانتزی': { icon: Wand },
+    'علمی-تخیلی': { icon: Rocket },
+    'ترسناک': { icon: Skull },
+    'معمایی': { icon: Fingerprint },
+    'پسا-آخرالزمانی': { icon: Bot },
+    'کلاسیک': { icon: Landmark },
 };
 
 const archetypes = {
-    'جنگجو': { icon: Swords, description: "استاد نبردهای تن به تن.", items: "شمشیر بلند\nزره زنجیری" },
-    'جادوگر': { icon: Wand, description: "کنترل‌کننده نیروهای جادویی.", items: "عصای چوبی\nکتاب طلسم" },
-    'مخفی‌کار': { icon: Ghost, description: "قاتلی خاموش در سایه‌ها.", items: "خنجر\nلباس تیره" },
-    'دانشمند': { icon: FlaskConical, description: "متخصص فناوری و گجت‌ها.", items: "آچار فرانسه\nعینک محافظ" },
-    'پهلوان': { icon: ShieldCheck, description: "مبارزی مقدس و مدافع.", items: "پتک\nسپر مقدس" },
-    'کماندار': { icon: Crosshair, description: "استاد تیراندازی از راه دور.", items: "کمان بلند\nیک ترکش تیر" },
+    'جنگجو': { icon: Swords, description: "استاد نبردهای تن به تن با قدرت بدنی بالا." },
+    'جادوگر': { icon: Wand, description: "دانای اسرار کهن و کنترل‌کننده نیروهای جادویی." },
+    'مخفی‌کار': { icon: Ghost, description: "قاتلی خاموش که در سایه‌ها حرکت می‌کند." },
+    'دانشمند': { icon: FlaskConical, description: "متخصص فناوری و گجت‌های پیشرفته در دنیای آینده." },
+    'پهلوان': { icon: ShieldCheck, description: "مبارزی مقدس که از بی‌گناهان دفاع می‌کند." },
+    'کماندار': { icon: Crosshair, description: "متخصص استفاده از تیر و کمان و استاد بقا در طبیعت." },
 };
 
+const perks = {
+    'کاریزماتیک': { icon: User, description: "توانایی بالا در متقاعد کردن دیگران و نفوذ اجتماعی." },
+    'مقاوم': { icon: Shield, description: "بدنی سرسخت که در برابر آسیب‌ها و بیماری‌ها مقاوم‌تر است." },
+    'تیزهوش': { icon: Brain, description: "ذهنی خلاق و سریع برای حل معماها و یافتن راه‌حل‌های غیرمنتظره." },
+    'چابک': { icon: Rabbit, description: "حرکت سریع و بی‌صدا، استاد فرار و جاخالی دادن." },
+    'حافظه قوی': { icon: Brain, description: "جزئیات و اطلاعات مهم را به راحتی به خاطر می‌سپارد." },
+    'چشمان تیزبین': { icon: Eye, description: "قابلیت دیدن جزئیات پنهان و پیدا کردن سرنخ‌ها." },
+};
+
+const flaws = {
+    'ترسو': { icon: HeartCrack, description: "در موقعیت‌های خطرناک دچار استرس و وحشت می‌شود." },
+    'بدشانس': { icon: Moon, description: "همیشه بدترین اتفاق ممکن برایش رخ می‌دهد." },
+    'مغرور': { icon: Sun, description: "اعتماد به نفس بیش از حد، گاهی کار دستش می‌دهد." },
+    'کله‌شق': { icon: Angry, description: "به سختی نظرش را عوض می‌کند و اغلب راه اشتباه را می‌رود." },
+    'زودباور': { icon: Shell, description: "به راحتی حرف دیگران را باور می‌کند و فریب می‌خورد." },
+    'طمع‌کار': { icon: Gem, description: "عشق به ثروت و اشیاء قیمتی او را به دردسر می‌اندازد." },
+};
+
+const gmPersonalities = ['جدی و تاریک', 'شوخ و سرگرم‌کننده', 'روایی و سینمایی', 'واقع‌گرا و بی‌رحم', 'مینیمالیست و سریع'];
 
 interface NewGameCreatorProps {
     onBack: () => void;
@@ -62,44 +61,67 @@ interface NewGameCreatorProps {
 export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const [step, setStep] = useState(1);
     
-    const [genre, setGenre] = useState<keyof typeof genres>('فانتزی');
-    const [archetype, setArchetype] = useState<keyof typeof archetypes>('جنگجو');
     const [characterName, setCharacterName] = useState('');
-    const [selectedScenario, setSelectedScenario] = useState(genres['فانتزی'].scenarios[0]);
+    const [characterDesc, setCharacterDesc] = useState('');
+    const [customArchetype, setCustomArchetype] = useState('');
+    const [selectedArchetype, setSelectedArchetype] = useState<keyof typeof archetypes | null>(null);
+    const [perk, setPerk] = useState<keyof typeof perks | null>(null);
+    const [flaw, setFlaw] = useState<keyof typeof flaws | null>(null);
+    const [initialItems, setInitialItems] = useState('');
+    const [storyPrompt, setStoryPrompt] = useState('');
+    const [scenarioTitle, setScenarioTitle] = useState('');
+    
+    const [genre, setGenre] = useState<keyof typeof genres>('فانتزی');
+    const [difficulty, setDifficulty] = useState('معمولی');
+    const [gmPersonality, setGmPersonality] = useState('روایی و سینمایی');
+
 
     const handleNext = () => setStep(s => Math.min(s + 1, TOTAL_STEPS));
     const handlePrev = () => setStep(s => Math.max(s - 1, 1));
     
     const canProceed = () => {
         switch(step) {
-            case 1: return !!genre;
-            case 2: return !!archetype && characterName.trim().length > 0;
-            case 3: return !!selectedScenario;
+            case 1: return !!genre && !!difficulty && !!gmPersonality && scenarioTitle.trim().length > 0;
+            case 2: return characterName.trim().length > 0 && (customArchetype.trim().length > 0 || !!selectedArchetype) ;
+            case 3: return !!perk && !!flaw;
+            case 4: return initialItems.trim().length > 0;
+            case 5: return storyPrompt.trim().length > 0;
+            case 6: return true;
             default: return false;
         }
     }
     
     const handleStartGame = () => {
-        if (!characterName || !archetype || !selectedScenario) return;
+        const finalArchetype = customArchetype.trim() || selectedArchetype;
 
         const fullStoryPrompt = `
-        عنوان سناریو: ${selectedScenario.title}
+        عنوان سناریو: ${scenarioTitle}
         ژانر: ${genre}. 
+        سبک راوی: ${gmPersonality}. 
+        سطح دشواری: ${difficulty}. 
+        
         شخصیت:
         - نام: ${characterName}
-        - کهن الگو: ${archetype}
-        
-        تجهیزات اولیه: 
-        ${archetypes[archetype].items}
+        - کهن الگو: ${finalArchetype}
+        - توضیحات: ${characterDesc}
+        - نقطه قوت: ${perk}
+        - نقطه ضعف: ${flaw}
+
+        تجهیزات اولیه: ${initialItems.split('\n').join(', ')}
 
         صحنه شروع:
-        ${selectedScenario.prompt}
+        ${storyPrompt}
         `;
 
         const customScenario: CustomScenario = {
-            title: selectedScenario.title,
-            character: [`نام: ${characterName}`, `کهن‌الگو: ${archetype}`],
-            initialItems: archetypes[archetype].items.split('\n'),
+            title: scenarioTitle,
+            character: [
+                `نام: ${characterName}`, 
+                `کهن‌الگو: ${finalArchetype}`, 
+                `ویژگی‌ها: ${perk}, ${flaw}`,
+                `توضیحات: ${characterDesc}`
+            ],
+            initialItems: initialItems.split('\n').filter(i => i.trim() !== ''),
             storyPrompt: fullStoryPrompt,
         };
         onStartGame(customScenario, characterName);
@@ -107,40 +129,96 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
 
     const renderStep = () => {
         switch (step) {
-            case 1: return <Step title="۱. انتخاب ژانر" description="سبک و دنیای کلی ماجراجویی خود را مشخص کنید.">
-                <SelectionGrid 
-                    items={genres} 
-                    selected={genre} 
-                    onSelect={(key) => { 
-                        const newGenre = key as keyof typeof genres;
-                        setGenre(newGenre); 
-                        setSelectedScenario(genres[newGenre].scenarios[0]);
-                    }} 
-                    columns="3" 
-                />
-            </Step>
-            case 2: return <Step title="۲. انتخاب شخصیت" description="کلاس و نام قهرمان خود را انتخاب کنید.">
-                <div className="space-y-8">
-                     <Input 
-                        placeholder="نام شخصیت" 
-                        value={characterName} 
-                        onChange={e => setCharacterName(e.target.value)} 
-                        className="text-center text-lg max-w-sm mx-auto" 
-                    />
-                    <SelectionGrid 
-                        items={archetypes} 
-                        selected={archetype} 
-                        onSelect={(key) => setArchetype(key as keyof typeof archetypes)} 
-                        columns="3" 
-                    />
+            case 1: return <Step title="۱. مبانی جهان" description="قوانین و حال و هوای کلی دنیای خود را مشخص کنید.">
+                 <div className="space-y-6">
+                    <Input placeholder="عنوان سناریو (مثلا: انتقام جادوگر تاریکی)" value={scenarioTitle} onChange={e => setScenarioTitle(e.target.value)} className="text-center text-lg" />
+                     <SelectionGrid items={genres} selected={genre} onSelect={(key) => setGenre(key as keyof typeof genres)} columns="3" title="ژانر" />
+                    <div>
+                        <Label className="text-lg font-bold text-primary mb-2 block">سطح دشواری</Label>
+                        <RadioGroup value={difficulty} className="mt-2 grid grid-cols-3 gap-4" onValueChange={setDifficulty}>
+                           {['آسان', 'معمولی', 'سخت'].map(level => (
+                               <Label key={level} htmlFor={`diff-${level}`} className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", difficulty === level && "border-primary ring-2 ring-primary")}>
+                                  <RadioGroupItem value={level} id={`diff-${level}`} className="sr-only" />
+                                  {level}
+                               </Label>
+                           ))}
+                        </RadioGroup>
+                    </div>
+                     <div>
+                        <Label htmlFor="gm-personality" className="text-lg font-bold text-primary mb-2 block">سبک راوی (GM)</Label>
+                        <Select value={gmPersonality} onValueChange={setGmPersonality}>
+                            <SelectTrigger id="gm-personality" className="w-full mt-2">
+                                <SelectValue placeholder="شخصیت GM را انتخاب کنید" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {gmPersonalities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </Step>
-            case 3: return <Step title="۳. انتخاب سناریو" description="نقطه شروع ماجراجویی خود را از بین گزینه‌های زیر انتخاب کنید.">
-                <ScenarioSelection 
-                    scenarios={genres[genre].scenarios} 
-                    selected={selectedScenario} 
-                    onSelect={setSelectedScenario} 
-                />
+            case 2: return <Step title="۲. پروفایل شخصیت" description="به قهرمان خود یک نام، یک کلاس و یک پیشینه (اختیاری) بدهید.">
+                <div className="space-y-6">
+                    <Input placeholder="نام شخصیت" value={characterName} onChange={e => setCharacterName(e.target.value)} className="text-center text-lg" />
+                    <div>
+                        <Label className="text-lg font-bold text-primary mb-2 block">کهن الگو (Archetype)</Label>
+                        <SelectionGrid 
+                            items={archetypes} 
+                            selected={selectedArchetype} 
+                            onSelect={(key) => {
+                                setSelectedArchetype(key as keyof typeof archetypes);
+                                setCustomArchetype(''); 
+                            }} 
+                            columns="3"
+                        />
+                        <div className="flex items-center gap-4 my-4">
+                            <hr className="flex-grow border-border/50"/>
+                            <span className="text-muted-foreground">یا</span>
+                            <hr className="flex-grow border-border/50"/>
+                        </div>
+                        <Input 
+                            placeholder="... یک کهن‌الگوی سفارشی بسازید" 
+                            value={customArchetype} 
+                            onChange={e => {
+                                setCustomArchetype(e.target.value)
+                                setSelectedArchetype(null); 
+                            }}
+                            className="text-center" 
+                        />
+                    </div>
+                    <Textarea placeholder="توضیحات و پیشینه شخصیت (اختیاری)" value={characterDesc} onChange={e => setCharacterDesc(e.target.value)} rows={4} />
+                </div>
+            </Step>
+            case 3: return <Step title="۳. انتخاب ویژگی‌ها" description="یک نقطه قوت (Perk) و یک نقطه ضعف (Flaw) انتخاب کنید تا به شخصیت خود عمق ببخشید.">
+                <div className="grid md:grid-cols-2 gap-8">
+                    <FeatureSelection title="نقاط قوت (Perks)" items={perks} selected={perk} onSelect={setPerk} />
+                    <FeatureSelection title="نقاط ضعف (Flaws)" items={flaws} selected={flaw} onSelect={setFlaw} />
+                </div>
+            </Step>
+            case 4: return <Step title="۴. تجهیزات اولیه" description="شخصیت شما ماجراجویی را با چه آیتم‌هایی شروع می‌کند؟ (هر آیتم را در یک خط جدید بنویسید)">
+                 <Textarea placeholder="شمشیر بلند&#x0a;کوله پشتی چرمی&#x0a;3 سکه طلا" value={initialItems} onChange={e => setInitialItems(e.target.value)} rows={8} />
+            </Step>
+            case 5: return <Step title="۵. صحنه افتتاحیه" description="متن شروع داستان را بنویسید. هرچه جزئیات بیشتری بدهید، هوش مصنوعی داستان بهتری خلق خواهد کرد.">
+                 <Textarea placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آیید. آخرین چیزی که به یاد دارید، نور کورکننده یک طلسم است. اکنون تنها هستید و صدای زوزه‌ی گرگ‌ها از دور به گوش می‌رسد..." value={storyPrompt} onChange={e => setStoryPrompt(e.target.value)} rows={10} />
+            </Step>
+            case 6: return <Step title="۶. بازبینی و شروع" description="خلاصه‌ای از دنیایی که خلق کرده‌اید. اگر همه چیز درست است، ماجراجویی را آغاز کنید.">
+                <Card className="max-h-96 overflow-y-auto">
+                    <CardContent className="p-6 space-y-4 text-sm">
+                        <div><strong className="text-primary">عنوان:</strong> {scenarioTitle}</div>
+                        <div><strong className="text-primary">ژانر:</strong> {genre}</div>
+                        <div><strong className="text-primary">دشواری:</strong> {difficulty}</div>
+                        <div><strong className="text-primary">سبک راوی:</strong> {gmPersonality}</div>
+                        <hr className="border-border/50"/>
+                        <div><strong className="text-primary">نام شخصیت:</strong> {characterName}</div>
+                        <div><strong className="text-primary">کهن الگو:</strong> {customArchetype.trim() || selectedArchetype}</div>
+                        <div><strong className="text-primary">نقطه قوت:</strong> {perk}</div>
+                        <div><strong className="text-primary">نقطه ضعف:</strong> {flaw}</div>
+                        <hr className="border-border/50"/>
+                        <div><strong className="text-primary">تجهیزات:</strong> <pre className="whitespace-pre-wrap font-body">{initialItems}</pre></div>
+                         <hr className="border-border/50"/>
+                        <div><strong className="text-primary">شروع داستان:</strong> <p className="mt-1">{storyPrompt}</p></div>
+                    </CardContent>
+                </Card>
             </Step>
             default: return null;
         }
@@ -159,14 +237,14 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
 
                 <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mb-8" />
                 
-                <div className="min-h-[400px]">
+                <div className="min-h-[450px]">
                     {renderStep()}
                 </div>
 
                 <div className="flex justify-between mt-8">
                     <Button onClick={handlePrev} disabled={step === 1} variant="outline">قبلی</Button>
                     {step < TOTAL_STEPS && <Button onClick={handleNext} disabled={!canProceed()}>بعدی</Button>}
-                    {step === TOTAL_STEPS && <Button onClick={handleStartGame} disabled={!canProceed()} className="bg-primary hover:bg-primary/90">شروع ماجراجویی</Button>}
+                    {step === TOTAL_STEPS && <Button onClick={handleStartGame} className="bg-primary hover:bg-primary/90">شروع ماجراجویی</Button>}
                 </div>
             </div>
         </div>
@@ -185,7 +263,7 @@ const Step = ({ title, description, children }: { title: string, description: st
     </Card>
 );
 
-const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: "2" | "3" | "4" }) => {
+const SelectionGrid = ({ items, selected, onSelect, columns = "3", title }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: "2" | "3" | "4", title?: string }) => {
     const columnClasses: Record<string, string> = {
         "2": "grid-cols-2",
         "3": "grid-cols-2 md:grid-cols-3",
@@ -193,45 +271,54 @@ const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: an
     };
     
     return (
-    <div className={cn("grid gap-4", columnClasses[columns])}>
-        {Object.entries(items).map(([key, value]: [string, any]) => (
-            <Card 
-                key={key}
-                onClick={() => onSelect(key)}
-                className={cn(
-                    "cursor-pointer transition-all hover:shadow-accent/50 hover:shadow-md hover:-translate-y-1",
-                    selected === key ? "ring-2 ring-accent" : "border-primary/20"
-                )}
-            >
-                <CardHeader className="items-center text-center p-4">
-                    <div className="p-3 bg-muted rounded-full mb-2">
-                        <value.icon className="w-7 h-7 text-foreground" />
-                    </div>
-                    <CardTitle className="text-base">{key}</CardTitle>
-                    <CardDescription className="text-xs text-center">{value.description}</CardDescription>
-                </CardHeader>
-            </Card>
-        ))}
+    <div>
+        {title && <Label className="text-lg font-bold text-primary mb-2 block">{title}</Label>}
+        <div className={cn("grid gap-4", columnClasses[columns])}>
+            {Object.entries(items).map(([key, value]: [string, any]) => (
+                <Card 
+                    key={key}
+                    onClick={() => onSelect(key)}
+                    className={cn(
+                        "cursor-pointer transition-all hover:shadow-primary/50 hover:shadow-md hover:-translate-y-1",
+                        selected === key ? "ring-2 ring-primary" : "border-primary/20"
+                    )}
+                >
+                    <CardHeader className="items-center text-center p-4">
+                        <div className="p-3 bg-muted rounded-full mb-2">
+                            <value.icon className="w-7 h-7 text-foreground" />
+                        </div>
+                        <CardTitle className="text-base">{key}</CardTitle>
+                        {value.description && <CardDescription className="text-xs">{value.description}</CardDescription>}
+                    </CardHeader>
+                </Card>
+            ))}
+        </div>
     </div>
     )
 };
 
-const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[], selected: any | null, onSelect: (scenario: any) => void }) => (
-    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-        {scenarios.map((scenario, index) => (
-            <Card 
-                key={index}
-                onClick={() => onSelect(scenario)}
-                className={cn(
-                    "cursor-pointer transition-all hover:border-accent",
-                    selected?.title === scenario.title ? "ring-2 ring-accent" : "border-primary/20"
-                )}
-            >
-                <CardHeader>
-                    <CardTitle>{scenario.title}</CardTitle>
-                    <CardDescription>{scenario.prompt}</CardDescription>
-                </CardHeader>
-            </Card>
-        ))}
+const FeatureSelection = ({ title, items, selected, onSelect }: { title: string, items: any, selected: string | null, onSelect: (key: string) => void }) => (
+    <div>
+        <h3 className="text-xl font-bold text-center mb-4 text-primary">{title}</h3>
+        <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+            {Object.entries(items).map(([key, value]: [string, any]) => (
+                <Card 
+                    key={key} 
+                    onClick={() => onSelect(key)} 
+                    className={cn(
+                        "cursor-pointer transition-colors", 
+                        selected === key ? "bg-primary/20 border-primary" : "hover:bg-muted/50"
+                    )}
+                >
+                    <CardContent className="p-4 flex items-center gap-4">
+                        <value.icon className="w-6 h-6 text-primary" />
+                        <div>
+                            <p className="font-bold">{key}</p>
+                            <p className="text-sm text-muted-foreground">{value.description}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
     </div>
 );

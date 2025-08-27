@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   FilePlus,
   Upload,
-  Swords,
   Settings,
   Trophy,
   AlertTriangle,
@@ -13,7 +12,6 @@ import {
 interface StartScreenProps {
   onNewGame: () => void;
   onLoadGame: () => void;
-  onCustomScenario: () => void;
   onSettings: () => void;
   onScoreboard: () => void;
   apiKeyError?: string;
@@ -22,7 +20,6 @@ interface StartScreenProps {
 export function StartScreen({
   onNewGame,
   onLoadGame,
-  onCustomScenario,
   onSettings,
   onScoreboard,
   apiKeyError,
@@ -57,10 +54,6 @@ export function StartScreen({
         <Button size="lg" variant="outline" onClick={onLoadGame}>
           <Upload />
           بارگذاری ماجراجویی
-        </Button>
-        <Button size="lg" variant="outline" onClick={onCustomScenario}>
-          <Swords />
-          سناریوی سفارشی
         </Button>
       </div>
 
