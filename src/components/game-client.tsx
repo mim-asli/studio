@@ -17,6 +17,7 @@ import { CustomScenarioCreator } from "./custom-scenario-creator";
 import { LoadGame } from "./load-game";
 import { SettingsPage } from "./screens/settings-page";
 import { Scoreboard } from "./screens/scoreboard";
+import { NewGameCreator } from "./new-game-creator";
 
 const SAVE_GAME_KEY = "dastan-savegame";
 
@@ -36,7 +37,7 @@ export const initialGameState: GameState = {
   isLoading: false,
 };
 
-type View = "start" | "game" | "new-scenario" | "load-game" | "settings" | "scoreboard";
+type View = "start" | "game" | "new-game" | "custom-scenario" | "load-game" | "settings" | "scoreboard";
 
 export function GameClient() {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
@@ -179,21 +180,25 @@ export function GameClient() {
   if (view === "start") {
     return (
       <StartScreen 
-        onNewGame={() => setView("new-scenario")}
+        onNewGame={() => setView("new-game")}
         onLoadGame={() => {
             const result = loadGame();
             if (result === "not-found") {
               setView("load-game");
             }
           }}
-        onCustomScenario={() => setView("new-scenario")}
+        onCustomScenario={() => setView("custom-scenario")}
         onSettings={() => setView("settings")}
         onScoreboard={() => setView("scoreboard")}
       />
     );
   }
 
-  if (view === "new-scenario") {
+  if (view === "new-game") {
+    return <NewGameCreator onBack={() => setView("start")} onStartGame={startNewGame} />;
+  }
+
+  if (view === "custom-scenario") {
     return <CustomScenarioCreator onBack={() => setView("start")} />;
   }
   
