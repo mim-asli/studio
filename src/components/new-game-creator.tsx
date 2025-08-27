@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed, MinusCircle, PlusCircle } from "lucide-react";
+import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed, MinusCircle, PlusCircle, Pencil } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
@@ -106,6 +106,40 @@ const difficultyPoints = {
     'سخت': 7,
 };
 
+const openingScenes: Record<keyof typeof genres, string[]> = {
+    'فانتزی': [
+        "شما در یک جنگل تاریک و مه‌آلود به هوش می‌آyید. آخرین چیزی که به یاد دارید، نور کورکننده یک طلسم است. اکنون تنها هستید و صدای زوزه‌ی گرگ‌ها از دور به گوش می‌رسد.",
+        "در میان یک بازار شلوغ و پر هیاهوی شهری بزرگ، جیب‌بری ماهر کیف شما را می‌دزدد و در میان جمعیت ناپدید می‌شود. تصمیم با شماست: تعقیب یا رها کردن؟",
+        "شما به عنوان آخرین نگهبان یک برج ویرانه، متوجه نزدیک شدن ارتشی از اورک‌ها می‌شوید. زنگ خطر را به صدا در می‌آورید، اما می‌دانید که به تنهایی شانسی ندارید.",
+    ],
+    'علمی-تخیلی': [
+        "شما از خواب انجمادی در یک سفینه فضایی متروکه بیدار می‌شوید. سیستم‌های سفینه از کار افتاده‌اند و تنها نور قرمز اضطراری راهروها را روشن کرده است. صدای خراشیدنی از دور به گوش می‌رسد.",
+        "روی یک سیاره بیگانه با آسمانی بنفش و گیاهان درخشان به هوش می‌آیید. سفینه‌تان سقوط کرده و تجهیزاتتان آسیب دیده است. باید راهی برای بقا و ارتباط با پایگاه پیدا کنید.",
+        "به عنوان یک کارآگاه سایبرپانک در شهر نئو-تهران، جدیدترین پرونده‌تان شما را به یک شرکت بزرگ فناوری می‌رساند که به نظر می‌رسد در حال آزمایش‌های غیرقانونی روی انسان‌ها است.",
+    ],
+    'ترسناک': [
+        "در یک عمارت ویکتوریایی متروکه به هوش می‌آیید و هیچ خاطره‌ای از اینکه چگونه به اینجا رسیده‌اید ندارید. درها قفل هستند و تنها صدای موجود، تیک تاک یک ساعت قدیمی است.",
+        "ماشین شما در یک جاده روستایی دورافتاده خراب شده است. تنها پناهگاه موجود، یک متل قدیمی و ترسناک است که تابلوی نئونی آن به طرز وهم‌انگیزی چشمک می‌زند.",
+        "شما تنها بازمانده یک مراسم آیینی عجیب هستید. اکنون در یک زیرزمین تاریک گیر افتاده‌اید و می‌دانید که موجودی که دوستانتان را قربانی کرده، هنوز در این نزدیکی است.",
+    ],
+    'معمایی': [
+        "شما یک کارآگاه خصوصی هستید که برای تحقیق درباره یک قتل در یک قطار سریع‌السیر استخدام شده‌اید. هر یک از مسافران انگیزه‌ای برای قتل دارد و شما تنها چند ساعت تا رسیدن به مقصد فرصت دارید.",
+        "یک نامه مرموز شما را به کتابخانه‌ای باستانی دعوت می‌کند که گفته می‌شود حاوی یک راز بزرگ است. با ورود شما، درها پشت سرتان قفل می‌شوند و معماها شروع می‌شوند.",
+        "شما به یک مهمانی شام در یک عمارت اشرافی دعوت شده‌اید، اما میزبان به قتل می‌رسد. همه مهمانان مظنون هستند و شما باید قاتل را قبل از اینکه دوباره حمله کند، پیدا کنید.",
+    ],
+    'پسا-آخرالزمانی': [
+        "در خرابه‌های یک شهر بزرگ که توسط طبیعت پس گرفته شده، به دنبال غذا و آب می‌گردید. شما از آخرین بازماندگان یک بیماری همه‌گیر هستید و باید از دست گروه‌های غارتگر و موجودات جهش‌یافته جان سالم به در ببرید.",
+        "شما رهبر یک پناهگاه زیرزمینی کوچک هستید. منابع رو به اتمام است و شما باید تیمی را برای جستجو در دنیای خطرناک بیرون بفرستید.",
+        "در یک بیابان بی‌پایان، شما راننده یک کامیون زرهی هستید که محموله‌ای ارزشمند (آب پاک) را حمل می‌کند. کاروان شما مورد حمله راهزنان قرار می‌گیرد.",
+    ],
+    'کلاسیک': [
+        "شما یک گلادیاتور در روم باستان هستید که برای آزادی خود در کولوسئوم می‌جنگید. امروز باید با خطرناک‌ترین حریف خود روبرو شوید.",
+        "در نقش یک سامورایی بی‌ارباب (رونین) در ژاپن فئودال، به روستایی می‌رسید که توسط راهزنان مورد ظلم قرار گرفته است. آیا به آنها کمک خواهید کرد؟",
+        "شما یک دزد دریایی در دریای کارائیب هستید. نقشه‌ای در دست دارید که محل گنج کاپیتان بلک‌هارت افسانه‌ای را نشان می‌دهد، اما رقبای شما نیز به دنبال آن هستند.",
+    ],
+};
+
+
 interface NewGameCreatorProps {
     onBack: () => void;
     onStartGame: (scenario: CustomScenario, characterName: string) => void;
@@ -127,6 +161,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const [genre, setGenre] = useState<keyof typeof genres>('فانتزی');
     const [difficulty, setDifficulty] = useState<'آسان'|'معمولی'|'سخت'>('معمولی');
     const [gmPersonality, setGmPersonality] = useState('روایی و سینمایی');
+    const [writingCustomScene, setWritingCustomScene] = useState(false);
 
     const totalPoints = difficultyPoints[difficulty];
     const usedPoints = Object.entries(initialItems).reduce((acc, [item, count]) => {
@@ -328,8 +363,34 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                     </div>
                  </div>
             </Step>
-            case 5: return <Step title="۵. صحنه افتتاحیه" description="متن شروع داستان را بنویسید. هرچه جزئیات بیشتری بدهید، هوش مصنوعی داستان بهتری خلق خواهد کرد.">
-                 <Textarea placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آیید. آخرین چیزی که به یاد دارید، نور کورکننده یک طلسم است. اکنون تنها هستید و صدای زوزه‌ی گرگ‌ها از دور به گوش می‌رسد..." value={storyPrompt} onChange={e => setStoryPrompt(e.target.value)} rows={10} />
+            case 5: return <Step title="۵. صحنه افتتاحیه" description="یک نقطه شروع برای داستان انتخاب کنید یا خودتان بنویسید.">
+                <div className="space-y-4">
+                    {openingScenes[genre].map((scene, index) => (
+                        <Card key={index} onClick={() => { setStoryPrompt(scene); setWritingCustomScene(false); }} className={cn("cursor-pointer hover:border-primary", storyPrompt === scene && !writingCustomScene && "border-primary ring-2 ring-primary")}>
+                            <CardContent className="p-4">
+                                <p className="text-sm text-muted-foreground">{scene}</p>
+                            </CardContent>
+                        </Card>
+                    ))}
+                     <Card onClick={() => { setWritingCustomScene(true); setStoryPrompt(''); }} className={cn("cursor-pointer hover:border-primary", writingCustomScene && "border-primary ring-2 ring-primary")}>
+                        <CardContent className="p-4 flex items-center gap-4">
+                            <Pencil className="w-6 h-6 text-primary"/>
+                            <div>
+                                <p className="font-bold">نوشتن سناریوی سفارشی</p>
+                                <p className="text-sm text-muted-foreground">داستان خود را با جزئیات دلخواهتان شروع کنید.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    {writingCustomScene && (
+                        <Textarea 
+                            placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آیید..." 
+                            value={storyPrompt} 
+                            onChange={e => setStoryPrompt(e.target.value)} 
+                            rows={6}
+                            className="mt-4" 
+                        />
+                    )}
+                </div>
             </Step>
             case 6: return <Step title="۶. بازبینی و شروع" description="خلاصه‌ای از دنیایی که خلق کرده‌اید. اگر همه چیز درست است، ماجراجویی را آغاز کنید.">
                 <Card className="max-h-96 overflow-y-auto">
@@ -452,7 +513,3 @@ const FeatureSelection = ({ title, items, selected, onSelect }: { title: string,
         </div>
     </div>
 );
-
-    
-
-    
