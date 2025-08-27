@@ -76,19 +76,24 @@ export function GameClient() {
     handleLowHealthEffect();
   }, [handleLowHealthEffect, handleLowSanityEffect]);
 
-  const saveGame = useCallback(() => {
-    if (!gameState.gameStarted) return;
+  const saveGame = useCallback((stateToSave?: GameState) => {
+    const currentState = stateToSave || gameState;
+    if (!currentState.gameStarted) return;
     try {
       const saveFile: SaveFile = {
         id: "save_1",
         timestamp: Date.now(),
-        gameState: gameState,
+        gameState: currentState,
       };
       localStorage.setItem(SAVE_GAME_KEY, JSON.stringify(saveFile));
-      toast({
-        title: "بازی ذخیره شد",
-        description: "پیشرفت شما در این دستگاه ذخیره شد.",
-      });
+      
+      // We only show the toast when the user manually saves.
+      if (!stateToSave) {
+          toast({
+            title: "بازی ذخیره شد",
+            description: "پیشرفت شما در این دستگاه ذخیره شد.",
+          });
+      }
     } catch (error) {
       console.error("Failed to save game:", error);
       toast({
@@ -145,12 +150,15 @@ export function GameClient() {
         playerAction,
       });
 
-      setGameState(prev => ({
-        ...prev,
+      const updatedGameState = {
+        ...gameState,
         ...nextTurn,
         gameStarted: true,
         isLoading: false,
-      }));
+      };
+
+      setGameState(updatedGameState);
+      saveGame(updatedGameState); // Auto-save after each turn
 
       if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
       if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
@@ -179,6 +187,7 @@ export function GameClient() {
       };
 
       setGameState(freshGameState);
+      saveGame(freshGameState); // Save the initial state of the new game
       setView("game");
   };
 
@@ -257,7 +266,7 @@ export function GameClient() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-headline text-accent tracking-widest">داستان</h1>
             <div className="flex items-center gap-2">
-              <Button size="icon" variant="outline" onClick={saveGame} disabled={gameState.isLoading}><Save /></Button>
+              <Button size="icon" variant="outline" onClick={() => saveGame()} disabled={gameState.isLoading}><Save /></Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button size="icon" variant="destructive_outline"><LogOut/></Button>
