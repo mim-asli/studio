@@ -12,29 +12,15 @@ interface StoryDisplayProps {
 const parseSegment = (text: string, isPlayerAction: boolean) => {
     if (!text) return null;
 
-    const contentToParse = isPlayerAction ? text.substring(PLAYER_ACTION_PREFIX.length) : text;
-
-    // A helper function to parse for the keyword "داستان"
-    const parseForKeywords = (str: string) => {
-        // This regex will split the string by the keyword, keeping the keyword.
-        const parts = str.split(/(داستان)/g); 
-        return parts.map((part, index) => {
-            if (part === 'داستان') {
-                return <span key={index} className="text-primary font-bold">{part}</span>;
-            }
-            return part;
-        });
-    };
-
     if (isPlayerAction) {
         return (
             <span className="text-player-action font-bold">
-                {PLAYER_ACTION_PREFIX}{contentToParse}
+                {text}
             </span>
         );
     }
     
-    return parseForKeywords(contentToParse);
+    return text;
 };
 
 
