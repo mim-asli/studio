@@ -43,6 +43,7 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateNextTurnOutputSchema},
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.\n
 Enforce the following rules:\n- **State Synchronization Philosophy:** Any changes to the game world or player state MUST be reflected in the JSON output.\n- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n- **Persistent World Philosophy:** The game doesn\'t end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n
+Respond in the persona of the GM Personality specified in the story prompt.
 JSON Output Structure:
 ALWAYS return a JSON object with the following structure:\n{
   "story": "string", // Narrative text of the current events.

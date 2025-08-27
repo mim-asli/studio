@@ -76,7 +76,7 @@ const scenarios: Record<keyof typeof genres, { title: string; description: strin
         { title: "بازار نیمه‌شب", description: "شما به طور اتفاقی وارد یک بازار مخفی می‌شوید که فقط در نیمه‌شب‌های مهتابی ظاهر می‌شود. در این بازار، ارواح، اجنه و موجودات جادویی، رویاها، خاطرات و سال‌های عمر را معامله می‌کنند. شما چه چیزی برای فروش دارید و چه چیزی می‌خواهید بخرید؟" },
         { title: "قلب جنگل سنگ‌شده", description: "در مرکز یک جنگل باستانی، تمام موجودات زنده به سنگ تبدیل شده‌اند. شما تنها کسی هستید که از این نفرین جان سالم به در برده‌اید. باید به قلب جنگل سفر کنید تا منبع این جادوی تاریک را پیدا کرده و آن را معکوس کنید." },
         { title: "شهر زیر ابرها", description: "شما در یک شهر معلق زندگی می‌کنید که بر فراز ابرها ساخته شده است. نسل‌هاست که هیچ‌کس سطح زمین را ندیده. اما حالا، موتورهایی که شهر را در آسمان نگه داشته‌اند، در حال از کار افتادن هستند و شما باید برای یافتن راه نجات، به دنیای ناشناخته پایین سفر کنید." },
-        { title: "دزد سایه‌ها", description: "در شهری که سایه‌ها جان دارند و می‌توانند از صاحبانشان جدا شوند، یک دزد مرموز شروع به دزدیدن سایه‌های افراد مهم کرده است. قربانیان بدون سایه، هویت و خاطرات خود را از دست می‌دهند. شما استخدام شده‌اید تا این دزد شبح‌وار را پیدا کنید." },
+        { title: "دزد سایه‌ها", description: "در شهری که سایه‌ها جان دارند و می‌توانند از صاحبانشان جدا شوند، یک دزد مرموز شروع به دزدیدن سایه‌های افراد مهم کرده است. قربانیان بدون سایه، هویت و خاطرات خود را از دست می‌دهają. شما استخدام شده‌اید تا این دزد شبح‌وار را پیدا کنید." },
         { title: "کتابخانه زندگان", description: "شما کتابدار یک کتابخانه اسرارآمیز هستید که در آن، هر کتاب داستان زندگی یک موجود زنده است. وقتی کتابی باز می‌شود، خواننده می‌تواند وارد خاطرات صاحب آن شود. امروز، کتاب زندگی خودتان به طور مرموزی از قفسه ناپدید شده است." }
     ],
     'علمی-تخیلی': [
@@ -132,7 +132,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const [step, setStep] = useState(1);
     
     // State for all selections
-    const [genre, setGenre] = useState<keyof typeof genres | null>(null);
+    const [genre, setGenre] = useState<keyof typeof genres>('فانتزی');
     const [archetype, setArchetype] = useState<keyof typeof archetypes | null>(null);
     const [characterName, setCharacterName] = useState('');
     const [characterDesc, setCharacterDesc] = useState('');
@@ -185,9 +185,9 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 <div className="space-y-6">
                     <div>
                         <Label className="text-lg font-bold text-accent">سطح دشواری</Label>
-                        <RadioGroup defaultValue="معمولی" className="mt-2 grid grid-cols-3 gap-4" onValueChange={(val) => setDifficulty(val)}>
+                        <RadioGroup defaultValue="معمولی" className="mt-2 grid grid-cols-3 gap-4" onValueChange={setDifficulty}>
                            {['آسان', 'معمولی', 'سخت'].map(level => (
-                               <Label key={level} htmlFor={`diff-${level}`} className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground", difficulty === level && "border-accent")}>
+                               <Label key={level} htmlFor={`diff-${level}`} className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", difficulty === level && "border-accent ring-2 ring-accent")}>
                                   <RadioGroupItem value={level} id={`diff-${level}`} className="sr-only" />
                                   {level}
                                </Label>
