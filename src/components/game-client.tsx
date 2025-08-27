@@ -189,15 +189,15 @@ export function GameClient() {
     }
   };
 
-  const startNewGame = (scenario: CustomScenario, characterName: string) => {
+  const handleStartGame = (scenario: CustomScenario, characterName: string) => {
     const gameId = crypto.randomUUID();
     const freshGameState: GameState = {
       ...initialGameState,
       id: gameId,
-      story: `ژانر: ${scenario.storyPrompt}\n\n${scenario.title}`,
+      story: `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}`,
       playerState: { health: 100, sanity: 100 },
-      inventory: [scenario.initialItems],
-      skills: [scenario.character],
+      inventory: scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
+      skills: scenario.character.split(',').map(s => s.trim()),
       gameStarted: true,
       isLoading: false,
       choices: ["بازی را شروع کن و اولین صحنه را با جزئیات توصیف کن."],
@@ -207,8 +207,9 @@ export function GameClient() {
     
     setGameState(freshGameState);
     setView("game");
-    saveGame(freshGameState);
+    processPlayerAction(freshGameState.choices[0]);
   };
+
 
   const resetGame = () => {
     setGameState(initialGameState);
@@ -228,11 +229,11 @@ export function GameClient() {
   }
 
   if (view === "new-game") {
-    return <NewGameCreator onBack={() => setView("start")} onStartGame={startNewGame} />;
+    return <NewGameCreator onBack={() => setView("start")} onStartGame={handleStartGame} />;
   }
 
   if (view === "custom-scenario") {
-    return <CustomScenarioCreator onBack={() => setView("start")} />;
+    return <CustomScenarioCreator onBack={() => setView("start")} onStartGame={handleStartGame}/>;
   }
   
   if (view === "load-game") {
@@ -313,3 +314,5 @@ export function GameClient() {
     </>
   );
 }
+
+    

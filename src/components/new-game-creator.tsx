@@ -80,6 +80,32 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             default: return false;
         }
     }
+    
+    const handleStartGame = () => {
+        if (!characterName || !archetype || !selectedScenario) return;
+
+        const fullStoryPrompt = `
+        عنوان سناریو: ${selectedScenario.title}
+        ژانر: ${genre}. 
+        شخصیت:
+        - نام: ${characterName}
+        - کهن الگو: ${archetype}
+        
+        تجهیزات اولیه: 
+        ${archetypes[archetype].items}
+
+        صحنه شروع:
+        ${selectedScenario.prompt}
+        `;
+
+        const customScenario: CustomScenario = {
+            title: selectedScenario.title,
+            character: `نام: ${characterName}, کهن‌الگو: ${archetype}`,
+            initialItems: archetypes[archetype].items,
+            storyPrompt: fullStoryPrompt,
+        };
+        onStartGame(customScenario, characterName);
+    }
 
     const renderStep = () => {
         switch (step) {
@@ -122,18 +148,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             default: return null;
         }
     };
-    
-    const handleStartGame = () => {
-        if (!characterName || !archetype || !selectedScenario) return;
-
-        const customScenario: CustomScenario = {
-            title: selectedScenario.title,
-            character: `نام: ${characterName}, کهن‌الگو: ${archetype}`,
-            initialItems: archetypes[archetype].items,
-            storyPrompt: `ژانر: ${genre}. سناریو: ${selectedScenario.prompt}`,
-        };
-        onStartGame(customScenario, characterName);
-    }
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
@@ -178,13 +192,13 @@ const Step = ({ title, description, children }: { title: string, description: st
 
 const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: "2" | "3" | "4" }) => {
     const columnClasses: Record<string, string> = {
-        "2": "md:grid-cols-2",
-        "3": "md:grid-cols-3",
-        "4": "md:grid-cols-4",
+        "2": "grid-cols-2",
+        "3": "grid-cols-2 md:grid-cols-3",
+        "4": "grid-cols-2 md:grid-cols-4",
     };
     
     return (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", columnClasses[columns])}>
+    <div className={cn("grid gap-4", columnClasses[columns])}>
         {Object.entries(items).map(([key, value]: [string, any]) => (
             <Card 
                 key={key}
@@ -226,3 +240,5 @@ const ScenarioSelection = ({ scenarios, selected, onSelect }: { scenarios: any[]
         ))}
     </div>
 );
+
+    

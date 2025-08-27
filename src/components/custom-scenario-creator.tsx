@@ -65,6 +65,7 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
     const [characterName, setCharacterName] = useState('');
     const [characterDesc, setCharacterDesc] = useState('');
     const [archetype, setArchetype] = useState('');
+    const [selectedArchetype, setSelectedArchetype] = useState<keyof typeof archetypes | null>(null);
     const [perk, setPerk] = useState<keyof typeof perks | null>(null);
     const [flaw, setFlaw] = useState<keyof typeof flaws | null>(null);
     const [initialItems, setInitialItems] = useState('');
@@ -82,7 +83,7 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
     const canProceed = () => {
         switch(step) {
             case 1: return !!genre && !!difficulty && !!gmPersonality && scenarioTitle.trim().length > 0;
-            case 2: return characterName.trim().length > 0 && archetype.trim().length > 0;
+            case 2: return characterName.trim().length > 0 && (archetype.trim().length > 0 || !!selectedArchetype) ;
             case 3: return !!perk && !!flaw;
             case 4: return initialItems.trim().length > 0;
             case 5: return storyPrompt.trim().length > 0;
@@ -92,6 +93,8 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
     }
     
     const handleStartGame = () => {
+        const finalArchetype = archetype.trim() || selectedArchetype;
+
         const fullStoryPrompt = `
         عنوان سناریو: ${scenarioTitle}
         ژانر: ${genre}. 
@@ -100,7 +103,7 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
         
         شخصیت:
         - نام: ${characterName}
-        - کهن الگو: ${archetype}
+        - کهن الگو: ${finalArchetype}
         - توضیحات: ${characterDesc}
         - نقطه قوت: ${perk}
         - نقطه ضعف: ${flaw}
@@ -113,7 +116,7 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
 
         const customScenario: CustomScenario = {
             title: scenarioTitle,
-            character: `نام: ${characterName}, کهن‌الگو: ${archetype}, ویژگی‌ها: ${perk}, ${flaw}. توضیحات: ${characterDesc}`,
+            character: `نام: ${characterName}, کهن‌الگو: ${finalArchetype}, ویژگی‌ها: ${perk}, ${flaw}. توضیحات: ${characterDesc}`,
             initialItems: initialItems,
             storyPrompt: fullStoryPrompt,
         };
@@ -151,10 +154,35 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
                 </div>
             </Step>
             case 2: return <Step title="۲. پروفایل شخصیت" description="به قهرمان خود یک نام، یک کلاس و یک پیشینه (اختیاری) بدهید.">
-                <div className="space-y-4">
+                <div className="space-y-6">
                     <Input placeholder="نام شخصیت" value={characterName} onChange={e => setCharacterName(e.target.value)} className="text-center text-lg" />
-                    <Input placeholder="نام کهن‌الگو/کلاس (مثلا: شوالیه سقوط‌کرده)" value={archetype} onChange={e => setArchetype(e.target.value)} className="text-center text-lg" />
-                    <Textarea placeholder="توضیحات و پیشینه شخصیت (اختیاری)" value={characterDesc} onChange={e => setCharacterDesc(e.target.value)} rows={6} />
+                    <div>
+                        <Label className="text-lg font-bold text-accent">کهن الگو (Archetype)</Label>
+                        <SelectionGrid 
+                            items={archetypes} 
+                            selected={selectedArchetype} 
+                            onSelect={(key) => {
+                                setSelectedArchetype(key as keyof typeof archetypes);
+                                setArchetype(''); // Clear custom input
+                            }} 
+                            columns="3"
+                        />
+                        <div className="flex items-center gap-4 my-4">
+                            <hr className="flex-grow border-border/50"/>
+                            <span className="text-muted-foreground">یا</span>
+                            <hr className="flex-grow border-border/50"/>
+                        </div>
+                        <Input 
+                            placeholder="... یک کهن‌الگوی سفارشی بسازید" 
+                            value={archetype} 
+                            onChange={e => {
+                                setArchetype(e.target.value)
+                                setSelectedArchetype(null); // Clear selection
+                            }}
+                            className="text-center" 
+                        />
+                    </div>
+                    <Textarea placeholder="توضیحات و پیشینه شخصیت (اختیاری)" value={characterDesc} onChange={e => setCharacterDesc(e.target.value)} rows={4} />
                 </div>
             </Step>
             case 3: return <Step title="۳. انتخاب ویژگی‌ها" description="یک نقطه قوت (Perk) و یک نقطه ضعف (Flaw) انتخاب کنید تا به شخصیت خود عمق ببخشید.">
@@ -178,7 +206,7 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
                         <div><strong className="text-accent">سبک راوی:</strong> {gmPersonality}</div>
                         <hr className="border-border/50"/>
                         <div><strong className="text-accent">نام شخصیت:</strong> {characterName}</div>
-                        <div><strong className="text-accent">کهن الگو:</strong> {archetype}</div>
+                        <div><strong className="text-accent">کهن الگو:</strong> {archetype.trim() || selectedArchetype}</div>
                         <div><strong className="text-accent">نقطه قوت:</strong> {perk}</div>
                         <div><strong className="text-accent">نقطه ضعف:</strong> {flaw}</div>
                         <hr className="border-border/50"/>
@@ -205,7 +233,7 @@ export function CustomScenarioCreator({ onBack, onStartGame }: CustomScenarioCre
 
                 <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mb-8" />
                 
-                <div className="min-h-[400px]">
+                <div className="min-h-[450px]">
                     {renderStep()}
                 </div>
 
@@ -235,15 +263,15 @@ const Step = ({ title, description, children }: { title: string, description: st
 
 const SelectionGrid = ({ items, selected, onSelect, columns = "3", title }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: "2" | "3" | "4", title?: string }) => {
     const columnClasses: Record<string, string> = {
-        "2": "md:grid-cols-2",
-        "3": "md:grid-cols-3",
-        "4": "md:grid-cols-4",
+        "2": "grid-cols-2",
+        "3": "grid-cols-3",
+        "4": "grid-cols-4",
     };
     
     return (
     <div>
-        {title && <Label className="text-lg font-bold text-accent">{title}</Label>}
-        <div className={cn("grid grid-cols-2 gap-4 mt-2", columnClasses[columns])}>
+        {title && <Label className="text-lg font-bold text-accent mb-2 block">{title}</Label>}
+        <div className={cn("grid gap-4", columnClasses[columns])}>
             {Object.entries(items).map(([key, value]: [string, any]) => (
                 <Card 
                     key={key}
@@ -292,3 +320,5 @@ const FeatureSelection = ({ title, items, selected, onSelect }: { title: string,
         </div>
     </div>
 );
+
+    
