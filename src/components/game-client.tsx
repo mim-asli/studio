@@ -151,8 +151,6 @@ export function GameClient() {
   
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
-    
-    const stateBeforeAction = { ...gameState };
 
     // Immediately update the UI with the player's action.
     setGameState(prev => ({ 
@@ -162,22 +160,19 @@ export function GameClient() {
       choices: [] 
     }));
 
-    // Create a temporary state for the AI, using the state *before* the action was added.
-    const { story, ...restOfState } = stateBeforeAction;
-    const currentGameStateForAI = {
-        ...restOfState,
-        story: story.slice(-5).join('\n\n')
-    };
+    // Create a copy of the current state to pass to the AI.
+    const currentGameStateForAI = { ...gameState };
+
+    // Replace the full story with a summarized version for the AI prompt.
+    // The AI will still have the full, structured game state.
+    // @ts-ignore
+    currentGameStateForAI.story = gameState.story.slice(-10).join('\n\n');
     
     // Remove client-side only state properties from the object sent to the AI
     // @ts-ignore
     delete currentGameStateForAI.isLoading; 
     // @ts-ignore
     delete currentGameStateForAI.gameStarted;
-    // @ts-ignore
-    delete currentGameStateForAI.isGameOver;
-    // @ts-ignore
-    delete currentGameStateForAI.id;
 
 
     try {
