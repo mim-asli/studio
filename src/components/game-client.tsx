@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 const SAVES_KEY = "dastan-saves";
+export const PLAYER_ACTION_PREFIX = "> ";
 
 export const initialGameState: GameState = {
   id: '',
@@ -149,16 +150,26 @@ export function GameClient() {
   }, [toast]);
   
   const processPlayerAction = async (playerAction: string) => {
-    setGameState(prev => ({ ...prev, isLoading: true, choices: [] }));
+    const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
     
-    // Create a temporary state object for the AI.
-    // This is crucial to avoid mutating the main gameState object.
-    const { story, ...restOfState } = gameState;
-    const currentGameStateForAI = { 
-        ...restOfState, 
-        story: Array.isArray(story) ? story.slice(-5).join('\n\n') : ""
-    };
+    // Immediately update the UI with the player's action.
+    setGameState(prev => ({ 
+      ...prev, 
+      story: [...prev.story, formattedPlayerAction],
+      isLoading: true, 
+      choices: [] 
+    }));
 
+    // Create a temporary state for the AI, using the state *before* the action was added.
+    const currentStateForAI = { ...gameState };
+
+    // Create the payload for the AI, ensuring the story is a joined string.
+    const { story, ...restOfState } = currentStateForAI;
+    const currentGameStateForAI = {
+        ...restOfState,
+        story: story.slice(-5).join('\n\n')
+    };
+    
     // Remove client-side only state properties from the object sent to the AI
     // @ts-ignore
     delete currentGameStateForAI.isLoading; 
@@ -167,6 +178,7 @@ export function GameClient() {
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
+        // We send the player action without the prefix to the AI.
         gameState: currentGameStateForAI,
         playerAction,
       });
@@ -178,7 +190,7 @@ export function GameClient() {
         const updatedGameState: GameState = {
             ...prevGameState,
             ...restOfNextTurn,
-            // **THE FIX**: Append the new story string to the existing story array.
+            // Append the new story string to the existing story array.
             story: [...prevGameState.story, newStory],
             gameStarted: true,
             isLoading: false,
@@ -331,5 +343,3 @@ export function GameClient() {
     </>
   );
 }
-
-    
