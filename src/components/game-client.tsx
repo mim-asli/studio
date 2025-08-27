@@ -11,13 +11,24 @@ import { InteractionPanel } from "@/components/interaction-panel";
 import { SidebarTabs } from "@/components/sidebar-tabs";
 import { SceneDisplay } from "@/components/scene-display";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save, FilePlus, AlertTriangle } from "lucide-react";
+import { Loader2, Save, FilePlus, AlertTriangle, LogOut } from "lucide-react";
 import { StartScreen } from "./screens/start-screen";
 import { CustomScenarioCreator } from "./custom-scenario-creator";
 import { LoadGame } from "./load-game";
 import { SettingsPage } from "./screens/settings-page";
 import { Scoreboard } from "./screens/scoreboard";
 import { NewGameCreator } from "./new-game-creator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const SAVE_GAME_KEY = "dastan-savegame";
 
@@ -245,7 +256,28 @@ export function GameClient() {
         <div className="flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-headline text-accent tracking-widest">داستان</h1>
-            <Button size="icon" variant="outline" onClick={saveGame} disabled={gameState.isLoading}><Save /></Button>
+            <div className="flex items-center gap-2">
+              <Button size="icon" variant="outline" onClick={saveGame} disabled={gameState.isLoading}><Save /></Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button size="icon" variant="destructive_outline"><LogOut/></Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>بازگشت به منوی اصلی؟</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      آیا مطمئن هستید که می‌خواهید از بازی خارج شوید؟ هر پیشرفت ذخیره نشده‌ای از بین خواهد رفت.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>لغو</AlertDialogCancel>
+                    <AlertDialogAction onClick={resetGame} className="bg-destructive hover:bg-destructive/90">
+                        خروج
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
           <div className="flex-grow flex flex-col gap-4 overflow-y-auto pr-2">
             <PlayerHud playerState={gameState.playerState} />
