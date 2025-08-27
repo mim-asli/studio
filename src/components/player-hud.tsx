@@ -14,30 +14,30 @@ interface HudStatProps {
 }
 
 const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudStatProps) => {
-  let percentage, colorClass;
+  let percentage: number;
+  let colorClass: string;
 
   if (variant === 'inverse') {
     // For hunger, thirst. Higher value is worse.
     percentage = (value / max) * 100;
-    if (value > 70) {
-      colorClass = "text-red-500";
-    } else if (value > 40) {
-      colorClass = "text-yellow-500";
+    if (percentage > 70) {
+      colorClass = "text-red-500"; // Very hungry/thirsty
+    } else if (percentage > 40) {
+      colorClass = "text-yellow-500"; // hungry/thirsty
     } else {
-      colorClass = "text-green-500";
+      colorClass = "text-green-500"; // Full
     }
   } else {
     // For health, sanity, stamina, mana. Lower value is worse.
     percentage = (value / max) * 100;
-    if (value < 30) {
-      colorClass = "text-red-500";
-    } else if (value < 60) {
-      colorClass = "text-yellow-500";
+    if (percentage < 30) {
+      colorClass = "text-red-500"; // Dangerously low
+    } else if (percentage < 60) {
+      colorClass = "text-yellow-500"; // Low
     } else {
-      colorClass = "text-green-500";
+      colorClass = "text-green-500"; // Healthy
     }
   }
-
 
   return (
     <div className="flex flex-col items-center gap-1 text-center">
