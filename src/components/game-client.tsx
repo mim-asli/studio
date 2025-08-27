@@ -34,7 +34,7 @@ const SAVES_KEY = "dastan-saves";
 
 export const initialGameState: GameState = {
   id: '',
-  story: "به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید.",
+  story: ["به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید."],
   playerState: { health: 100, sanity: 100 },
   inventory: [],
   skills: [],
@@ -152,7 +152,12 @@ export function GameClient() {
     setGameState(prev => ({ ...prev, isLoading: true, gameStarted: true, choices: [] }));
     setView("game");
 
-    const currentGameStateForAI = { ...gameState };
+    const { story, ...restOfState } = gameState;
+    const currentGameStateForAI = { 
+        ...restOfState, 
+        story: story.slice(-5).join('\n\n') // Send last 5 story parts for context
+    };
+
     // @ts-ignore
     delete currentGameStateForAI.isLoading; 
     // @ts-ignore
@@ -160,6 +165,7 @@ export function GameClient() {
 
     try {
       const nextTurn = await generateNextTurn({
+        // @ts-ignore
         gameState: currentGameStateForAI,
         playerAction,
       });
@@ -167,6 +173,7 @@ export function GameClient() {
       const updatedGameState = {
         ...gameState,
         ...nextTurn,
+        story: [...gameState.story, nextTurn.story],
         gameStarted: true,
         isLoading: false,
       };
@@ -194,7 +201,7 @@ export function GameClient() {
     const freshGameState: GameState = {
       ...initialGameState,
       id: gameId,
-      story: `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}`,
+      story: [`دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}`],
       playerState: { health: 100, sanity: 100 },
       inventory: scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
       skills: scenario.character.split(',').map(s => s.trim()),
@@ -254,7 +261,7 @@ export function GameClient() {
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 text-center">
             <AlertTriangle className="w-24 h-24 text-destructive mb-4" />
             <h1 className="text-6xl font-headline text-destructive mb-2">بازی تمام شد</h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl">{gameState.story}</p>
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl">{gameState.story[gameState.story.length-1]}</p>
             <Button size="lg" onClick={resetGame}>
                 <FilePlus className="ml-2" /> شروع یک افسانه جدید
             </Button>
@@ -267,7 +274,7 @@ export function GameClient() {
       <main className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen bg-background text-foreground font-body p-2 sm:p-4 gap-4">
         <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <div className="relative flex-grow border rounded-md shadow-inner bg-card overflow-hidden flex flex-col">
-            <StoryDisplay story={gameState.story} />
+            <StoryDisplay storySegments={gameState.story} />
             {gameState.isLoading && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
                 <Loader2 className="w-16 h-16 text-primary animate-spin" />

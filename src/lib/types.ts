@@ -1,8 +1,9 @@
 import type { GenerateNextTurnOutput } from '@/ai/flows/generate-next-turn';
 
 // This will be the main state object for the game
-export type GameState = GenerateNextTurnOutput & {
+export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {
     id: string; // Unique ID for the game session
+    story: string[]; // Keep a history of story segments
     isGameOver: boolean;
     gameStarted: boolean;
     isLoading: boolean;
