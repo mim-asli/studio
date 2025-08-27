@@ -30,6 +30,8 @@ const GenerateNextTurnOutputSchema = z.object({
   newLocation: z.string().optional().describe('A new location introduced in this turn.'),
   globalEvent: z.string().optional().describe('A global event that occurred in this turn.'),
   sceneEntities: z.array(z.string()).describe('List of entities in the current scene.'),
+  isCombat: z.boolean().optional().describe('Whether combat is active.'),
+  enemies: z.array(z.any()).optional().describe('A list of enemies in the combat.'),
 });
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
 
@@ -42,6 +44,8 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateNextTurnInputSchema},
   output: {schema: GenerateNextTurnOutputSchema},
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.\n
+IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
+
 Enforce the following rules:\n- **State Synchronization Philosophy:** Any changes to the game world or player state MUST be reflected in the JSON output.\n- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n- **Persistent World Philosophy:** The game doesn\'t end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n
 Respond in the persona of the GM Personality specified in the story prompt.
 JSON Output Structure:

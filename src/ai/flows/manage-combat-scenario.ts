@@ -40,6 +40,7 @@ const prompt = ai.definePrompt({
   input: {schema: ManageCombatScenarioInputSchema},
   output: {schema: ManageCombatScenarioOutputSchema},
   prompt: `You are managing a combat scenario in a dynamic text-based RPG.
+IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
 Here is the current scene description: {{{sceneDescription}}}
 
