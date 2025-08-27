@@ -76,24 +76,15 @@ export function GameClient() {
     handleLowHealthEffect();
   }, [handleLowHealthEffect, handleLowSanityEffect]);
 
-  const saveGame = useCallback((stateToSave?: GameState) => {
-    const currentState = stateToSave || gameState;
-    if (!currentState.gameStarted) return;
+  const saveGame = useCallback((stateToSave: GameState) => {
+    if (!stateToSave.gameStarted) return;
     try {
       const saveFile: SaveFile = {
         id: "save_1",
         timestamp: Date.now(),
-        gameState: currentState,
+        gameState: stateToSave,
       };
       localStorage.setItem(SAVE_GAME_KEY, JSON.stringify(saveFile));
-      
-      // We only show the toast when the user manually saves.
-      if (!stateToSave) {
-          toast({
-            title: "بازی ذخیره شد",
-            description: "پیشرفت شما در این دستگاه ذخیره شد.",
-          });
-      }
     } catch (error) {
       console.error("Failed to save game:", error);
       toast({
@@ -102,7 +93,7 @@ export function GameClient() {
         description: "بازی شما ذخیره نشد.",
       });
     }
-  }, [gameState, toast]);
+  }, [toast]);
 
   const loadGame = useCallback(() => {
     try {
@@ -178,16 +169,16 @@ export function GameClient() {
   const startNewGame = (scenario: CustomScenario) => {
       const freshGameState: GameState = {
         ...initialGameState,
-        story: scenario.storyPrompt, // Use scenario description as the opening story
+        story: scenario.storyPrompt,
         playerState: { health: 100, sanity: 100 },
         inventory: [scenario.initialItems],
-        skills: [scenario.character], // Store character info in skills for now
+        skills: [scenario.character],
         gameStarted: true,
         isLoading: false,
       };
 
       setGameState(freshGameState);
-      saveGame(freshGameState); // Save the initial state of the new game
+      saveGame(freshGameState);
       setView("game");
   };
 
@@ -266,7 +257,6 @@ export function GameClient() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-headline text-accent tracking-widest">داستان</h1>
             <div className="flex items-center gap-2">
-              <Button size="icon" variant="outline" onClick={() => saveGame()} disabled={gameState.isLoading}><Save /></Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button size="icon" variant="destructive_outline"><LogOut/></Button>
@@ -300,3 +290,5 @@ export function GameClient() {
     </>
   );
 }
+
+    
