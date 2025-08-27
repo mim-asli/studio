@@ -3,15 +3,34 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Backpack, PersonStanding, ScrollText, Map } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export function SidebarTabs({ inventory, skills, quests }: { inventory: string[], skills: string[], quests: string[] }) {
+  const tabs = [
+    { value: "inventory", label: "موجودی", icon: <Backpack className="w-5 h-5" /> },
+    { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" /> },
+    { value: "quests", label: "مأموریت‌ها", icon: <ScrollText className="w-5 h-5" /> },
+    { value: "map", label: "نقشه", icon: <Map className="w-5 h-5" /> },
+  ]
+  
   return (
     <Tabs defaultValue="inventory" className="h-full flex flex-col">
       <TabsList className="grid w-full grid-cols-4 bg-transparent border rounded-md">
-        <TabsTrigger value="inventory" aria-label="موجودی"><Backpack className="w-5 h-5" /></TabsTrigger>
-        <TabsTrigger value="character" aria-label="شخصیت"><PersonStanding className="w-5 h-5" /></TabsTrigger>
-        <TabsTrigger value="quests" aria-label="مأموریت‌ها"><ScrollText className="w-5 h-5" /></TabsTrigger>
-        <TabsTrigger value="map" aria-label="نقشه"><Map className="w-5 h-5" /></TabsTrigger>
+        {tabs.map((tab) => (
+          <Tooltip key={tab.value}>
+            <TooltipTrigger asChild>
+              <TabsTrigger value={tab.value} aria-label={tab.label}>{tab.icon}</TabsTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{tab.label}</p>
+            </TooltipContent>
+          </Tooltip>
+        ))}
       </TabsList>
       <div className="flex-grow mt-4">
         <TabsContent value="inventory" className="m-0">

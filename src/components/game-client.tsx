@@ -29,6 +29,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 const SAVES_KEY = "dastan-saves";
 export const PLAYER_ACTION_PREFIX = "> ";
@@ -296,7 +303,7 @@ export function GameClient() {
   }
 
   return (
-    <>
+    <TooltipProvider>
       <GameDirectorChat 
         isOpen={isDirectorChatOpen}
         onClose={() => setIsDirectorChatOpen(false)}
@@ -326,7 +333,14 @@ export function GameClient() {
             <div className="flex items-center gap-2">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button size="icon" variant="ghost"><LogOut/></Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="ghost"><LogOut/></Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>خروج به منوی اصلی</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -355,6 +369,6 @@ export function GameClient() {
           </div>
         </div>
       </main>
-    </>
+    </TooltipProvider>
   );
 }

@@ -7,6 +7,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Send, ChevronsLeft, Mic, MicOff, Bot } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 interface InteractionPanelProps {
   choices: string[];
@@ -71,17 +78,23 @@ export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat 
         </div>
         <div className="mt-auto pt-2">
             <form onSubmit={handleCustomSubmit} className="flex gap-2">
-                <Button
-                    type="button"
-                    size="icon"
-                    onClick={onDirectorChat}
-                    disabled={isLoading}
-                    variant="outline"
-                    title="گفتگو با کارگردان بازی"
-                >
-                    <Bot />
-                    <span className="sr-only">گفتگو با کارگردان</span>
-                </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            type="button"
+                            size="icon"
+                            onClick={onDirectorChat}
+                            disabled={isLoading}
+                            variant="outline"
+                        >
+                            <Bot />
+                            <span className="sr-only">گفتگو با کارگردان</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>گفتگو با کارگردان بازی</p>
+                    </TooltipContent>
+                </Tooltip>
                 <Input
                     placeholder={listening ? "در حال گوش دادن..." : "چه کار می‌کنی؟"}
                     value={customInput}
@@ -89,17 +102,24 @@ export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat 
                     disabled={isLoading}
                     className="bg-background/50 focus:ring-primary"
                 />
-                 <Button
-                    type="button"
-                    size="icon"
-                    onClick={handleMicClick}
-                    disabled={isLoading || isUnsupported}
-                    variant={listening ? "destructive" : "outline"}
-                    className={cn(listening && "animate-pulse")}
-                >
-                    {listening ? <MicOff /> : <Mic />}
-                    <span className="sr-only">{listening ? "توقف ضبط" : "شروع ضبط"}</span>
-                </Button>
+                 <Tooltip>
+                    <TooltipTrigger asChild>
+                         <Button
+                            type="button"
+                            size="icon"
+                            onClick={handleMicClick}
+                            disabled={isLoading || isUnsupported}
+                            variant={listening ? "destructive" : "outline"}
+                            className={cn(listening && "animate-pulse")}
+                        >
+                            {listening ? <MicOff /> : <Mic />}
+                            <span className="sr-only">{listening ? "توقف ضبط" : "شروع ضبط"}</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{listening ? "توقف ضبط" : "شروع ضبط با میکروفون"}</p>
+                    </TooltipContent>
+                </Tooltip>
                 <Button type="submit" size="icon" disabled={isLoading} variant="default">
                     <Send />
                 </Button>
