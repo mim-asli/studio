@@ -30,9 +30,8 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
     useEffect(() => {
         const savesJson = localStorage.getItem(SAVES_KEY);
         if (savesJson) {
-            const saves = JSON.parse(savesJson);
-            // Sort saves by timestamp descending
-            saves.sort((a: SaveFile, b: SaveFile) => b.timestamp - a.timestamp);
+            const saves: SaveFile[] = JSON.parse(savesJson);
+            saves.sort((a, b) => b.timestamp - a.timestamp);
             setSavedGames(saves);
         }
     }, []);
@@ -86,7 +85,7 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                                                         <AlertDialogTitle>آیا مطمئن هستید؟</AlertDialogTitle>
                                                         <AlertDialogDescription>
                                                            این عمل قابل بازگشت نیست. این کار ماجراجویی "{save.characterName}" را برای همیشه حذف خواهد کرد.
-                                                        </Description>
+                                                        </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>لغو</AlertDialogCancel>
