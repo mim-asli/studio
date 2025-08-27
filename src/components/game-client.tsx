@@ -362,8 +362,10 @@ export function GameClient() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>لغو</AlertDialogCancel>
-                    <AlertDialogAction onClick={resetGame} variant="destructive">
-                        خروج
+                    <AlertDialogAction asChild>
+                      <Button onClick={resetGame} variant="destructive">
+                          خروج
+                      </Button>
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
