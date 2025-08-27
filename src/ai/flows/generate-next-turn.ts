@@ -18,7 +18,7 @@ const GenerateNextTurnInputSchema = z.object({
 export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
 
 const GenerateNextTurnOutputSchema = z.object({
-  story: z.string().describe('The narrative text of the current events.'),
+  story: z.string().describe('The narrative text of the current events. This should be a single string.'),
   playerState: z.any().describe('The state of the player (health, sanity, etc.).'),
   inventory: z.array(z.string()).describe('A list of items in the player\'s inventory.'),
   skills: z.array(z.string()).describe('A list of the player\'s skills.'),
