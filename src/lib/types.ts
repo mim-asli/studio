@@ -23,3 +23,41 @@ export interface CustomScenario {
     initialItems: string;
     storyPrompt: string;
 }
+
+// --- Settings Types ---
+
+export type ApiKey = {
+  id: string;
+  name: string;
+  value: string;
+  enabled: boolean;
+  status?: 'valid' | 'invalid' | 'quota_exceeded' | 'unchecked';
+};
+
+export type HuggingFaceSettings = {
+  enabled: boolean;
+  apiKey: string;
+  modelId: string;
+  prioritize: boolean;
+};
+
+export type LocalLlmSettings = {
+  enabled: boolean;
+  endpoint: string;
+  prioritize: boolean;
+};
+
+export type AudioSettings = {
+  master: number;
+  music: number;
+  ambient: number;
+  sfx: number;
+};
+
+export type AppSettings = {
+  theme: 'dark' | 'light';
+  geminiApiKeys: ApiKey[];
+  huggingFace: HuggingFaceSettings;
+  localLlm: LocalLlmSettings;
+  audio: AudioSettings;
+};
