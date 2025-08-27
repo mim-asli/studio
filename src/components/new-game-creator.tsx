@@ -270,7 +270,7 @@ const SelectionGrid = ({ items, selected, onSelect, columns = "3" }: { items: an
     };
     
     return (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", columnClasses[columns || "3"])}>
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", columnClasses[columns])}>
         {Object.entries(items).map(([key, value]: [string, any]) => (
             <Card 
                 key={key}
