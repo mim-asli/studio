@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed, MinusCircle, PlusCircle, Pencil } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { Progress } from './ui/progress';
 import { cn } from '@/lib/utils';
 import type { CustomScenario } from '@/lib/types';
@@ -118,7 +118,7 @@ const openingScenes: Record<keyof typeof genres, string[]> = {
         "به عنوان یک کارآگاه سایبرپانک در شهر نئو-تهران، جدیدترین پرونده‌تان شما را به یک شرکت بزرگ فناوری می‌رساند که به نظر می‌رسد در حال آزمایش‌های غیرقانونی روی انسان‌ها است.",
     ],
     'ترسناک': [
-        "در یک عمارت ویکتوریایی متروکه به هوش می‌آیید و هیچ خاطره‌ای از اینکه چگونه به اینجا رسیده‌اید ندارید. درها قفل هستند و تنها صدای موجود، تیک تاک یک ساعت قدیمی است.",
+        "در یک عمارت ویکتوریایی متروکه به هوش می‌آyید و هیچ خاطره‌ای از اینکه چگونه به اینجا رسیده‌اید ندارید. درها قفل هستند و تنها صدای موجود، تیک تاک یک ساعت قدیمی است.",
         "ماشین شما در یک جاده روستایی دورافتاده خراب شده است. تنها پناهگاه موجود، یک متل قدیمی و ترسناک است که تابلوی نئونی آن به طرز وهم‌انگیزی چشمک می‌زند.",
         "شما تنها بازمانده یک مراسم آیینی عجیب هستید. اکنون در یک زیرزمین تاریک گیر افتاده‌اید و می‌دانید که موجودی که دوستانتان را قربانی کرده، هنوز در این نزدیکی است.",
     ],
@@ -513,3 +513,5 @@ const FeatureSelection = ({ title, items, selected, onSelect }: { title: string,
         </div>
     </div>
 );
+
+    
