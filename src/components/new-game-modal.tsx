@@ -79,10 +79,6 @@ export function NewGameModal({ open, onOpenChange, onStartGame }: NewGameModalPr
 
         <div className="grid gap-4 pt-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="genre" className="text-left">ژانر</Label>
-            <Input id="genre" value={scenario.genre} onChange={e => setScenario(s => ({...s, genre: e.target.value}))} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="character" className="text-left">شخصیت</Label>
             <Input id="character" value={scenario.character} onChange={e => setScenario(s => ({...s, character: e.target.value}))} className="col-span-3" />
           </div>
