@@ -11,37 +11,34 @@ interface StoryDisplayProps {
 
 const parseSegment = (text: string) => {
     if (!text) return null;
-    
-    // Check for player action prefix
+
     const isPlayerAction = text.startsWith(PLAYER_ACTION_PREFIX);
-    
-    // The text to be parsed, without the prefix if it exists
     const contentToParse = isPlayerAction ? text.substring(PLAYER_ACTION_PREFIX.length) : text;
 
-    // A helper function to parse for the keyword "داستان"
-    const parseForKeyword = (str: string) => {
-        const parts = str.split(/(داستان)/g);
-        return parts.map((part, index) => 
-            part === 'داستان' ? (
-                <span key={index} className="text-primary">{part}</span>
-            ) : (
-                part
-            )
-        );
+    // A helper function to parse for the keyword "داستان" and other keywords
+    const parseForKeywords = (str: string) => {
+        // This regex will split the string by the keywords, keeping the keywords.
+        const parts = str.split(/(داستان)/g); 
+        return parts.map((part, index) => {
+            if (part === 'داستان') {
+                return <span key={index} className="text-primary font-bold">{part}</span>;
+            }
+            return part;
+        });
     };
 
     if (isPlayerAction) {
         return (
-            <span className="text-accent font-bold">
+            <span className="text-player-action font-bold">
                 {PLAYER_ACTION_PREFIX}
-                {parseForKeyword(contentToParse)}
+                {parseForKeywords(contentToParse)}
             </span>
         );
     }
     
-    // For regular story text, just parse for the keyword.
-    return parseForKeyword(contentToParse);
+    return parseForKeywords(contentToParse);
 };
+
 
 export function StoryDisplay({ storySegments = [] }: StoryDisplayProps) {
   const segments = Array.isArray(storySegments) ? storySegments : [];
