@@ -40,6 +40,8 @@ const prompt = ai.definePrompt({
 
   Provide an insightful and helpful answer from the perspective of the game director. Focus on providing hints and lore about the world.
   Respond in character as the game director, but do not reveal critical plot points that would ruin the player experience.
+  
+  Additionally, if the player asks about the potential outcome of an action they did not take ("what if" questions), provide a creative and interesting response. Speculate on what might have happened. This is an opportunity to show the complexity of the world and the consequences of choices.
 `,
 });
 
