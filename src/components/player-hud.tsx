@@ -1,7 +1,8 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HeartPulse, BrainCircuit, Droplets, Wheat } from "lucide-react";
+import { HeartPulse, BrainCircuit, Droplets, Wheat, Zap, Sparkles } from "lucide-react";
 import type { GameState } from "@/lib/types";
 
 interface HudStatProps {
@@ -60,14 +61,14 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
 };
 
 export function PlayerHud({ playerState }: { playerState: GameState['playerState'] }) {
-  const { health = 100, sanity = 100, hunger = 0, thirst = 0 } = playerState || {};
+  const { health = 100, sanity = 100, hunger = 0, thirst = 0, stamina, mana } = playerState || {};
   
   return (
     <Card className="bg-transparent border">
       <CardHeader className="pb-4 pt-4">
         <CardTitle className="font-headline text-2xl tracking-wider">علائم حیاتی</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-4 gap-2">
+      <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
         <HudGauge 
             label="سلامتی" 
             value={health} 
@@ -92,6 +93,22 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
             icon={<Droplets />}
             variant="inverse"
         />
+        {stamina !== undefined && (
+          <HudGauge 
+              label="انرژی" 
+              value={stamina} 
+              icon={<Zap />}
+              variant="default"
+          />
+        )}
+        {mana !== undefined && (
+           <HudGauge 
+              label="مانا" 
+              value={mana} 
+              icon={<Sparkles />}
+              variant="default"
+          />
+        )}
       </CardContent>
     </Card>
   );

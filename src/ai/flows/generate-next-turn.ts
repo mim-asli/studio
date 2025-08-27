@@ -29,6 +29,8 @@ const PlayerStateSchema = z.object({
   sanity: z.number().describe("Player's current sanity. Max 100. Low sanity can cause hallucinations or negative effects."),
   hunger: z.number().describe("Player's current hunger level. 0 is not hungry, 100 is starving."),
   thirst: z.number().describe("Player's current thirst level. 0 is not thirsty, 100 is dehydrated."),
+  stamina: z.number().optional().describe("Player's current stamina/energy. Max 100. Physical actions consume stamina."),
+  mana: z.number().optional().describe("Player's current magical energy. Max 100. Casting spells consumes mana."),
 });
 
 const WorldStateSchema = z.object({
@@ -86,7 +88,9 @@ Enforce the following rules:\n
         - A Ruby: Worth around 20-25 Gold Coins.
         - A Diamond: Worth over 100 Gold Coins.
     - **Transactions:** When the player wants to buy or sell, present the price and require them to confirm the transaction as their next action. For example: "The merchant offers you 5 Gold Coins for the ruby. Do you accept?" Choices: ["بله، معامله می‌کنم", "نه، ممنون"].
-
+- **Item Crafting:** If the player action describes an attempt to combine items from their inventory, evaluate the logic of the combination. If it makes sense, allow the crafting attempt. The result might be a new item, a broken item, or a partial success. Update the inventory accordingly. For example, if a player tries to combine a sturdy branch and a sharp rock, they might create a 'makeshift axe'.
+- **Stamina and Fatigue:** All characters, including the player, have Stamina (max 100). Physical actions like running, fighting, climbing, or swimming consume stamina. The amount consumed should be proportional to the effort. Resting or consuming certain items can restore stamina. Low stamina (below 20) should have negative consequences, such as reduced combat effectiveness or inability to perform strenuous actions.
+- **Mana and Magic:** For characters with magical abilities, all spells consume Mana (max 100). The more powerful the spell, the more mana it consumes. Mana can be restored through rest, meditation, or special potions. If a character's mana is too low, they cannot cast spells. Only include mana for characters who are magical in nature (e.g. 'جادوگر').
 - **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n
 - **Persistent World Philosophy:** The game doesn't end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n
 - **Time and Resource Progression:** With every player action, time must progress logically. Update the day and time of day in the worldState. Actions also affect hunger and thirst; update them accordingly.
