@@ -10,22 +10,23 @@ interface StoryDisplayProps {
 }
 
 const parseSegment = (text: string) => {
-    if (!text) return [];
+    if (!text) return null;
     
     // Check for player action prefix
     const isPlayerAction = text.startsWith(PLAYER_ACTION_PREFIX);
-    const content = isPlayerAction ? text.substring(PLAYER_ACTION_PREFIX.length) : text;
-
-    const parts = content.split(/(داستان)/g);
-    const nodes = parts.map((part, index) => 
-        part === 'داستان' ? (
-            <span key={index} className="text-primary">{part}</span>
-        ) : (
-            part
-        )
-    );
     
     if (isPlayerAction) {
+        // If it's a player action, wrap the whole thing in a styled span
+        // and then parse for the word "داستان" inside it.
+        const content = text.substring(PLAYER_ACTION_PREFIX.length);
+        const parts = content.split(/(داستان)/g);
+        const nodes = parts.map((part, index) => 
+            part === 'داستان' ? (
+                <span key={index} className="text-primary">{part}</span>
+            ) : (
+                part
+            )
+        );
         return (
             <span className="text-accent italic">
                 {PLAYER_ACTION_PREFIX}{nodes}
@@ -33,7 +34,15 @@ const parseSegment = (text: string) => {
         );
     }
     
-    return <>{nodes}</>;
+    // For regular story text, just parse for the word "داستان".
+    const parts = text.split(/(داستان)/g);
+    return parts.map((part, index) => 
+        part === 'داستان' ? (
+            <span key={index} className="text-primary">{part}</span>
+        ) : (
+            part
+        )
+    );
 };
 
 export function StoryDisplay({ storySegments = [] }: StoryDisplayProps) {
