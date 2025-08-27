@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed, MinusCircle, PlusCircle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Progress } from './ui/progress';
@@ -72,6 +72,36 @@ const flaws = {
 
 const gmPersonalities = ['جدی و تاریک', 'شوخ و سرگرم‌کننده', 'روایی و سینمایی', 'واقع‌گرا و بی‌رحم', 'مینیمالیست و سریع'];
 
+const startingEquipment = {
+    // Weapons (Cost: 4-5)
+    'شمشیر کوتاه': { cost: 4, description: 'یک شمشیر سبک و سریع.' },
+    'تبر دستی': { cost: 4, description: 'مناسب برای نبرد و قطع چوب.' },
+    'خنجر': { cost: 3, description: 'سلاحی برای حملات غافلگیرانه.' },
+    'کمان کوتاه و ۱۰ تیر': { cost: 5, description: 'برای شکار و نبرد از راه دور.' },
+    'عصای چوبی': { cost: 2, description: 'یک عصای محکم، مناسب برای جادوگر.' },
+    // Armor (Cost: 3-4)
+    'سپر چوبی': { cost: 3, description: 'یک سپر ساده برای دفاع اولیه.' },
+    'زره چرمی': { cost: 4, description: 'محافظت پایه در برابر ضربات.' },
+    // Tools (Cost: 1-3)
+    'طناب (۱۰ متر)': { cost: 2, description: 'برای بالا رفتن و بستن اشیاء.' },
+    'مشعل': { cost: 1, description: 'برای روشن کردن مکان‌های تاریک.' },
+    'کیسه خواب': { cost: 2, description: 'برای استراحت راحت‌تر.' },
+    'کوله پشتی': { cost: 2, description: 'برای حمل آیتم‌های بیشتر.' },
+    'ابزار دزدی': { cost: 3, description: 'برای باز کردن قفل‌ها.' },
+    // Consumables (Cost: 1-3)
+    'جیره غذایی (۳ روز)': { cost: 2, description: 'غذای خشک برای سفر.' },
+    'قمقمه آب': { cost: 1, description: 'برای حمل آب.' },
+    'معجون سلامتی کوچک': { cost: 3, description: 'کمی از سلامتی را بازیابی می‌کند.' },
+    'کیسه پول (۵ سکه)': { cost: 1, description: 'برای شروع مقداری پول.' },
+    'کتاب طلسم پایه': { cost: 3, description: 'حاوی یک یا دو طلسم ساده.' },
+};
+
+const difficultyPoints = {
+    'آسان': 15,
+    'معمولی': 10,
+    'سخت': 7,
+};
+
 interface NewGameCreatorProps {
     onBack: () => void;
     onStartGame: (scenario: CustomScenario, characterName: string) => void;
@@ -86,14 +116,40 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const [selectedArchetype, setSelectedArchetype] = useState<keyof typeof archetypes | null>(null);
     const [perk, setPerk] = useState<keyof typeof perks | null>(null);
     const [flaw, setFlaw] = useState<keyof typeof flaws | null>(null);
-    const [initialItems, setInitialItems] = useState('');
+    const [initialItems, setInitialItems] = useState<Record<string, number>>({});
     const [storyPrompt, setStoryPrompt] = useState('');
     const [scenarioTitle, setScenarioTitle] = useState('');
     
     const [genre, setGenre] = useState<keyof typeof genres>('فانتزی');
-    const [difficulty, setDifficulty] = useState('معمولی');
+    const [difficulty, setDifficulty] = useState<'آسان'|'معمولی'|'سخت'>('معمولی');
     const [gmPersonality, setGmPersonality] = useState('روایی و سینمایی');
 
+    const totalPoints = difficultyPoints[difficulty];
+    const usedPoints = Object.entries(initialItems).reduce((acc, [item, count]) => {
+        const itemCost = startingEquipment[item as keyof typeof startingEquipment]?.cost || 0;
+        return acc + (itemCost * count);
+    }, 0);
+    const remainingPoints = totalPoints - usedPoints;
+
+    const handleAddItem = (item: keyof typeof startingEquipment) => {
+        if (remainingPoints >= startingEquipment[item].cost) {
+            setInitialItems(prev => ({...prev, [item]: (prev[item] || 0) + 1 }));
+        }
+    }
+    
+    const handleRemoveItem = (item: keyof typeof startingEquipment) => {
+        if (initialItems[item] > 0) {
+            setInitialItems(prev => {
+                const newItems = {...prev};
+                if (newItems[item] > 1) {
+                    newItems[item]--;
+                } else {
+                    delete newItems[item];
+                }
+                return newItems;
+            });
+        }
+    }
 
     const handleNext = () => setStep(s => Math.min(s + 1, TOTAL_STEPS));
     const handlePrev = () => setStep(s => Math.max(s - 1, 1));
@@ -103,7 +159,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             case 1: return !!genre && !!difficulty && !!gmPersonality && scenarioTitle.trim().length > 0;
             case 2: return characterName.trim().length > 0 && (customArchetype.trim().length > 0 || !!selectedArchetype) ;
             case 3: return !!perk && !!flaw;
-            case 4: return initialItems.trim().length > 0;
+            case 4: return Object.keys(initialItems).length > 0;
             case 5: return storyPrompt.trim().length > 0;
             case 6: return true;
             default: return false;
@@ -112,6 +168,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     
     const handleStartGame = () => {
         const finalArchetype = customArchetype.trim() || selectedArchetype;
+        const finalItemsList = Object.entries(initialItems).map(([item, count]) => count > 1 ? `${item} (x${count})` : item);
 
         const fullStoryPrompt = `
         عنوان سناریو: ${scenarioTitle}
@@ -126,7 +183,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
         - نقطه قوت: ${perk}
         - نقطه ضعف: ${flaw}
 
-        تجهیزات اولیه: ${initialItems.split('\n').join(', ')}
+        تجهیزات اولیه: ${finalItemsList.join(', ')}
 
         صحنه شروع:
         ${storyPrompt}
@@ -140,11 +197,13 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 `ویژگی‌ها: ${perk}, ${flaw}`,
                 `توضیحات: ${characterDesc}`
             ],
-            initialItems: initialItems.split('\n').filter(i => i.trim() !== ''),
+            initialItems: finalItemsList,
             storyPrompt: fullStoryPrompt,
         };
         onStartGame(customScenario, characterName);
     }
+    
+    const finalItemsListForReview = Object.entries(initialItems).map(([item, count]) => count > 1 ? `${item} (x${count})` : item);
 
     const renderStep = () => {
         switch (step) {
@@ -154,11 +213,12 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                      <SelectionGrid items={genres} selected={genre} onSelect={(key) => setGenre(key as keyof typeof genres)} columns="3" title="ژانر" />
                     <div>
                         <Label className="text-lg font-bold text-primary mb-2 block">سطح دشواری</Label>
-                        <RadioGroup value={difficulty} className="mt-2 grid grid-cols-3 gap-4" onValueChange={setDifficulty}>
-                           {['آسان', 'معمولی', 'سخت'].map(level => (
+                        <RadioGroup value={difficulty} className="mt-2 grid grid-cols-3 gap-4" onValueChange={value => setDifficulty(value as 'آسان'|'معمولی'|'سخت')}>
+                           {(['آسان', 'معمولی', 'سخت'] as const).map(level => (
                                <Label key={level} htmlFor={`diff-${level}`} className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", difficulty === level && "border-primary ring-2 ring-primary")}>
                                   <RadioGroupItem value={level} id={`diff-${level}`} className="sr-only" />
                                   {level}
+                                  <span className="text-xs text-muted-foreground mt-1">({difficultyPoints[level]} امتیاز)</span>
                                </Label>
                            ))}
                         </RadioGroup>
@@ -214,8 +274,55 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                     <FeatureSelection title="نقاط ضعف (Flaws)" items={flaws} selected={flaw} onSelect={setFlaw} />
                 </div>
             </Step>
-            case 4: return <Step title="۴. تجهیزات اولیه" description="شخصیت شما ماجراجویی را با چه آیتم‌هایی شروع می‌کند؟ (هر آیتم را در یک خط جدید بنویسید)">
-                 <Textarea placeholder="شمشیر بلند\nکوله پشتی چرمی\n3 سکه طلا" value={initialItems} onChange={e => setInitialItems(e.target.value)} rows={8} />
+            case 4: return <Step title="۴. تجهیزات اولیه" description="با استفاده از امتیازهای خود، تجهیزات شروع ماجراجویی را انتخاب کنید.">
+                 <div className="grid md:grid-cols-2 gap-6">
+                     {/* Available Items Column */}
+                    <div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>آیتم‌های موجود</CardTitle>
+                                <CardDescription>امتیاز باقی‌مانده: <span className="font-bold text-primary">{remainingPoints} / {totalPoints}</span></CardDescription>
+                            </CardHeader>
+                            <CardContent className="max-h-80 overflow-y-auto pr-2 space-y-2">
+                                {Object.entries(startingEquipment).map(([name, data]) => (
+                                    <div key={name} className="flex items-center justify-between p-2 rounded-md bg-muted/50 border">
+                                        <div>
+                                            <p className="font-semibold">{name} <span className="text-xs text-primary">({data.cost} امتیاز)</span></p>
+                                            <p className="text-xs text-muted-foreground">{data.description}</p>
+                                        </div>
+                                        <Button size="icon" variant="ghost" onClick={() => handleAddItem(name as keyof typeof startingEquipment)} disabled={remainingPoints < data.cost}>
+                                            <PlusCircle className="text-green-500"/>
+                                        </Button>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Selected Items Column */}
+                    <div>
+                        <Card>
+                             <CardHeader>
+                                <CardTitle>کوله پشتی شما</CardTitle>
+                                <CardDescription>آیتم‌هایی که انتخاب کرده‌اید.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="max-h-80 overflow-y-auto pr-2 space-y-2">
+                                {Object.keys(initialItems).length > 0 ? Object.entries(initialItems).map(([name, count]) => (
+                                     <div key={name} className="flex items-center justify-between p-2 rounded-md bg-muted/50 border">
+                                        <div>
+                                            <p className="font-semibold">{name} <span className="text-muted-foreground">x{count}</span></p>
+                                        </div>
+                                        <Button size="icon" variant="ghost" onClick={() => handleRemoveItem(name as keyof typeof startingEquipment)}>
+                                            <MinusCircle className="text-red-500"/>
+                                        </Button>
+                                    </div>
+                                )) : (
+                                    <p className="text-center text-muted-foreground py-10">کوله پشتی شما خالی است.</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                 </div>
             </Step>
             case 5: return <Step title="۵. صحنه افتتاحیه" description="متن شروع داستان را بنویسید. هرچه جزئیات بیشتری بدهید، هوش مصنوعی داستان بهتری خلق خواهد کرد.">
                  <Textarea placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آیید. آخرین چیزی که به یاد دارید، نور کورکننده یک طلسم است. اکنون تنها هستید و صدای زوزه‌ی گرگ‌ها از دور به گوش می‌رسد..." value={storyPrompt} onChange={e => setStoryPrompt(e.target.value)} rows={10} />
@@ -233,7 +340,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                         <div><strong className="text-primary">نقطه قوت:</strong> {perk}</div>
                         <div><strong className="text-primary">نقطه ضعف:</strong> {flaw}</div>
                         <hr className="border-border/50"/>
-                        <div><strong className="text-primary">تجهیزات:</strong> <pre className="whitespace-pre-wrap font-body">{initialItems}</pre></div>
+                        <div><strong className="text-primary">تجهیزات:</strong> <pre className="whitespace-pre-wrap font-body">{finalItemsListForReview.join('\n')}</pre></div>
                          <hr className="border-border/50"/>
                         <div><strong className="text-primary">شروع داستان:</strong> <p className="mt-1">{storyPrompt}</p></div>
                     </CardContent>
@@ -341,3 +448,5 @@ const FeatureSelection = ({ title, items, selected, onSelect }: { title: string,
         </div>
     </div>
 );
+
+    
