@@ -161,8 +161,6 @@ export function GameClient() {
   
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
-    
-    // Capture the state *before* updating the UI for the loading state.
     const stateBeforeAction = { ...gameState };
 
     setGameState(prev => ({ 
@@ -174,25 +172,22 @@ export function GameClient() {
     
     // Create a clean, summarized state object for the AI prompt.
     // This is more explicit and less error-prone than copying and deleting fields.
+    const { 
+      id, 
+      isGameOver, 
+      gameStarted, 
+      isLoading, 
+      story, 
+      ...restOfState 
+    } = stateBeforeAction;
+    
     const gameStateForAI = {
-      story: stateBeforeAction.story.slice(-10).join('\n\n'), // Use a summary of the story
-      playerState: stateBeforeAction.playerState,
-      inventory: stateBeforeAction.inventory,
-      skills: stateBeforeAction.skills,
-      quests: stateBeforeAction.quests,
-      choices: stateBeforeAction.choices,
-      worldState: stateBeforeAction.worldState,
-      sceneEntities: stateBeforeAction.sceneEntities,
-      companions: stateBeforeAction.companions,
-      isCombat: stateBeforeAction.isCombat,
-      enemies: stateBeforeAction.enemies,
-      characterName: stateBeforeAction.characterName,
-      scenarioTitle: stateBeforeAction.scenarioTitle,
+      ...restOfState,
+      story: story.slice(-10).join('\n\n'), // Use a summary of the story
     };
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
-        // We send the player action without the prefix to the AI.
         gameState: gameStateForAI,
         playerAction,
       });
@@ -200,22 +195,20 @@ export function GameClient() {
       setGameState(prevGameState => {
         const { story: newStory, ...restOfNextTurn } = nextTurn;
 
-        // Construct the new state based on the previous state and AI output.
         const updatedGameState: GameState = {
             ...prevGameState,
             ...restOfNextTurn,
-            story: [...prevGameState.story, newStory], // Add new story segment
+            story: [...prevGameState.story, newStory], 
             gameStarted: true,
             isLoading: false,
         };
 
-        // Check for game over condition
         if (updatedGameState.playerState.health <= 0) {
             updatedGameState.isGameOver = true;
             updatedGameState.story.push("شما مرده‌اید. داستان شما در اینجا به پایان می‌رسد.");
         }
 
-        saveGame(updatedGameState); // Auto-save after each turn
+        saveGame(updatedGameState);
         return updatedGameState;
       });
 
@@ -225,7 +218,6 @@ export function GameClient() {
 
     } catch (error) {
       console.error("Error generating next turn:", error);
-      // Restore previous choices if the AI call fails
       setGameState(prev => ({ 
           ...prev, 
           isLoading: false, 
@@ -391,3 +383,5 @@ export function GameClient() {
     </TooltipProvider>
   );
 }
+
+    
