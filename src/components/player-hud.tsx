@@ -14,17 +14,20 @@ interface HudStatProps {
 }
 
 const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudStatProps) => {
-  const percentage = (value / max) * 100;
+  const percentage = (variant === 'inverse' ? value : 100 - value) / max * 100;
+  const displayValue = variant === 'inverse' ? value : (max - value);
   
   let colorClass = "text-green-500";
   if (variant === 'default') {
-      if (percentage < 30) colorClass = "text-red-500";
-      else if (percentage < 60) colorClass = "text-yellow-500";
+      const displayPercentage = value / max * 100;
+      if (displayPercentage < 30) colorClass = "text-red-500";
+      else if (displayPercentage < 60) colorClass = "text-yellow-500";
   } else { // inverse, for hunger/thirst
-      if (percentage > 70) colorClass = "text-red-500";
-      else if (percentage > 40) colorClass = "text-yellow-500";
+      if (value > 70) colorClass = "text-red-500";
+      else if (value > 40) colorClass = "text-yellow-500";
   }
 
+  const strokeDashValue = variant === 'inverse' ? (max-value) / max * 100 : value;
 
   return (
     <div className="flex flex-col items-center gap-1 text-center">
@@ -47,7 +50,7 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
             className={`stroke-current ${colorClass} transition-all duration-300`}
             strokeWidth="2.5"
             fill="none"
-            strokeDasharray={`${percentage}, 100`}
+            strokeDasharray={`${strokeDashValue}, 100`}
           />
         </svg>
         <div className="absolute flex flex-col items-center justify-center">
@@ -55,7 +58,7 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
         </div>
       </div>
       <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{label}</span>
-      <span className="text-sm font-bold">{variant === 'default' ? value : (max - value)}</span>
+      <span className="text-sm font-bold">{variant === 'inverse' ? value : value}</span>
     </div>
   );
 };
@@ -93,7 +96,7 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
             icon={<Droplets />}
             variant="inverse"
         />
-        {stamina !== undefined && (
+        {stamina != null && (
           <HudGauge 
               label="انرژی" 
               value={stamina} 
@@ -101,7 +104,7 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
               variant="default"
           />
         )}
-        {mana !== undefined && (
+        {mana != null && (
            <HudGauge 
               label="مانا" 
               value={mana} 
