@@ -13,6 +13,10 @@ import { SceneDisplay } from "@/components/scene-display";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, FilePlus, AlertTriangle } from "lucide-react";
 import { StartScreen } from "./screens/start-screen";
+import { CustomScenarioCreator } from "./custom-scenario-creator";
+import { LoadGame } from "./load-game";
+import { SettingsPage } from "./screens/settings-page";
+import { Scoreboard } from "./screens/scoreboard";
 
 const SAVE_GAME_KEY = "dastan-savegame";
 
@@ -32,8 +36,11 @@ export const initialGameState: GameState = {
   isLoading: false,
 };
 
+type View = "start" | "game" | "new-scenario" | "load-game" | "settings" | "scoreboard";
+
 export function GameClient() {
   const [gameState, setGameState] = useState<GameState>(initialGameState);
+  const [view, setView] = useState<View>("start");
   const { toast } = useToast();
 
   const handleLowSanityEffect = useCallback(() => {
@@ -86,6 +93,7 @@ export function GameClient() {
       if (savedGameJson) {
         const saveFile: SaveFile = JSON.parse(savedGameJson);
         setGameState({ ...saveFile.gameState, isLoading: false, gameStarted: true });
+        setView("game");
         toast({
           title: "بازی بارگذاری شد",
           description: "ماجراجویی شما ادامه می‌یابد!",
@@ -96,6 +104,7 @@ export function GameClient() {
           title: "فایل ذخیره‌ای یافت نشد",
           description: "برای ایجاد فایل ذخیره، یک بازی جدید شروع کنید.",
         });
+        return "not-found";
       }
     } catch (error) {
       console.error("Failed to load game:", error);
@@ -109,7 +118,8 @@ export function GameClient() {
   }, [toast]);
   
   const processPlayerAction = async (playerAction: string) => {
-    setGameState(prev => ({ ...prev, isLoading: true }));
+    setGameState(prev => ({ ...prev, isLoading: true, gameStarted: true }));
+    setView("game");
 
     const currentGameStateForAI = { ...gameState };
     // @ts-ignore
@@ -163,19 +173,42 @@ export function GameClient() {
 
   const resetGame = () => {
     setGameState(initialGameState);
+    setView("start");
   }
 
-  if (!gameState.gameStarted) {
+  if (view === "start") {
     return (
       <StartScreen 
-        onNewGame={() => setGameState(prev => ({...prev, gameStarted: true}))} // This will likely change to a wizard
-        onLoadGame={loadGame}
-        onCustomScenario={() => { /* Navigate to custom scenario creator */ }}
-        onSettings={() => { /* Navigate to settings */ }}
-        onScoreboard={() => { /* Navigate to scoreboard */ }}
+        onNewGame={() => setView("new-scenario")}
+        onLoadGame={() => {
+            const result = loadGame();
+            if (result === "not-found") {
+              setView("load-game");
+            }
+          }}
+        onCustomScenario={() => setView("new-scenario")}
+        onSettings={() => setView("settings")}
+        onScoreboard={() => setView("scoreboard")}
       />
     );
   }
+
+  if (view === "new-scenario") {
+    return <CustomScenarioCreator onBack={() => setView("start")} />;
+  }
+  
+  if (view === "load-game") {
+    return <LoadGame onBack={() => setView("start")} onLoad={loadGame} />;
+  }
+
+  if (view === "settings") {
+    return <SettingsPage onBack={() => setView("start")} />;
+  }
+
+  if (view === "scoreboard") {
+    return <Scoreboard onBack={() => setView("start")} />;
+  }
+
 
   if (gameState.isGameOver) {
     return (

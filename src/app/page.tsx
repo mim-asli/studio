@@ -1,5 +1,5 @@
-import { StartScreen } from "@/components/screens/start-screen";
+import { GameClient } from "@/components/game-client";
 
 export default function Home() {
-  return <StartScreen />;
+  return <GameClient />;
 }

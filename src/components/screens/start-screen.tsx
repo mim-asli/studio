@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FilePlus,
@@ -10,8 +9,6 @@ import {
   Trophy,
   AlertTriangle,
 } from "lucide-react";
-import { NewGameCreator } from "../new-game-creator";
-import { LoadGame } from "../load-game";
 
 interface StartScreenProps {
   onNewGame: () => void;
@@ -30,19 +27,6 @@ export function StartScreen({
   onScoreboard,
   apiKeyError,
 }: StartScreenProps) {
-  const [view, setView] = useState<
-    "main" | "new-game" | "load-game" | "custom-scenario"
-  >("main");
-
-  if (view === "new-game") {
-    return <NewGameCreator onBack={() => setView("main")} />;
-  }
-  
-  if (view === "load-game") {
-    return <LoadGame onBack={() => setView("main")} />;
-  }
-
-  // TODO: Add other views (custom scenario, settings, scoreboard)
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 overflow-hidden">
@@ -71,11 +55,11 @@ export function StartScreen({
       )}
 
       <div className="flex flex-col gap-4 w-full max-w-xs">
-        <Button size="lg" onClick={() => setView("new-game")} className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20">
+        <Button size="lg" onClick={onNewGame} className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-lg shadow-accent/20">
           <FilePlus />
           ماجراجویی جدید
         </Button>
-        <Button size="lg" variant="secondary" onClick={() => setView("load-game")}>
+        <Button size="lg" variant="secondary" onClick={onLoadGame}>
           <Upload />
           بارگذاری ماجراجویی
         </Button>
