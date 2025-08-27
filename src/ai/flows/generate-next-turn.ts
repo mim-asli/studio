@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -39,7 +40,7 @@ const WorldStateSchema = z.object({
 const GenerateNextTurnOutputSchema = z.object({
   story: z.string().describe('The narrative text of the current events. This should be a single string.'),
   playerState: PlayerStateSchema.describe('The state of the player (health, sanity, etc.).'),
-  inventory: z.array(z.string()).describe("A list of items in the player's inventory. This should be the player's complete inventory."),
+  inventory: z.array(z.string()).describe("A list of items in the player's inventory. This should be the player's complete inventory. The player might find valuable items like Bronze, Silver, or Gold Coins, and gems like Rubies or Diamonds."),
   skills: z.array(z.string()).describe("A list of the player's skills."),
   quests: z.array(z.string()).describe("A list of the player's quests."),
   choices: z.array(z.string()).describe('A list of choices the player can make.'),
@@ -66,8 +67,12 @@ const prompt = ai.definePrompt({
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.\n
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
-Enforce the following rules:\n- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests) MUST be reflected in the JSON output. The inventory in the output must always be the complete inventory.
-- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n- **Persistent World Philosophy:** The game doesn\'t end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n- **Time and Resource Progression:** With every player action, time must progress logically. Update the day and time of day in the worldState. Actions also affect hunger and thirst; update them accordingly.
+Enforce the following rules:\n
+- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests) MUST be reflected in the JSON output. The inventory in the output must always be the complete inventory.
+- **Treasure and Economy:** The world contains valuable items. Players can find Bronze, Silver, and Gold Coins, as well as precious gems like Rubies, Sapphires, and Diamonds as loot, in chests, or as rewards. Make sure to include these as part of the story and inventory when appropriate.
+- **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n
+- **Persistent World Philosophy:** The game doesn't end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n
+- **Time and Resource Progression:** With every player action, time must progress logically. Update the day and time of day in the worldState. Actions also affect hunger and thirst; update them accordingly.
 Respond in the persona of the GM Personality specified in the story prompt.
 
 JSON Output Structure:

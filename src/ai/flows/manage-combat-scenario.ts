@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -27,7 +28,7 @@ const ManageCombatScenarioOutputSchema = z.object({
   combatLog: z.array(z.string()).describe('The updated combat log.'),
   sceneEntities: z.array(z.record(z.any())).describe('The entities present in the scene (player, enemies, objects).'),
   isCombatOver: z.boolean().describe('Whether the combat is over.'),
-  rewards: z.record(z.any()).optional().describe('The rewards for winning the combat.'),
+  rewards: z.record(z.any()).optional().describe('The rewards for winning the combat. This can include items, experience points, or valuables like Gold Coins or Gems.'),
 });
 export type ManageCombatScenarioOutput = z.infer<typeof ManageCombatScenarioOutputSchema>;
 
@@ -54,7 +55,7 @@ Here is the current combat log, if any: {{{combatLog}}}
 
 Based on the player's state, the enemies, and the available actions, describe what happens in the combat turn. Include the enemy actions, update the state of the enemies, and update the combat log.  Make sure to set isCombatOver to true when appropriate, and describe any rewards for the player.  Always populate sceneEntities with the player and the enemies.
 
-Output should be a JSON object conforming to ManageCombatScenarioOutputSchema. Make sure to set isCombatOver to true only when combat is actually over, and the player has won or lost.  If combat is over, you must populate the rewards field.
+Output should be a JSON object conforming to ManageCombatScenarioOutputSchema. Make sure to set isCombatOver to true only when combat is actually over, and the player has won or lost.  If combat is over, you must populate the rewards field. Rewards can include gold, gems, or unique items.
 `,
 });
 
