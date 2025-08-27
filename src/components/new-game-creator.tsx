@@ -125,7 +125,7 @@ const gmPersonalities = ['جدی و تاریک', 'شوخ و سرگرم‌کنن�
 
 interface NewGameCreatorProps {
     onBack: () => void;
-    onStartGame: (scenario: CustomScenario) => void;
+    onStartGame: (scenario: CustomScenario, characterName: string) => void;
 }
 
 export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
@@ -218,7 +218,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             initialItems: `بر اساس کهن‌الگوی ${archetype}`,
             storyPrompt: `ژانر: ${genre}. سبک راوی: ${gmPersonality}. سطح دشواری: ${difficulty}. سناریو: ${selectedScenario!.description}`,
         };
-        onStartGame(customScenario);
+        onStartGame(customScenario, characterName);
     }
 
     return (

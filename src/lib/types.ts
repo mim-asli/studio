@@ -2,19 +2,23 @@ import type { GenerateNextTurnOutput } from '@/ai/flows/generate-next-turn';
 
 // This will be the main state object for the game
 export type GameState = GenerateNextTurnOutput & {
+    id: string; // Unique ID for the game session
     isGameOver: boolean;
     gameStarted: boolean;
     isLoading: boolean;
     isCombat: boolean;
     enemies: any[];
+    characterName: string;
+    scenarioTitle: string;
 };
 
 // This represents a saved game file
 export interface SaveFile {
-    id: string;
+    id: string; // Corresponds to GameState.id
     timestamp: number;
     gameState: GameState;
-    customScenario?: CustomScenario;
+    characterName: string;
+    scenarioTitle: string;
 }
 
 export interface CustomScenario {

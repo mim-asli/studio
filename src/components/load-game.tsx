@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Trash2, Upload, Download } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,32 +15,34 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import type { SaveFile } from '@/lib/types';
 
-interface SaveGameItem {
-    name: string;
-    date: string;
-}
+const SAVES_KEY = "dastan-saves";
 
 interface LoadGameProps {
     onBack: () => void;
-    onLoad: () => string | null | undefined;
+    onLoad: (saveId: string) => void;
 }
 
 export function LoadGame({ onBack, onLoad }: LoadGameProps) {
-    // Placeholder data
-    const savedGames: SaveGameItem[] = [];
+    const [savedGames, setSavedGames] = useState<SaveFile[]>([]);
 
-    const handleLoadGame = (save: SaveGameItem) => {
-        // Here you would call the actual load logic
-        console.log("Loading game:", save.name);
-        onLoad();
-    }
+    useEffect(() => {
+        const savesJson = localStorage.getItem(SAVES_KEY);
+        if (savesJson) {
+            const saves = JSON.parse(savesJson);
+            // Sort saves by timestamp descending
+            saves.sort((a: SaveFile, b: SaveFile) => b.timestamp - a.timestamp);
+            setSavedGames(saves);
+        }
+    }, []);
 
-    const handleDeleteGame = (save: SaveGameItem) => {
-        // Here you would call the actual delete logic
-        console.log("Deleting game:", save.name);
-    }
-    
+    const handleDeleteGame = (saveId: string) => {
+        const newSaves = savedGames.filter(game => game.id !== saveId);
+        setSavedGames(newSaves);
+        localStorage.setItem(SAVES_KEY, JSON.stringify(newSaves));
+    };
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
             <div className="w-full max-w-2xl">
@@ -54,23 +57,27 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                 <Card className="mb-6">
                     <CardHeader>
                         <CardTitle>بازی‌های ذخیره شده</CardTitle>
+                        <CardDescription>یک ماجراجویی را برای ادامه انتخاب کنید.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {savedGames.length > 0 ? (
                             <ul className="space-y-3">
-                                {savedGames.map((save, index) => (
-                                     <li key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 group">
-                                        <div>
-                                            <p className="font-semibold">{save.name}</p>
-                                            <p className="text-sm text-muted-foreground">{save.date}</p>
+                                {savedGames.map((save) => (
+                                     <li key={save.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 group">
+                                        <div className="flex-1 overflow-hidden">
+                                            <p className="font-semibold truncate">{save.characterName || 'شخصیت بی‌نام'}</p>
+                                            <p className="text-sm text-muted-foreground truncate">{save.scenarioTitle}</p>
+                                            <p className="text-xs text-muted-foreground/70 mt-1">
+                                                آخرین ذخیره: {new Date(save.timestamp).toLocaleString('fa-IR')}
+                                            </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Button variant="ghost" size="sm" onClick={() => handleLoadGame(save)}>
+                                            <Button variant="ghost" size="sm" onClick={() => onLoad(save.id)}>
                                                 بارگذاری
                                             </Button>
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="icon" className="text-destructive opacity-50 group-hover:opacity-100 transition-opacity">
                                                         <Trash2 className="w-4 h-4"/>
                                                     </Button>
                                                 </AlertDialogTrigger>
@@ -78,12 +85,12 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                                                     <AlertDialogHeader>
                                                         <AlertDialogTitle>آیا مطمئن هستید؟</AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                           این عمل قابل بازگشت نیست. این کار فایل ذخیره شده "{save.name}" را برای همیشه حذف خواهد کرد.
-                                                        </AlertDialogDescription>
+                                                           این عمل قابل بازگشت نیست. این کار ماجراجویی "{save.characterName}" را برای همیشه حذف خواهد کرد.
+                                                        </Description>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>لغو</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDeleteGame(save)} className="bg-destructive hover:bg-destructive/90">
+                                                        <AlertDialogAction onClick={() => handleDeleteGame(save.id)} className="bg-destructive hover:bg-destructive/90">
                                                             حذف
                                                         </AlertDialogAction>
                                                     </AlertDialogFooter>
@@ -100,11 +107,6 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                         )}
                     </CardContent>
                 </Card>
-                
-                <div className="flex justify-center gap-4 mt-8">
-                    <Button variant="outline"><Upload className="ml-2"/> ورود (Import)</Button>
-                    <Button variant="outline"><Download className="ml-2"/> خروج (Export)</Button>
-                </div>
             </div>
         </div>
     );
