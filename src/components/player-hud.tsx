@@ -106,7 +106,7 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
             icon={<Droplets />}
             variant="inverse"
         />
-        {stamina !== undefined && stamina !== null && (
+        {stamina !== undefined && (
           <HudGauge 
               label="انرژی" 
               value={stamina} 
@@ -114,7 +114,7 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
               variant="default"
           />
         )}
-        {mana !== undefined && mana !== null && (
+        {mana !== undefined && (
            <HudGauge 
               label="مانا" 
               value={mana} 
