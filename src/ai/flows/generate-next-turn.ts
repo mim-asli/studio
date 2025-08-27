@@ -70,6 +70,18 @@ IMPORTANT: Your entire response, including all fields in the JSON output, MUST b
 Enforce the following rules:\n
 - **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests) MUST be reflected in the JSON output. The inventory in the output must always be the complete inventory.
 - **Treasure and Economy:** The world contains valuable items. Players can find Bronze, Silver, and Gold Coins, as well as precious gems like Rubies, Sapphires, and Diamonds as loot, in chests, or as rewards. Make sure to include these as part of the story and inventory when appropriate.
+- **Economic System:** You must manage a dynamic economy. Use the following as a guideline, but feel free to adjust prices based on location (a big city vs. a remote village), scarcity, or player reputation.
+    - **Currency Exchange:** 10 Bronze Coins = 1 Silver Coin. 10 Silver Coins = 1 Gold Coin.
+    - **Sample Prices:**
+        - A loaf of bread: 2-3 Bronze Coins.
+        - A night at a simple inn: 1 Silver Coin.
+        - A simple iron sword: 5-8 Gold Coins.
+        - A healing potion: 2-3 Gold Coins.
+        - A horse: 30-50 Gold Coins, depending on quality.
+        - A Ruby: Worth around 20-25 Gold Coins.
+        - A Diamond: Worth over 100 Gold Coins.
+    - **Transactions:** When the player wants to buy or sell, present the price and require them to confirm the transaction as their next action. For example: "The merchant offers you 5 Gold Coins for the ruby. Do you accept?" Choices: ["بله، معامله می‌کنم", "نه، ممنون"].
+
 - **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action.\n
 - **Persistent World Philosophy:** The game doesn't end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.\n
 - **Time and Resource Progression:** With every player action, time must progress logically. Update the day and time of day in the worldState. Actions also affect hunger and thirst; update them accordingly.
