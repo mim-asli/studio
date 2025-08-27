@@ -35,18 +35,22 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = true;
+    recognition.continuous = false; // Changed to false for better control
     recognition.interimResults = true;
     recognition.lang = 'fa-IR';
 
     recognition.onresult = (event: any) => {
+      let interimTranscript = '';
       let finalTranscript = '';
+
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         if (event.results[i].isFinal) {
           finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
         }
       }
-      setTranscript(prev => prev + finalTranscript);
+      setTranscript(finalTranscript || interimTranscript);
     };
 
     recognition.onerror = (event: any) => {
@@ -55,20 +59,17 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
     };
 
     recognition.onend = () => {
-      if (listening) {
-        // In continuous mode, it can sometimes stop. Restart it if we are still meant to be listening.
-        recognition.start();
-      } else {
-        setListening(false);
-      }
+      setListening(false);
     };
     
     recognitionRef.current = recognition;
 
     return () => {
-      recognition.stop();
+      if(recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
     };
-  }, [listening]);
+  }, []);
 
   const startListening = () => {
     if (recognitionRef.current && !listening) {
@@ -78,8 +79,13 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
         recognitionRef.current.start();
         setListening(true);
       } catch (e) {
-        setError('Speech recognition could not be started.');
-        setListening(false);
+        if (e instanceof Error && e.name === 'InvalidStateError') {
+          // This can happen if start() is called while it's already starting.
+          // We can safely ignore it.
+        } else {
+            setError('Speech recognition could not be started.');
+            setListening(false);
+        }
       }
     }
   };

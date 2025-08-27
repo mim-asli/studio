@@ -40,15 +40,20 @@ export function InteractionPanel({ choices, onAction, isLoading }: InteractionPa
 
   const handleMicClick = () => {
     if (listening) {
-      stopListening();
-      if (transcript.trim() && !isLoading) {
+        stopListening();
+    } else {
+        startListening();
+    }
+  };
+  
+  useEffect(() => {
+      if (!listening && transcript.trim() && !isLoading) {
           onAction(transcript.trim());
           setCustomInput('');
       }
-    } else {
-      startListening();
-    }
-  };
+  // This should only run when listening stops
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listening]);
 
   return (
     <Card className="bg-transparent border">
