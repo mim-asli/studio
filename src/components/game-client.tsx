@@ -152,6 +152,8 @@ export function GameClient() {
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
     
+    const stateBeforeAction = { ...gameState };
+
     // Immediately update the UI with the player's action.
     setGameState(prev => ({ 
       ...prev, 
@@ -161,10 +163,7 @@ export function GameClient() {
     }));
 
     // Create a temporary state for the AI, using the state *before* the action was added.
-    const currentStateForAI = { ...gameState };
-
-    // Create the payload for the AI, ensuring the story is a joined string.
-    const { story, ...restOfState } = currentStateForAI;
+    const { story, ...restOfState } = stateBeforeAction;
     const currentGameStateForAI = {
         ...restOfState,
         story: story.slice(-5).join('\n\n')
@@ -175,6 +174,11 @@ export function GameClient() {
     delete currentGameStateForAI.isLoading; 
     // @ts-ignore
     delete currentGameStateForAI.gameStarted;
+    // @ts-ignore
+    delete currentGameStateForAI.isGameOver;
+    // @ts-ignore
+    delete currentGameStateForAI.id;
+
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
