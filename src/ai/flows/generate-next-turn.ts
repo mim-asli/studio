@@ -39,6 +39,12 @@ const WorldStateSchema = z.object({
     weather: z.string().optional().describe("The current weather (e.g., 'Sunny', 'Raining', 'Foggy').")
 });
 
+const ActiveEffectSchema = z.object({
+    name: z.string().describe("The name of the effect (e.g., 'Sandstorm', 'Well Fed', 'Poisoned')."),
+    type: z.enum(['buff', 'debuff']).describe("The type of effect: 'buff' for positive, 'debuff' for negative."),
+    description: z.string().describe("A brief description of the effect's impact on the player."),
+});
+
 const GenerateNextTurnOutputSchema = z.object({
   story: z.string().describe('The narrative text of the current events. This should be a single string.'),
   playerState: PlayerStateSchema.describe('The state of the player (health, sanity, etc.).'),
@@ -55,6 +61,7 @@ const GenerateNextTurnOutputSchema = z.object({
   companions: z.array(z.string()).optional().describe("A list of the player's current companions. This should be the complete list of companions."),
   isCombat: z.boolean().optional().describe('Whether combat is active.'),
   enemies: z.array(EnemySchema).optional().describe('A list of enemies in the combat.'),
+  activeEffects: z.array(ActiveEffectSchema).optional().describe("A list of temporary buffs or debuffs affecting the player due to environment or status."),
 });
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
 
@@ -75,7 +82,13 @@ The user has specified a difficulty level. You MUST adjust the game's challenges
 - **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
 
 Enforce the following rules:
-- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions) MUST be reflected in the JSON output. The inventory and companions in the output must always be the complete lists.
+- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions, activeEffects) MUST be reflected in the JSON output. The inventory, companions, and activeEffects in the output must always be the complete lists.
+- **Active Effects:** Based on the situation, apply status effects to the player. These can be positive (buffs) or negative (debuffs). For example:
+    - Eating a good meal could result in a 'Well Fed' buff.
+    - Being in a blizzard could apply a 'Freezing' debuff.
+    - Being poisoned applies a 'Poisoned' debuff that might reduce health each turn.
+    - A blessing from a cleric could grant a 'Protected' buff.
+    Populate the 'activeEffects' array accordingly. These effects should be temporary and removed when the condition ends.
 - **Treasure and Economy:** The world contains valuable items. Players can find Bronze, Silver, and Gold Coins, as well as precious gems like Rubies, Sapphires, and Diamonds as loot, in chests, or as rewards. Make sure to include these as part of the story and inventory when appropriate.
 - **Economic System:** You must manage a dynamic economy. Use the following as a guideline, but feel free to adjust prices based on location (a big city vs. a remote village), scarcity, or player reputation.
     - **Currency Exchange:** 10 Bronze Coins = 1 Silver Coin. 10 Silver Coins = 1 Gold Coin.

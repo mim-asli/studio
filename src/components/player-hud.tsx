@@ -3,7 +3,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HeartPulse, BrainCircuit, Droplets, Wheat, Zap, Sparkles } from "lucide-react";
-import type { GameState } from "@/lib/types";
+import type { GameState, ActiveEffect } from "@/lib/types";
+import { EffectsDisplay } from "./effects-display";
 
 interface HudStatProps {
   label: string;
@@ -60,7 +61,12 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
   );
 };
 
-export function PlayerHud({ playerState }: { playerState: GameState['playerState'] }) {
+interface PlayerHudProps {
+    playerState: GameState['playerState'];
+    activeEffects: GameState['activeEffects'];
+}
+
+export function PlayerHud({ playerState, activeEffects }: PlayerHudProps) {
   const { health, sanity, hunger, thirst, stamina, mana } = playerState || {};
   
   return (
@@ -68,47 +74,50 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
       <CardHeader className="pb-4">
         <CardTitle className="font-headline text-2xl tracking-wider">علائم حیاتی</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-6 justify-items-center">
-        <HudGauge 
-            label="سلامتی" 
-            value={health ?? 100} 
-            icon={<HeartPulse />}
-            variant="default"
-        />
-        <HudGauge 
-            label="عقلانیت" 
-            value={sanity ?? 100} 
-            icon={<BrainCircuit />}
-            variant="default"
-        />
-        <HudGauge 
-            label="گرسنگی" 
-            value={hunger ?? 0} 
-            icon={<Wheat />}
-            variant="inverse"
-        />
-        <HudGauge 
-            label="تشنگی" 
-            value={thirst ?? 0} 
-            icon={<Droplets />}
-            variant="inverse"
-        />
-        {stamina != null && (
+      <CardContent>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-6 justify-items-center">
           <HudGauge 
-              label="انرژی" 
-              value={stamina} 
-              icon={<Zap />}
+              label="سلامتی" 
+              value={health ?? 100} 
+              icon={<HeartPulse />}
               variant="default"
           />
-        )}
-        {mana != null && (
-           <HudGauge 
-              label="مانا" 
-              value={mana} 
-              icon={<Sparkles />}
+          <HudGauge 
+              label="عقلانیت" 
+              value={sanity ?? 100} 
+              icon={<BrainCircuit />}
               variant="default"
           />
-        )}
+          <HudGauge 
+              label="گرسنگی" 
+              value={hunger ?? 0} 
+              icon={<Wheat />}
+              variant="inverse"
+          />
+          <HudGauge 
+              label="تشنگی" 
+              value={thirst ?? 0} 
+              icon={<Droplets />}
+              variant="inverse"
+          />
+          {stamina != null && (
+            <HudGauge 
+                label="انرژی" 
+                value={stamina} 
+                icon={<Zap />}
+                variant="default"
+            />
+          )}
+          {mana != null && (
+             <HudGauge 
+                label="مانا" 
+                value={mana} 
+                icon={<Sparkles />}
+                variant="default"
+            />
+          )}
+        </div>
+        <EffectsDisplay effects={activeEffects || []} />
       </CardContent>
     </Card>
   );

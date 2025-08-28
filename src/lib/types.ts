@@ -7,6 +7,7 @@ export type {CraftItemInput, CraftItemOutput} from '@/ai/flows/craft-item-flow';
 
 // This is the raw output from the AI flow. story is a single string.
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
+export type ActiveEffect = z.infer<typeof GenerateNextTurnOutputSchema.shape.activeEffects.element>;
 
 // This is the main state object for the game client. story is an array of strings.
 export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {

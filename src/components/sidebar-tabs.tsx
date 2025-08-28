@@ -2,7 +2,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
@@ -23,7 +23,7 @@ interface SidebarTabsProps {
 }
 
 export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps) {
-  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions } = gameState;
+  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects } = gameState;
   
   const tabs = [
     { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" /> },
@@ -53,7 +53,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
         </TabsList>
         <div className="flex-grow mt-4">
           <TabsContent value="vitals" className="m-0 h-full">
-             <PlayerHud playerState={playerState} />
+             <PlayerHud playerState={playerState} activeEffects={activeEffects} />
           </TabsContent>
           <TabsContent value="inventory" className="m-0 h-full">
             <Card className="bg-transparent border h-full">
