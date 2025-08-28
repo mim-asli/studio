@@ -45,32 +45,32 @@ const HALL_OF_FAME_KEY = "dastan-hall-of-fame";
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
 
+const handleLowSanityEffect = (gameState: GameState | null) => {
+  if (gameState && gameState.playerState?.sanity < 30) {
+    document.body.classList.add("sanity-glitch");
+  } else {
+    document.body.classList.remove("sanity-glitch");
+  }
+};
+
+const handleLowHealthEffect = (gameState: GameState | null) => {
+  if (gameState && gameState.playerState?.health < 30) {
+    document.body.classList.add("low-health-pulse");
+  } else {
+    document.body.classList.remove("low-health-pulse");
+  }
+};
+
 export function GameClient() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [view, setView] = useState<View>("start");
   const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleLowSanityEffect = useCallback(() => {
-    if (gameState && gameState.playerState?.sanity < 30) {
-      document.body.classList.add("sanity-glitch");
-    } else {
-      document.body.classList.remove("sanity-glitch");
-    }
-  }, [gameState]);
-  
-  const handleLowHealthEffect = useCallback(() => {
-    if (gameState && gameState.playerState?.health < 30) {
-      document.body.classList.add("low-health-pulse");
-    } else {
-      document.body.classList.remove("low-health-pulse");
-    }
-  }, [gameState]);
-
   useEffect(() => {
-    handleLowSanityEffect();
-    handleLowHealthEffect();
-  }, [gameState, handleLowSanityEffect, handleLowHealthEffect]);
+    handleLowSanityEffect(gameState);
+    handleLowHealthEffect(gameState);
+  }, [gameState]);
 
   const saveToHallOfFame = useCallback((finalState: GameState) => {
     try {
@@ -436,7 +436,6 @@ export function GameClient() {
                     gameState={gameState}
                   />
                   <div className="relative w-full h-screen">
-                    
                     <main className="relative grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen text-foreground font-body p-2 sm:p-4 gap-4">
                       <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
                         <div className="relative flex-grow border rounded-md shadow-inner bg-card/80 backdrop-blur-sm overflow-hidden flex flex-col">
