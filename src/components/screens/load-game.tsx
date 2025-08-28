@@ -1,9 +1,10 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import {
   AlertDialog,
   AlertDialogAction,

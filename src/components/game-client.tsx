@@ -12,11 +12,11 @@ import { InteractionPanel } from "@/components/interaction-panel";
 import { SidebarTabs } from "@/components/sidebar-tabs";
 import { Button } from "@/components/ui/button";
 import { Loader2, FilePlus, AlertTriangle, LogOut } from "lucide-react";
-import { StartScreen } from "./screens/start-screen";
-import { LoadGame } from "./load-game";
-import { SettingsPage } from "./screens/settings-page";
-import { Scoreboard } from "./screens/scoreboard";
-import { NewGameCreator } from "./new-game-creator";
+import { StartScreen } from "@/components/screens/start-screen";
+import { LoadGame } from "@/components/screens/load-game";
+import { SettingsPage } from "@/components/screens/settings-page";
+import { Scoreboard } from "@/components/screens/scoreboard";
+import { NewGameCreator } from "@/components/screens/new-game-creator";
 import { GameDirectorChat } from "./game-director-chat";
 import {
   AlertDialog,
