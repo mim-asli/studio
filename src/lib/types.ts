@@ -131,6 +131,23 @@ export const ManageCombatScenarioOutputSchema = z.object({
 export type ManageCombatScenarioOutput = z.infer<typeof ManageCombatScenarioOutputSchema>;
 
 
+// Schemas for queryGameDirector flow
+export const QueryGameDirectorInputSchema = z.object({
+  playerQuery: z.string().describe('The question the player wants to ask the game director.'),
+  gameState: z.string().describe('The current game state in JSON format.'),
+  conversationHistory: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    content: z.string(),
+  })).optional().describe('The history of the conversation so far.'),
+});
+export type QueryGameDirectorInput = z.infer<typeof QueryGameDirectorInputSchema>;
+
+export const QueryGameDirectorOutputSchema = z.object({
+  directorResponse: z.string().describe('The game director’s insightful answer to the player’s question.'),
+});
+export type QueryGameDirectorOutput = z.infer<typeof QueryGameDirectorOutputSchema>;
+
+
 // This is the main state object for the game client. story is an array of strings.
 export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {
     id: string; // Unique ID for the game session
