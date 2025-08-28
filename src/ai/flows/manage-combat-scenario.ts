@@ -49,15 +49,9 @@ Process the following combat action.
 **Player's Action:**
 {{{playerAction}}}
 
-**Player's State (before this action):**
-{{{playerState}}}
-
-**Player's Skills & Inventory:**
-- Skills: {{{skills}}}
-- Inventory: {{{inventory}}}
-
-**Enemies (before this action):**
-{{{enemies}}}
+**Current State (before this action):**
+- Player State: {{{playerState}}}
+- Enemies: {{{enemies}}}
 
 **Combat Log (Recent History):**
 {{{combatLog}}}

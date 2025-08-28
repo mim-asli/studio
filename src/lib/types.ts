@@ -20,8 +20,8 @@ export const PlayerStateSchema = z.object({
   thirst: z.number().describe("Player's current hydration level. 100 is fully hydrated, 0 is dehydrated. At 0, the player starts losing health."),
   stamina: z.number().optional().describe("Player's current stamina/energy. Max 100. Physical actions consume stamina."),
   mana: z.number().optional().describe("Player's current magical energy. Max 100. Casting spells consumes mana."),
-  ap: z.number().optional().describe("Player's current action points for combat."),
-  maxAp: z.number().optional().describe("Player's maximum action points for combat."),
+  ap: z.number().describe("Player's current action points for combat."),
+  maxAp: z.number().describe("Player's maximum action points for combat."),
 });
 export type PlayerState = z.infer<typeof PlayerStateSchema>;
 
@@ -91,17 +91,12 @@ export const ManageCombatScenarioInputSchema = z.object({
   playerAction: z.string().describe("The combat action taken by the player (e.g., '[مبارزه] حمله به گابلین')."),
   playerState: PlayerStateSchema.describe('The current state of the player.'),
   enemies: z.array(EnemySchema).describe('The list of enemies currently in combat.'),
-  inventory: z.array(z.string()).describe("The player's current inventory."),
-  skills: z.array(z.string()).describe("The player's current skills."),
   combatLog: z.array(z.string()).optional().describe('A log of recent events in this combat.'),
 });
 export type ManageCombatScenarioInput = z.infer<typeof ManageCombatScenarioInputSchema>;
 
 const CombatRewardSchema = z.object({
     items: z.array(z.string()).optional().describe("Items looted from the enemies."),
-    gold: z.number().optional().describe("Gold coins looted."),
-    silver: z.number().optional().describe("Silver coins looted."),
-    bronze: z.number().optional().describe("Bronze coins looted."),
     experience: z.number().optional().describe("Experience points gained."),
 });
 

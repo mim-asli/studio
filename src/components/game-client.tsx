@@ -252,8 +252,6 @@ export function GameClient() {
         playerAction,
         playerState: stateBeforeAction.playerState,
         enemies: stateBeforeAction.enemies || [],
-        inventory: stateBeforeAction.inventory,
-        skills: stateBeforeAction.skills,
         combatLog: stateBeforeAction.story.slice(-5), // Pass recent history as combat log
     });
 
