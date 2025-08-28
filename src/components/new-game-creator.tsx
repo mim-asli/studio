@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from "./ui/button";
-import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed, MinusCircle, PlusCircle, Pencil, Users } from "lucide-react";
+import { ArrowLeft, Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed, MinusCircle, PlusCircle, Pencil } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -106,8 +106,6 @@ const difficultyPoints = {
     'سخت': 7,
 };
 
-const companionStartScene = "شما و همراه قابل اعتمادتان، آریا، در کلبه‌ای کوچک در حاشیه جنگل نشسته‌اید. آریا که یک جنگجوی باتجربه است، نقشه‌ای قدیمی را روی میز پهن می‌کند و می‌گوید: «گنج گمشده معبد سایه‌ها... می‌گویند توسط ارواح محافظت می‌شود، اما ارزشش به ریسکش می‌ارزد. این اولین ماجراجویی بزرگ ما خواهد بود. آماده‌ای؟» او به شما اولین مأموریت را می‌دهد: پیدا کردن ورودی معبد سایه‌ها.";
-
 const openingScenes: Record<keyof typeof genres, string[]> = {
     'فانتزی': [
         "شما در یک جنگل تاریک و مه‌آلود به هوش می‌آyید. آخرین چیزی که به یاد دارید، نور کورکننده یک طلسم است. اکنون تنها هستید و صدای زوزه‌ی گرگ‌ها از دور به گوش می‌رسد.",
@@ -164,7 +162,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const [difficulty, setDifficulty] = useState<'آسان'|'معمولی'|'سخت'>('معمولی');
     const [gmPersonality, setGmPersonality] = useState('روایی و سینمایی');
     const [writingCustomScene, setWritingCustomScene] = useState(false);
-    const [startWithCompanion, setStartWithCompanion] = useState(false);
 
     const totalPoints = difficultyPoints[difficulty];
     const usedPoints = Object.entries(initialItems).reduce((acc, [item, count]) => {
@@ -224,7 +221,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
         - توضیحات: ${characterDesc}
         - نقطه قوت: ${perk}
         - نقطه ضعف: ${flaw}
-        ${startWithCompanion ? "- همراه: بازی را با یک همراه به نام آریا شروع می‌کند." : ""}
 
         تجهیزات اولیه: ${finalItemsList.join(', ')}
 
@@ -241,7 +237,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 `توضیحات: ${characterDesc}`
             ],
             initialItems: finalItemsList,
-            initialCompanions: startWithCompanion ? ['آریا'] : [],
             storyPrompt: fullStoryPrompt,
         };
         onStartGame(customScenario, characterName);
@@ -371,22 +366,13 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             case 5: return <Step title="۵. صحنه افتتاحیه" description="یک نقطه شروع برای داستان انتخاب کنید یا خودتان بنویسید.">
                 <div className="space-y-4">
                     {openingScenes[genre].map((scene, index) => (
-                        <Card key={index} onClick={() => { setStoryPrompt(scene); setWritingCustomScene(false); setStartWithCompanion(false); }} className={cn("cursor-pointer hover:border-primary", storyPrompt === scene && !writingCustomScene && !startWithCompanion && "border-primary ring-2 ring-primary")}>
+                        <Card key={index} onClick={() => { setStoryPrompt(scene); setWritingCustomScene(false); }} className={cn("cursor-pointer hover:border-primary", storyPrompt === scene && !writingCustomScene && "border-primary ring-2 ring-primary")}>
                             <CardContent className="p-4">
                                 <p className="text-sm text-muted-foreground">{scene}</p>
                             </CardContent>
                         </Card>
                     ))}
-                    <Card onClick={() => { setStoryPrompt(companionStartScene); setWritingCustomScene(false); setStartWithCompanion(true); }} className={cn("cursor-pointer hover:border-primary", startWithCompanion && "border-primary ring-2 ring-primary")}>
-                        <CardContent className="p-4 flex items-center gap-4">
-                            <Users className="w-6 h-6 text-primary"/>
-                            <div>
-                                <p className="font-bold">شروع با یک همراه</p>
-                                <p className="text-sm text-muted-foreground">ماجراجویی خود را با یک دوست وفادار و اولین مأموریت خود شروع کنید.</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                     <Card onClick={() => { setWritingCustomScene(true); setStoryPrompt(''); setStartWithCompanion(false); }} className={cn("cursor-pointer hover:border-primary", writingCustomScene && "border-primary ring-2 ring-primary")}>
+                     <Card onClick={() => { setWritingCustomScene(true); setStoryPrompt(''); }} className={cn("cursor-pointer hover:border-primary", writingCustomScene && "border-primary ring-2 ring-primary")}>
                         <CardContent className="p-4 flex items-center gap-4">
                             <Pencil className="w-6 h-6 text-primary"/>
                             <div>
@@ -418,7 +404,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                         <div><strong className="text-primary">کهن الگو:</strong> {customArchetype.trim() || selectedArchetype}</div>
                         <div><strong className="text-primary">نقطه قوت:</strong> {perk}</div>
                         <div><strong className="text-primary">نقطه ضعف:</strong> {flaw}</div>
-                        {startWithCompanion && <div><strong className="text-primary">همراه:</strong> آریا</div>}
                         <hr className="border-border/50"/>
                         <div><strong className="text-primary">تجهیزات:</strong> <pre className="whitespace-pre-wrap font-body">{finalItemsListForReview.join('\n')}</pre></div>
                          <hr className="border-border/50"/>

@@ -24,7 +24,7 @@ export type ManageCombatScenarioInput = z.infer<typeof ManageCombatScenarioInput
 const ManageCombatScenarioOutputSchema = z.object({
   story: z.string().describe('The narrative of the combat scenario.'),
   enemyActions: z.array(z.record(z.any())).describe('The actions of the enemies.'),
-  updatedEnemies: z.array(z.record(z_any())).describe('The updated state of the enemies.'),
+  updatedEnemies: z.array(z.record(z.any())).describe('The updated state of the enemies.'),
   combatLog: z.array(z.string()).describe('The updated combat log.'),
   sceneEntities: z.array(z.record(z.any())).describe('The entities present in the scene (player, enemies, objects).'),
   isCombatOver: z.boolean().describe('Whether the combat is over.'),

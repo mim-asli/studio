@@ -248,7 +248,7 @@ export function GameClient() {
       },
       inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
       skills: characterSkills,
-      companions: scenario.initialCompanions || [], // Add initial companions
+      companions: [],
       gameStarted: true,
       isLoading: true, // We will be loading the first turn
       choices: [],
@@ -381,7 +381,3 @@ export function GameClient() {
     </TooltipProvider>
   );
 }
-
-    
-
-    
