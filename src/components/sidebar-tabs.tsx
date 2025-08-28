@@ -2,13 +2,13 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe, Waypoints } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
 import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
 import type { GameState } from "@/lib/types";
-import { Button } from "./ui/button";
+import { GlobeDisplay } from "./globe-display";
 
 import {
   Tooltip,
@@ -35,7 +35,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
     { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" /> },
     { value: "quests", label: "مأموریت‌ها", icon: <ScrollText className="w-5 h-5" /> },
     { value: "world", label: "جهان", icon: <Globe className="w-5 h-5" /> },
-    { value: "map", label: "سفر سریع", icon: <Map className="w-5 h-5" /> },
+    { value: "map", label: "نقشه", icon: <Map className="w-5 h-5" /> },
   ]
   
   return (
@@ -115,31 +115,14 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
           <TabsContent value="map" className="m-0 h-full">
               <Card className="bg-transparent border h-full flex flex-col">
                   <CardHeader>
-                      <CardTitle className="font-headline text-2xl tracking-wider text-foreground">سفر سریع</CardTitle>
-                      <CardContent className="text-sm text-muted-foreground p-0 pt-2">شما در حال حاضر در <span className="text-primary font-bold">{currentLocation}</span> هستید.</CardContent>
+                      <CardTitle className="font-headline text-2xl tracking-wider text-foreground">نقشه جهان</CardTitle>
+                      <CardContent className="text-sm text-muted-foreground p-0 pt-2">جهان را بچرخانید و مکان‌های کشف شده را ببینید.</CardContent>
                   </CardHeader>
-                  <CardContent className="text-center w-full flex-grow overflow-y-auto pr-2">
-                      {discoveredLocations && discoveredLocations.length > 1 ? (
-                          <div className="space-y-2">
-                            {discoveredLocations.filter(loc => loc !== currentLocation).map((location, index) => (
-                                <Button 
-                                    key={index} 
-                                    variant="outline" 
-                                    className="w-full justify-start"
-                                    onClick={() => onFastTravel(`سفر به ${location}`)}
-                                    disabled={isCrafting} // Use isCrafting as a general isLoading flag
-                                >
-                                    <Waypoints className="ml-2 h-4 w-4"/>
-                                    {location}
-                                </Button>
-                            ))}
-                          </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                            <Map className="w-24 h-24 mx-auto mb-4 text-muted-foreground/30"/>
-                            <p className="text-sm">هنوز مکان دیگری برای سفر کشف نکرده‌اید.</p>
-                        </div>
-                      )}
+                  <CardContent className="text-center w-full flex-grow overflow-hidden p-0">
+                      <GlobeDisplay 
+                        locations={discoveredLocations || []}
+                        onLocationClick={(location) => onFastTravel(`سفر به ${location}`)}
+                      />
                   </CardContent>
               </Card>
           </TabsContent>
