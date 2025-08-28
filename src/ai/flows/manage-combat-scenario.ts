@@ -11,26 +11,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import type { ManageCombatScenarioInput, ManageCombatScenarioOutput } from '@/lib/types';
+import { ManageCombatScenarioInputSchema, ManageCombatScenarioOutputSchema } from '@/lib/types';
 
-const ManageCombatScenarioInputSchema = z.object({
-  sceneDescription: z.string().describe('The current scene description.'),
-  playerState: z.record(z.any()).describe('The current player state.'),
-  enemies: z.array(z.record(z.any())).describe('The list of enemies.'),
-  combatLog: z.array(z.string()).optional().describe('The combat log.'),
-  playerActions: z.array(z.string()).describe('The list of available player actions.'),
-});
-export type ManageCombatScenarioInput = z.infer<typeof ManageCombatScenarioInputSchema>;
-
-const ManageCombatScenarioOutputSchema = z.object({
-  story: z.string().describe('The narrative of the combat scenario.'),
-  enemyActions: z.array(z.record(z.any())).describe('The actions of the enemies.'),
-  updatedEnemies: z.array(z.record(z.any())).describe('The updated state of the enemies.'),
-  combatLog: z.array(z.string()).describe('The updated combat log.'),
-  sceneEntities: z.array(z.record(z.any())).describe('The entities present in the scene (player, enemies, objects).'),
-  isCombatOver: z.boolean().describe('Whether the combat is over.'),
-  rewards: z.record(z.any()).optional().describe('The rewards for winning the combat. This can include items, experience points, or valuables like Gold Coins or Gems.'),
-});
-export type ManageCombatScenarioOutput = z.infer<typeof ManageCombatScenarioOutputSchema>;
 
 export async function manageCombatScenario(input: ManageCombatScenarioInput): Promise<ManageCombatScenarioOutput> {
   return manageCombatScenarioFlow(input);
@@ -40,27 +23,51 @@ const prompt = ai.definePrompt({
   name: 'manageCombatScenarioPrompt',
   input: {schema: ManageCombatScenarioInputSchema},
   output: {schema: ManageCombatScenarioOutputSchema},
-  prompt: `You are managing a combat scenario in a dynamic text-based RPG.
+  prompt: `You are the turn-based combat manager for a text-based RPG called Dastan.
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
-Here is the current scene description: {{{sceneDescription}}}
+**Combat Rules:**
+1.  **Turn Order:** The player always acts first. Then, all enemies act.
+2.  **Damage Calculation:** Damage is calculated simply as: (Attacker's Attack - Defender's Defense). Minimum damage is 1. Be creative with attack descriptions.
+3.  **Enemy AI:** Enemies should act logically.
+    *   If there are multiple enemies, they should coordinate.
+    *   An enemy might defend if its health is low.
+    *   A powerful enemy might use a special ability.
+    *   Don't make all enemies attack every single turn. Variety is key.
+4.  **Player Skills & Inventory:** The player's skills and inventory can influence combat. For example, a 'Shield Bash' skill might stun an enemy. A 'Fire Bomb' from inventory could damage all enemies. Factor these into your narration and outcomes.
+5.  **Combat End:**
+    *   Combat ends when all enemies are defeated OR the player's health is 0 or less. Set 'isCombatOver' to true in this case.
+    *   If the player wins, populate the 'rewards' field. Rewards MUST be appropriate for the defeated enemies. A wild wolf won't have gold coins, but a bandit might.
+6.  **Next Choices:** After the turn, provide the player with the next set of valid combat choices. This should primarily be attacking any remaining enemies.
 
-Here is the player's current state: {{{playerState}}}
+**Your Task:**
+Process the following combat turn.
 
-Here is the list of enemies: {{{enemies}}}
+**Player's Action:**
+{{{playerAction}}}
 
-Here are the available player actions: {{{playerActions}}}
+**Player's State:**
+{{{playerState}}}
 
-Here is the current combat log, if any: {{{combatLog}}}
+**Player's Skills & Inventory:**
+- Skills: {{{skills}}}
+- Inventory: {{{inventory}}}
 
-Based on the player's state, the enemies, and the available actions, describe what happens in the combat turn. Include the enemy actions, update the state of the enemies, and update the combat log.
-- Set 'isCombatOver' to true only when the combat is definitively finished (player has won or lost).
-- If combat is over and the player has won, populate the 'rewards' field.
-- **Crucially, rewards MUST be appropriate to the defeated enemies.** A bandit might carry a few coins, but a wild wolf or a slime monster likely has no treasure. Be realistic.
+**Enemies:**
+{{{enemies}}}
 
-Always populate 'sceneEntities' with the player and the enemies.
+**Combat Log (Recent History):**
+{{{combatLog}}}
 
-Output should be a JSON object conforming to ManageCombatScenarioOutputSchema.
+**Instructions:**
+1.  **Narrate Player's Action:** Describe the outcome of the player's action based on the combat rules. Update the target enemy's health.
+2.  **Narrate Enemies' Actions:** For each enemy that is still alive, describe its action. Update the player's health if they are attacked.
+3.  **Update State:** Populate 'updatedPlayerState' and 'updatedEnemies' with the final health values after the turn.
+4.  **Compile Narration:** Combine the player and enemy action descriptions into a single 'turnNarration' string.
+5.  **Determine Next Choices:** Populate the 'choices' array for the player's next turn.
+6.  **Check for Combat End:** Set 'isCombatOver' if the conditions are met. If the player won, determine appropriate 'rewards'.
+
+Process the turn and return the JSON output.
 `,
 });
 

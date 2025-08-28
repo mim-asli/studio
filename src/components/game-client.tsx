@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput, CraftItemOutput, ActiveEffect } from "@/lib/types";
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
+import { manageCombatScenario, ManageCombatScenarioOutput } from "@/ai/flows/manage-combat-scenario";
 import { craftItem } from "@/ai/flows/craft-item-flow";
 import { useToast } from "@/hooks/use-toast";
 import { initialGameState, PLAYER_ACTION_PREFIX } from '@/lib/game-data';
@@ -140,7 +141,6 @@ export function GameClient() {
   
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
-    
     const stateBeforeAction = { ...gameState };
 
     setGameState(prev => ({ 
@@ -149,19 +149,39 @@ export function GameClient() {
       isLoading: true, 
       choices: [] 
     }));
-    
-    const gameStateForAI = JSON.stringify(stateBeforeAction);
-    
 
     try {
-      const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
+        if (stateBeforeAction.isCombat) {
+            await handleCombatTurn(playerAction, stateBeforeAction);
+        } else {
+            await handleExplorationTurn(playerAction, stateBeforeAction);
+        }
+    } catch (error) {
+      console.error("Error processing player action:", error);
+      setGameState(prev => ({ 
+          ...prev, 
+          isLoading: false, 
+          choices: stateBeforeAction.choices.length > 0 ? stateBeforeAction.choices : ["دوباره تلاش کن"] 
+      }));
+      toast({
+        variant: "destructive",
+        title: "خطای هوش مصنوعی",
+        description: "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.",
+      });
+    }
+  };
+
+  const handleExplorationTurn = async (playerAction: string, stateBeforeAction: GameState) => {
+    const gameStateForAI = JSON.stringify(stateBeforeAction);
+
+    const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
         gameState: gameStateForAI,
         playerAction,
         difficulty: gameState.difficulty,
         gmPersonality: gameState.gmPersonality,
-      });
-      
-      setGameState(prevGameState => {
+    });
+    
+    setGameState(prevGameState => {
         const { story: newStory, ...restOfNextTurn } = nextTurn;
 
         const updatedGameState: GameState = {
@@ -179,25 +199,58 @@ export function GameClient() {
 
         saveGame(updatedGameState);
         return updatedGameState;
-      });
+    });
 
-      if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
-      if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
-      if (nextTurn.newLocation) toast({ title: "مکان جدید کشف شد", description: `شما ${nextTurn.newLocation} را پیدا کردید.` });
+    if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
+    if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
+    if (nextTurn.newLocation) toast({ title: "مکان جدید کشف شد", description: `شما ${nextTurn.newLocation} را پیدا کردید.` });
+  };
+  
+  const handleCombatTurn = async (playerAction: string, stateBeforeAction: GameState) => {
+    const combatResult: ManageCombatScenarioOutput = await manageCombatScenario({
+        playerAction,
+        playerState: stateBeforeAction.playerState,
+        enemies: stateBeforeAction.enemies || [],
+        inventory: stateBeforeAction.inventory,
+        skills: stateBeforeAction.skills,
+        combatLog: stateBeforeAction.story.slice(-5), // Pass recent history as combat log
+    });
 
-    } catch (error) {
-      console.error("Error generating next turn:", error);
-      setGameState(prev => ({ 
-          ...prev, 
-          isLoading: false, 
-          choices: stateBeforeAction.choices.length > 0 ? stateBeforeAction.choices : ["دوباره تلاش کن"] 
-      }));
-      toast({
-        variant: "destructive",
-        title: "خطای هوش مصنوعی",
-        description: "داستان نتوانست ادامه یابد. لطفاً یک اقدام متفاوت را امتحان کنید.",
-      });
-    }
+    setGameState(prev => {
+        const { turnNarration, updatedPlayerState, updatedEnemies, choices, isCombatOver, rewards } = combatResult;
+        
+        const newStory = [...prev.story, turnNarration];
+        let newInventory = prev.inventory;
+        
+        if (isCombatOver) {
+            newStory.push("مبارزه تمام شد.");
+            if (rewards && rewards.items) {
+                newInventory = [...newInventory, ...rewards.items];
+                const rewardText = `شما به دست آوردید: ${rewards.items.join(', ')}`;
+                newStory.push(rewardText);
+                toast({ title: "غنائم جنگی!", description: rewardText });
+            }
+        }
+        
+        const updatedGameState: GameState = {
+            ...prev,
+            story: newStory,
+            playerState: updatedPlayerState,
+            enemies: updatedEnemies,
+            choices: isCombatOver ? ["ادامه بده..."] : choices,
+            isCombat: !isCombatOver,
+            inventory: newInventory,
+            isLoading: false,
+        };
+
+        if (updatedPlayerState.health <= 0) {
+            updatedGameState.isGameOver = true;
+            updatedGameState.story.push("شما در مبارزه شکست خوردید. داستان شما در اینجا به پایان می‌رسد.");
+        }
+
+        saveGame(updatedGameState);
+        return updatedGameState;
+    });
   };
 
   const handleCrafting = async (ingredients: string[]) => {

@@ -24,6 +24,9 @@ const EnemySchema = z.object({
     id: z.string().describe("A unique identifier for the enemy in this combat scene."),
     name: z.string().describe("The name of the enemy."),
     health: z.number().describe("The current health of the enemy."),
+    maxHealth: z.number().describe("The maximum health of the enemy."),
+    attack: z.number().describe("The enemy's attack power."),
+    defense: z.number().describe("The enemy's defense power."),
 });
 
 const PlayerStateSchema = z.object({
@@ -63,8 +66,8 @@ const GenerateNextTurnOutputSchema = z.object({
   globalEvent: z.string().optional().describe('A global event that occurred in this turn.'),
   sceneEntities: z.array(z.string()).describe('List of all entities in the current scene (player, companions, enemies, important objects).'),
   companions: z.array(z.string()).optional().describe("A list of the player's current companions. This should be the complete list of companions."),
-  isCombat: z.boolean().optional().describe('Whether combat is active.'),
-  enemies: z.array(EnemySchema).optional().describe('A list of enemies in the combat.'),
+  isCombat: z.boolean().optional().describe('If the player action initiates combat, set this to true. Otherwise, leave it undefined.'),
+  enemies: z.array(EnemySchema).optional().describe("If isCombat is true, populate this list with the enemies the player is facing. Define their stats (health, attack, defense)."),
   activeEffects: z.array(ActiveEffectSchema).optional().describe("A list of temporary buffs or debuffs affecting the player due to environment or status."),
 });
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
@@ -87,6 +90,18 @@ IMPORTANT: Your entire response, including all fields in the JSON output, MUST b
     *   **آسان (Easy):** Resources are more abundant. Enemies are less frequent and weaker. NPCs are generally more helpful.
     *   **معمولی (Normal):** A balanced experience with standard challenges and rewards.
     *   **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
+
+**Your Primary Role (Non-Combat):**
+Your main job is to advance the story based on player actions outside of combat. You will describe the world, handle interactions with non-player characters (NPCs), present puzzles, and manage exploration.
+
+**Starting Combat:**
+- If the player's action would logically lead to a fight (e.g., "attack the guard", "kick the hornet's nest"), you must initiate combat.
+- To do this:
+  1. Set the 'isCombat' flag to **true**.
+  2. Populate the 'enemies' array with detailed stats for each opponent (health, maxHealth, attack, defense).
+  3. Describe the start of the fight in the 'story' field.
+  4. Provide the player with initial combat choices, such as attacking a specific enemy (e.g., "[مبارزه] حمله به گابلین راهزن").
+- **IMPORTANT:** Once you set 'isCombat' to true, your job is done for this turn. Another AI agent will take over to manage the turn-by-turn combat. You should NOT narrate the combat itself.
 
 Enforce the following rules:
 - **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions, activeEffects, discoveredLocations) MUST be reflected in the JSON output. The inventory, companions, activeEffects, and discoveredLocations in the output must always be the complete lists.
@@ -121,9 +136,6 @@ Enforce the following rules:
 
 JSON Output Structure:
 ALWAYS return a JSON object with the specified structure. Ensure all fields are populated correctly based on the current turn.
-
-Turn-Based Combat:
-If combat starts, set isCombat to true and populate the 'enemies' array with their stats. Player choices should include combat actions like [COMBAT: ATTACK] enemyId.
 
 Scene Composition:
 Populate 'sceneEntities' with all entities in the scene (player, companions, enemies, objects).
