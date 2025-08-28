@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Award, Skull, CalendarDays, Shield, User } from "lucide-react";
+import { ArrowLeft, Award, Skull, CalendarDays, User } from "lucide-react";
 import type { HallOfFameEntry } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
@@ -42,27 +42,27 @@ export function Scoreboard({ onBack }: ScoreboardProps) {
                  {entries.length > 0 ? (
                     <div className="space-y-4">
                         {entries.map(entry => (
-                            <Card key={entry.id} className="bg-card/50 backdrop-blur-sm">
+                            <Card key={entry.id} className="bg-card/50 backdrop-blur-sm border-primary/20">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center gap-3 text-accent">
+                                    <CardTitle className="flex items-center gap-3 text-primary">
                                         <User/>
                                         {entry.characterName}
                                     </CardTitle>
                                     <CardDescription>{entry.scenarioTitle}</CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-3 text-sm">
-                                    <div className="flex items-start gap-3 text-destructive">
-                                        <Skull className="w-5 h-5 mt-0.5 shrink-0"/>
+                                <CardContent className="space-y-4 text-sm">
+                                    <div className="flex items-start gap-3 text-muted-foreground">
+                                        <Skull className="w-5 h-5 mt-0.5 shrink-0 text-destructive/80"/>
                                         <div>
-                                            <p className="font-semibold">سرنوشت</p>
-                                            <p className="text-destructive/80">{entry.outcome}</p>
+                                            <p className="font-semibold text-foreground">سرنوشت</p>
+                                            <p>{entry.outcome}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 text-muted-foreground">
                                         <CalendarDays className="w-5 h-5 shrink-0"/>
                                         <p>{entry.daysSurvived} روز زنده ماند.</p>
                                     </div>
-                                     <p className="text-xs text-muted-foreground/70 pt-2 text-left border-t border-border/50">
+                                     <p className="text-xs text-muted-foreground/70 pt-3 text-left border-t border-border/50">
                                         پایان ماجراجویی: {new Date(entry.timestamp).toLocaleString('fa-IR')}
                                     </p>
                                 </CardContent>
@@ -71,7 +71,7 @@ export function Scoreboard({ onBack }: ScoreboardProps) {
                     </div>
                 ) : (
                     <div className="text-center py-20">
-                        <Award className="w-24 h-24 text-muted-foreground/50 mx-auto mb-4"/>
+                        <Award className="w-24 h-24 text-muted-foreground/30 mx-auto mb-4"/>
                         <h2 className="text-2xl font-bold">تالار افتخارات خالی است</h2>
                         <p className="text-muted-foreground mt-2">
                            یک ماجراجویی را به پایان برسانید تا نام خود را در اینجا ثبت کنید.
