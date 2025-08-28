@@ -19,6 +19,8 @@ export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {
     isLoading: boolean;
     characterName: string;
     scenarioTitle: string;
+    difficulty: 'آسان' | 'معمولی' | 'سخت';
+    gmPersonality: string;
 };
 
 // This represents a saved game file
@@ -35,6 +37,8 @@ export interface CustomScenario {
     character: string[];
     initialItems: string[];
     storyPrompt: string;
+    difficulty: 'آسان' | 'معمولی' | 'سخت';
+    gmPersonality: string;
 }
 
 // --- Settings Types ---

@@ -238,6 +238,8 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             ],
             initialItems: finalItemsList,
             storyPrompt: fullStoryPrompt,
+            difficulty: difficulty,
+            gmPersonality: gmPersonality,
         };
         onStartGame(customScenario, characterName);
     }

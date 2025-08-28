@@ -63,6 +63,8 @@ export const initialGameState: GameState = {
   scenarioTitle: '',
   currentLocation: 'مکان نامشخص',
   discoveredLocations: [],
+  difficulty: 'معمولی',
+  gmPersonality: 'روایی و سینمایی',
 };
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
@@ -182,6 +184,8 @@ export function GameClient() {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
         gameState: gameStateForAI,
         playerAction,
+        difficulty: gameState.difficulty,
+        gmPersonality: gameState.gmPersonality,
       });
       
       setGameState(prevGameState => {
@@ -301,6 +305,8 @@ export function GameClient() {
       scenarioTitle: scenario.title,
       currentLocation: 'شروع ماجرا', // Initial location
       discoveredLocations: ['شروع ماجرا'], // Add initial location
+      difficulty: scenario.difficulty,
+      gmPersonality: scenario.gmPersonality,
     };
     
     setGameState(freshGameState);

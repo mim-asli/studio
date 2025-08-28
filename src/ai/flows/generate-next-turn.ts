@@ -15,6 +15,8 @@ import {z} from 'genkit';
 const GenerateNextTurnInputSchema = z.object({
   gameState: z.string().describe('The current state of the game as a JSON string.'),
   playerAction: z.string().describe('The action taken by the player.'),
+  difficulty: z.string().optional().describe("The game's difficulty level (e.g., 'آسان', 'معمولی', 'سخت'). This must be respected on every turn."),
+  gmPersonality: z.string().optional().describe("The Game Master's personality (e.g., 'جدی و تاریک', 'شوخ و سرگرم‌کننده'). This must be respected on every turn."),
 });
 export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
 
@@ -79,10 +81,12 @@ const generateNextTurnPrompt = ai.definePrompt({
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
-The user has specified a difficulty level. You MUST adjust the game's challenges accordingly:
-- **آسان (Easy):** Resources are more abundant. Enemies are less frequent and weaker. NPCs are generally more helpful.
-- **معمولی (Normal):** A balanced experience with standard challenges and rewards.
-- **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
+**Core Instructions (Adhere to these on EVERY turn):**
+1.  **GM Personality:** You MUST adopt the following persona: **{{gmPersonality}}**. Your narrative, descriptions, and character dialogue must all reflect this style.
+2.  **Difficulty Level:** You MUST adjust the game's challenges based on this difficulty: **{{difficulty}}**.
+    *   **آسان (Easy):** Resources are more abundant. Enemies are less frequent and weaker. NPCs are generally more helpful.
+    *   **معمولی (Normal):** A balanced experience with standard challenges and rewards.
+    *   **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
 
 Enforce the following rules:
 - **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions, activeEffects, discoveredLocations) MUST be reflected in the JSON output. The inventory, companions, activeEffects, and discoveredLocations in the output must always be the complete lists.
@@ -114,7 +118,6 @@ Enforce the following rules:
 - **Forward Momentum Philosophy:** Always move the story forward. Options presented to the player should be meaningful, distinct, and logical consequences of the last action. Whenever possible, provide at least 4 to 6 meaningful and diverse choices to give the player a real sense of agency.
 - **Persistent World Philosophy:** The game doesn't end with a quest. Introduce a new challenge or long-term goal after each major victory. Game over only when the player dies.
 - **Time and Resource Progression:** With every player action, time must progress logically. Update the day and time of day in the worldState. Actions also affect hunger and thirst; update them accordingly.
-Respond in the persona of the GM Personality specified in the story prompt.
 
 JSON Output Structure:
 ALWAYS return a JSON object with the specified structure. Ensure all fields are populated correctly based on the current turn.
