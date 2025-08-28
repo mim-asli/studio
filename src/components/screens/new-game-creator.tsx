@@ -91,7 +91,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
         }
     }
     
-    const handleStartGame = () => {
+    const handleStartGameClick = () => {
         const finalArchetype = customArchetype.trim() || selectedArchetype;
         const finalItemsList = Object.entries(initialItems).map(([item, count]) => count > 1 ? `${item} (x${count})` : item);
 
@@ -271,7 +271,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                     </Card>
                     {writingCustomScene && (
                         <Textarea 
-                            placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آیید..." 
+                            placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آyید..." 
                             value={storyPrompt} 
                             onChange={e => setStoryPrompt(e.target.value)} 
                             rows={6}
@@ -323,7 +323,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 <div className="flex justify-between mt-8">
                     <Button onClick={handlePrev} disabled={step === 1} variant="outline">قبلی</Button>
                     {step < TOTAL_STEPS && <Button onClick={handleNext} disabled={!canProceed()}>بعدی</Button>}
-                    {step === TOTAL_STEPS && <Button onClick={handleStartGame} className="bg-primary hover:bg-primary/90">شروع ماجراجویی</Button>}
+                    {step === TOTAL_STEPS && <Button onClick={handleStartGameClick} className="bg-primary hover:bg-primary/90">شروع ماجراجویی</Button>}
                 </div>
             </div>
         </div>

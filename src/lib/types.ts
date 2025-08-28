@@ -10,15 +10,7 @@ const EnemySchema = z.object({
     ap: z.number().describe("The enemy's current action points."),
     maxAp: z.number().describe("The enemy's maximum action points."),
 });
-
-// Schemas for generateNextTurn flow
-export const GenerateNextTurnInputSchema = z.object({
-  gameState: z.string().describe('The current state of the game as a JSON string.'),
-  playerAction: z.string().describe('The action taken by the player.'),
-  difficulty: z.string().optional().describe("The game's difficulty level (e.g., 'آسان', 'معمولی', 'سخت'). This must be respected on every turn."),
-  gmPersonality: z.string().optional().describe("The Game Master's personality (e.g., 'جدی و تاریک', 'شوخ و سرگرم‌کننده'). This must be respected on every turn."),
-});
-export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
+export type Enemy = z.infer<typeof EnemySchema>;
 
 const PlayerStateSchema = z.object({
   health: z.number().describe("Player's current health. Max 100."),
@@ -42,6 +34,16 @@ const ActiveEffectSchema = z.object({
     type: z.enum(['buff', 'debuff']).describe("The type of effect: 'buff' for positive, 'debuff' for negative."),
     description: z.string().describe("A brief description of the effect's impact on the player."),
 });
+export type ActiveEffect = z.infer<typeof ActiveEffectSchema>;
+
+// Schemas for generateNextTurn flow
+export const GenerateNextTurnInputSchema = z.object({
+  gameState: z.string().describe('The current state of the game as a JSON string.'),
+  playerAction: z.string().describe('The action taken by the player.'),
+  difficulty: z.string().optional().describe("The game's difficulty level (e.g., 'آسان', 'معمولی', 'سخت'). This must be respected on every turn."),
+  gmPersonality: z.string().optional().describe("The Game Master's personality (e.g., 'جدی و تاریک', 'شوخ و سرگرم‌کننده'). This must be respected on every turn."),
+});
+export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
 
 export const GenerateNextTurnOutputSchema = z.object({
   story: z.string().describe('The narrative text of the current events. This should be a single string.'),
@@ -80,11 +82,6 @@ export const CraftItemOutputSchema = z.object({
   message: z.string().describe("A message to the player describing the outcome of their crafting attempt (e.g., 'You successfully crafted a torch.' or 'You fumbled and dropped the items, achieving nothing.')."),
 });
 export type CraftItemOutput = z.infer<typeof CraftItemOutputSchema>;
-
-
-// Local Types, not from AI flows
-export type ActiveEffect = z.infer<typeof ActiveEffectSchema>;
-export type Enemy = z.infer<typeof EnemySchema>;
 
 
 // Schemas for manageCombatScenarioFlow

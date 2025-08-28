@@ -320,6 +320,8 @@ export function GameClient() {
         thirst: 0,
         stamina: 100, // Always start with stamina
         mana: isMagical ? 100 : undefined, // Only add mana for magical characters
+        ap: 4, 
+        maxAp: 4,
       },
       inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
       skills: characterSkills,
