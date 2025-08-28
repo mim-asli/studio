@@ -69,11 +69,11 @@ export function SceneDisplay({ entities, companions }: { entities: string[], com
 
 const getWeatherIcon = (weather: string = "") => {
     const lowerWeather = weather.toLowerCase();
-    if (lowerWeather.includes('rain') || lowerWeather.includes('باران')) return <Cloud className="w-6 h-6 text-blue-300"/>;
-    if (lowerWeather.includes('snow') || lowerWeather.includes('برف')) return <Snowflake className="w-6 h-6 text-white"/>;
-    if (lowerWeather.includes('fog') || lowerWeather.includes('مه')) return <Cloud className="w-6 h-6 text-gray-400"/>;
-    if (lowerWeather.includes('wind') || lowerWeather.includes('باد')) return <Leaf className="w-6 h-6 text-green-300"/>;
-    return null;
+    if (lowerWeather.includes('rain') || lowerWeather.includes('باران')) return <Cloud className="w-8 h-8 text-blue-300"/>;
+    if (lowerWeather.includes('snow') || lowerWeather.includes('برف')) return <Snowflake className="w-8 h-8 text-white"/>;
+    if (lowerWeather.includes('fog') || lowerWeather.includes('مه')) return <Cloud className="w-8 h-8 text-gray-400"/>;
+    if (lowerWeather.includes('wind') || lowerWeather.includes('باد')) return <Leaf className="w-8 h-8 text-green-300"/>;
+    return <Sun className="w-8 h-8 text-yellow-500" />;
 }
 
 export function WorldStateDisplay({ worldState }: { worldState: GameState['worldState'] }) {
@@ -82,38 +82,33 @@ export function WorldStateDisplay({ worldState }: { worldState: GameState['world
     const weatherIcon = getWeatherIcon(worldState.weather);
 
     return (
-        <Card className="bg-transparent border h-full flex flex-col justify-center">
+        <Card className="bg-transparent border h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl tracking-wider">وضعیت جهان</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-6">
-                 <div className="flex items-center gap-4 text-2xl">
-                    {isNight ? <Moon className="w-8 h-8 text-yellow-300" /> : <Sun className="w-8 h-8 text-yellow-500" />}
+            <CardContent className="flex flex-col flex-grow justify-around">
+                 <div className="flex items-center gap-4">
+                    {isNight ? <Moon className="w-10 h-10 text-yellow-300" /> : <Sun className="w-10 h-10 text-yellow-500" />}
                     <div>
-                        <p className="font-headline">{worldState.time}</p>
-                        <p className="text-sm text-muted-foreground">زمان</p>
+                        <p className="font-headline text-2xl">{worldState.time}</p>
+                        <p className="text-sm text-muted-foreground">زمان روز</p>
                     </div>
                  </div>
-                 <div className="flex items-center gap-4 text-2xl">
-                    <div className="font-headline text-4xl w-8 text-center">{worldState.day}</div>
-                    <p className="text-sm text-muted-foreground mt-2">روز</p>
+                 <div className="flex items-center gap-4">
+                    <div className="font-headline text-5xl w-10 text-center">{worldState.day}</div>
+                     <div>
+                        <p className="font-headline text-2xl">روز</p>
+                        <p className="text-sm text-muted-foreground">از شروع ماجراجویی</p>
+                    </div>
                  </div>
-                 {worldState.weather && weatherIcon && (
-                    <>
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-4 text-2xl">
-                                        {weatherIcon}
-                                         <p className="text-sm text-muted-foreground">{worldState.weather}</p>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>آب و هوا: {worldState.weather}</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                    </>
+                 {worldState.weather && (
+                    <div className="flex items-center gap-4">
+                        {weatherIcon}
+                        <div>
+                            <p className="font-headline text-2xl">{worldState.weather}</p>
+                            <p className="text-sm text-muted-foreground">آب و هوا</p>
+                        </div>
+                    </div>
                  )}
             </CardContent>
         </Card>
