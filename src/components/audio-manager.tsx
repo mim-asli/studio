@@ -6,11 +6,12 @@ import type { GameState } from '@/lib/types';
 import { useSettings } from '@/hooks/use-settings';
 
 interface AudioManagerProps {
-  gameState: GameState;
+  gameState: GameState | null; // Allow gameState to be null for menu screens
 }
 
 const audioSources = {
   music: {
+    menu: "https://storage.googleapis.com/stet-media/generative-ai/examples/dastan/music/menu.mp3",
     calm: "https://storage.googleapis.com/stet-media/generative-ai/examples/dastan/music/calm.mp3",
     combat: "https://storage.googleapis.com/stet-media/generative-ai/examples/dastan/music/combat.mp3",
     mystery: "https://storage.googleapis.com/stet-media/generative-ai/examples/dastan/music/mystery.mp3",
@@ -50,6 +51,8 @@ export function AudioManager({ gameState }: AudioManagerProps) {
         ambientAudioRef.current?.play().catch(e => console.error("Ambient play failed:", e));
         document.removeEventListener('click', handleInteraction);
     }
+    // Autoplay is restricted, so we need a user interaction to start audio.
+    // We'll play on the first click anywhere on the page.
     document.addEventListener('click', handleInteraction);
 
     return () => {
@@ -59,7 +62,7 @@ export function AudioManager({ gameState }: AudioManagerProps) {
     };
   }, []);
 
-  const fadeAudio = (audio: HTMLAudioElement, targetVolume: number) => {
+  const fadeAudio = (audio: HTMLAudioElement, targetVolume: number, onFadeOut?: () => void) => {
     const initialVolume = audio.volume;
     let startTime: number | null = null;
     
@@ -75,6 +78,7 @@ export function AudioManager({ gameState }: AudioManagerProps) {
       } else {
         if (targetVolume === 0) {
             audio.pause();
+            if (onFadeOut) onFadeOut();
         }
       }
     };
@@ -84,38 +88,61 @@ export function AudioManager({ gameState }: AudioManagerProps) {
   const switchAudioSource = (audioRef: React.MutableRefObject<HTMLAudioElement | null>, newSrc: string, targetVolume: number) => {
      const audio = audioRef.current;
     if (!audio) return;
+    
+    // If the new source is empty, fade out and stop.
+    if (!newSrc) {
+        if (audio.src && !audio.paused) {
+            fadeAudio(audio, 0);
+        }
+        return;
+    }
 
     if (audio.src !== newSrc) {
-        fadeAudio(audio, 0);
-        setTimeout(() => {
+        fadeAudio(audio, 0, () => {
             audio.src = newSrc;
             audio.volume = 0; // Start at 0 before playing
             audio.play().catch(e => console.error("Audio play failed:", e));
-            setTimeout(() => fadeAudio(audio, targetVolume), 50); // Short delay before fading in
-        }, FADE_DURATION);
-    } else {
+            setTimeout(() => fadeAudio(audio, targetVolume), 50);
+        });
+    } else if (!audio.paused) { // If src is the same, just adjust volume
         fadeAudio(audio, targetVolume);
+    } else { // If src is the same but paused, start playing and fade in
+        audio.volume = 0;
+        audio.play().catch(e => console.error("Audio play failed:", e));
+        setTimeout(() => fadeAudio(audio, targetVolume), 50);
     }
   }
 
   // --- Music Logic ---
   useEffect(() => {
     const musicVolume = (settings.audio.master / 100) * (settings.audio.music / 100);
-    let musicSrc = audioSources.music.calm;
+    let musicSrc = audioSources.music.menu; // Default to menu music
 
-    if (gameState.isCombat) {
-      musicSrc = audioSources.music.combat;
-    } else if (gameState.currentLocation.toLowerCase().includes('راز') || gameState.currentLocation.toLowerCase().includes('معما')) {
-      musicSrc = audioSources.music.mystery;
+    if (gameState?.gameStarted) {
+      if (gameState.isCombat) {
+        musicSrc = audioSources.music.combat;
+      } else if (gameState.currentLocation.toLowerCase().includes('راز') || gameState.currentLocation.toLowerCase().includes('معما')) {
+        musicSrc = audioSources.music.mystery;
+      } else {
+        musicSrc = audioSources.music.calm;
+      }
     }
     
     switchAudioSource(musicAudioRef, musicSrc, musicVolume);
 
-  }, [gameState.isCombat, gameState.currentLocation, settings.audio.master, settings.audio.music]);
+  }, [gameState, settings.audio.master, settings.audio.music]);
 
 
   // --- Ambient Sound Logic ---
   useEffect(() => {
+    // Ambient sounds only play when the game is active
+    if (!gameState?.gameStarted) {
+        if (ambientAudioRef.current?.src) {
+           fadeAudio(ambientAudioRef.current, 0);
+        }
+        return;
+    }
+
     const ambientVolume = (settings.audio.master / 100) * (settings.audio.ambient / 100);
     let ambientSrc = "";
 
@@ -132,15 +159,9 @@ export function AudioManager({ gameState }: AudioManagerProps) {
       ambientSrc = audioSources.ambient.cave;
     }
     
-    if (ambientSrc) {
-        switchAudioSource(ambientAudioRef, ambientSrc, ambientVolume);
-    } else if (ambientAudioRef.current?.src) {
-         fadeAudio(ambientAudioRef.current, 0);
-    }
+    switchAudioSource(ambientAudioRef, ambientSrc, ambientVolume);
 
-  }, [gameState.currentLocation, gameState.worldState.weather, settings.audio.master, settings.audio.ambient]);
+  }, [gameState, settings.audio.master, settings.audio.ambient]);
 
   return null; // This component does not render anything
 }
-
-    

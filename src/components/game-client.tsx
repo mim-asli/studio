@@ -47,31 +47,31 @@ const HALL_OF_FAME_KEY = "dastan-hall-of-fame";
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
 
 export function GameClient() {
-  const [gameState, setGameState] = useState<GameState>(initialGameState);
+  const [gameState, setGameState] = useState<GameState | null>(null);
   const [view, setView] = useState<View>("start");
   const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
   const { toast } = useToast();
 
   const handleLowSanityEffect = useCallback(() => {
-    if (gameState.playerState?.sanity < 30) {
+    if (gameState && gameState.playerState?.sanity < 30) {
       document.body.classList.add("sanity-glitch");
     } else {
       document.body.classList.remove("sanity-glitch");
     }
-  }, [gameState.playerState?.sanity]);
+  }, [gameState]);
   
   const handleLowHealthEffect = useCallback(() => {
-    if (gameState.playerState?.health < 30) {
+    if (gameState && gameState.playerState?.health < 30) {
       document.body.classList.add("low-health-pulse");
     } else {
       document.body.classList.remove("low-health-pulse");
     }
-  }, [gameState.playerState?.health]);
+  }, [gameState]);
 
   useEffect(() => {
     handleLowSanityEffect();
     handleLowHealthEffect();
-  }, [handleLowSanityEffect, handleLowHealthEffect]);
+  }, [gameState, handleLowSanityEffect, handleLowHealthEffect]);
 
   const saveToHallOfFame = useCallback((finalState: GameState) => {
     try {
@@ -102,8 +102,8 @@ export function GameClient() {
   }, [toast]);
 
 
-  const saveGame = useCallback((stateToSave: GameState) => {
-    if (!stateToSave.gameStarted || !stateToSave.id) return;
+  const saveGame = useCallback((stateToSave?: GameState | null) => {
+    if (!stateToSave || !stateToSave.gameStarted || !stateToSave.id) return;
     try {
         const savesJson = localStorage.getItem(SAVES_KEY);
         const saves: SaveFile[] = savesJson ? JSON.parse(savesJson) : [];
@@ -181,15 +181,16 @@ export function GameClient() {
   }, [saveToHallOfFame]);
   
   const processPlayerAction = async (playerAction: string) => {
+    if (!gameState) return;
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
     const stateBeforeAction = { ...gameState };
 
-    setGameState(prev => ({ 
+    setGameState(prev => (prev ? { 
       ...prev, 
       story: [...prev.story, formattedPlayerAction],
       isLoading: true, 
       choices: [] 
-    }));
+    }: null));
 
     try {
         if (stateBeforeAction.isCombat) {
@@ -199,11 +200,11 @@ export function GameClient() {
         }
     } catch (error) {
       console.error("Error processing player action:", error);
-      setGameState(prev => ({ 
+      setGameState(prev => (prev ? { 
           ...prev, 
           isLoading: false, 
           choices: stateBeforeAction.choices.length > 0 ? stateBeforeAction.choices : ["دوباره تلاش کن"] 
-      }));
+      }: null));
       toast({
         variant: "destructive",
         title: "خطای هوش مصنوعی",
@@ -223,6 +224,7 @@ export function GameClient() {
     });
     
     setGameState(prevGameState => {
+        if (!prevGameState) return null;
         const { story: newStory, ...restOfNextTurn } = nextTurn;
 
         let updatedGameState: GameState = {
@@ -257,6 +259,7 @@ export function GameClient() {
     });
 
     setGameState(prev => {
+        if (!prev) return null;
         const { turnNarration, updatedPlayerState, updatedEnemies, choices, isCombatOver, rewards } = combatResult;
         
         const newStory = [...prev.story, turnNarration];
@@ -293,7 +296,8 @@ export function GameClient() {
   };
 
   const handleCrafting = async (ingredients: string[]) => {
-    setGameState(prev => ({ ...prev, isLoading: true }));
+    if (!gameState) return;
+    setGameState(prev => (prev ? { ...prev, isLoading: true } : null));
     try {
         const result: CraftItemOutput = await craftItem({
             ingredients,
@@ -301,6 +305,7 @@ export function GameClient() {
         });
 
         setGameState(prev => {
+            if (!prev) return null;
             let newInventory = [...prev.inventory];
             // Remove consumed items
             result.consumedItems.forEach(consumed => {
@@ -333,7 +338,7 @@ export function GameClient() {
 
     } catch (error) {
         console.error("Crafting error:", error);
-        setGameState(prev => ({ ...prev, isLoading: false }));
+        setGameState(prev => (prev ? { ...prev, isLoading: false } : null));
         toast({
             variant: "destructive",
             title: "خطای ساخت و ساز",
@@ -374,6 +379,7 @@ export function GameClient() {
       discoveredLocations: ['شروع ماجرا'], // Add initial location
       difficulty: scenario.difficulty,
       gmPersonality: scenario.gmPersonality,
+      isGameOver: false,
     };
     
     setGameState(freshGameState);
@@ -386,121 +392,121 @@ export function GameClient() {
 
 
   const resetGame = () => {
-    setGameState(initialGameState);
+    setGameState(null);
     setView("start");
   }
 
-  if (view === "start") {
-    return (
-      <StartScreen 
-        onNewGame={() => setView("new-game")}
-        onLoadGame={() => setView("load-game")}
-        onSettings={() => setView("settings")}
-        onScoreboard={() => setView("scoreboard")}
-      />
-    );
-  }
+  const renderContent = () => {
+      switch (view) {
+        case "start":
+            return (
+                <StartScreen 
+                    onNewGame={() => setView("new-game")}
+                    onLoadGame={() => setView("load-game")}
+                    onSettings={() => setView("settings")}
+                    onScoreboard={() => setView("scoreboard")}
+                />
+            );
+        case "new-game":
+            return <NewGameCreator onBack={() => setView("start")} onStartGame={handleStartGame} />;
+        case "load-game":
+            return <LoadGame onBack={() => setView("start")} onLoad={loadGame} />;
+        case "settings":
+            return <SettingsPage onBack={() => setView("start")} />;
+        case "scoreboard":
+            return <Scoreboard onBack={() => setView("start")} />;
+        case "game":
+            if (!gameState) return null; // Should not happen in this view
+            if (gameState.isGameOver) {
+                 return (
+                    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 text-center">
+                        <AlertTriangle className="w-24 h-24 text-destructive mb-4" />
+                        <h1 className="text-6xl font-headline text-destructive mb-2">بازی تمام شد</h1>
+                        <p className="text-xl text-muted-foreground mb-8 max-w-2xl">{gameState.story[gameState.story.length-1]}</p>
+                        <Button size="lg" onClick={resetGame}>
+                            <FilePlus className="ml-2" /> شروع یک افسانه جدید
+                        </Button>
+                  </div>
+                );
+            }
+            return (
+                 <TooltipProvider>
+                  <GameDirectorChat 
+                    isOpen={isDirectorChatOpen}
+                    onClose={() => setIsDirectorChatOpen(false)}
+                    gameState={gameState}
+                  />
+                  <main className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen bg-background text-foreground font-body p-2 sm:p-4 gap-4">
+                    <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
+                      <div className="relative flex-grow border rounded-md shadow-inner bg-card overflow-hidden flex flex-col">
+                        <StoryDisplay storySegments={gameState.story} />
+                        {gameState.isLoading && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                            <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                          </div>
+                        )}
+                      </div>
+                      <InteractionPanel 
+                        choices={gameState.choices} 
+                        onAction={processPlayerAction} 
+                        isLoading={gameState.isLoading}
+                        onDirectorChat={() => setIsDirectorChatOpen(true)}
+                      />
+                    </div>
 
-  if (view === "new-game") {
-    return <NewGameCreator onBack={() => setView("start")} onStartGame={handleStartGame} />;
-  }
-  
-  if (view === "load-game") {
-    return <LoadGame onBack={() => setView("start")} onLoad={loadGame} />;
-  }
-
-  if (view === "settings") {
-    return <SettingsPage onBack={() => setView("start")} />;
-  }
-
-  if (view === "scoreboard") {
-    return <Scoreboard onBack={() => setView("start")} />;
-  }
-
-
-  if (gameState.isGameOver) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 text-center">
-            <AlertTriangle className="w-24 h-24 text-destructive mb-4" />
-            <h1 className="text-6xl font-headline text-destructive mb-2">بازی تمام شد</h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-2xl">{gameState.story[gameState.story.length-1]}</p>
-            <Button size="lg" onClick={resetGame}>
-                <FilePlus className="ml-2" /> شروع یک افسانه جدید
-            </Button>
-      </div>
-    );
+                    <div className="flex flex-col gap-4 h-[calc(100vh-2rem)]">
+                      <div className="flex justify-between items-center">
+                        <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
+                        <div className="flex items-center gap-2">
+                          <AlertDialog>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="icon" variant="ghost"><LogOut/></Button>
+                                  </AlertDialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>خروج به منوی اصلی</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>بازگشت به منوی اصلی؟</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  پیشرفت شما به صورت خودکار ذخیره شده است. آیا می‌خواهید به منوی اصلی بازگردید؟
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>لغو</AlertDialogCancel>
+                                <AlertDialogAction onClick={resetGame}>
+                                  خروج
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                      <div className="flex-grow flex flex-col overflow-hidden">
+                        <SidebarTabs 
+                          gameState={gameState}
+                          onCraft={handleCrafting}
+                          isCrafting={gameState.isLoading}
+                          onFastTravel={processPlayerAction}
+                        />
+                      </div>
+                    </div>
+                  </main>
+                </TooltipProvider>
+            );
+        default:
+          return <StartScreen onNewGame={() => setView("new-game")} onLoadGame={() => setView("load-game")} onSettings={() => setView("settings")} onScoreboard={() => setView("scoreboard")} />;
+      }
   }
 
   return (
-    <TooltipProvider>
-      <GameDirectorChat 
-        isOpen={isDirectorChatOpen}
-        onClose={() => setIsDirectorChatOpen(false)}
-        gameState={gameState}
-      />
-      <AudioManager gameState={gameState} />
-      <main className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen bg-background text-foreground font-body p-2 sm:p-4 gap-4">
-        <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
-          <div className="relative flex-grow border rounded-md shadow-inner bg-card overflow-hidden flex flex-col">
-            <StoryDisplay storySegments={gameState.story} />
-            {gameState.isLoading && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-                <Loader2 className="w-16 h-16 text-primary animate-spin" />
-              </div>
-            )}
-          </div>
-          <InteractionPanel 
-            choices={gameState.choices} 
-            onAction={processPlayerAction} 
-            isLoading={gameState.isLoading}
-            onDirectorChat={() => setIsDirectorChatOpen(true)}
-          />
-        </div>
-
-        <div className="flex flex-col gap-4 h-[calc(100vh-2rem)]">
-          <div className="flex justify-between items-center">
-            <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
-            <div className="flex items-center gap-2">
-              <AlertDialog>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button size="icon" variant="ghost"><LogOut/></Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>خروج به منوی اصلی</p>
-                    </TooltipContent>
-                  </Tooltip>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>بازگشت به منوی اصلی؟</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      پیشرفت شما به صورت خودکار ذخیره شده است. آیا می‌خواهید به منوی اصلی بازگردید؟
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>لغو</AlertDialogCancel>
-                    <AlertDialogAction onClick={resetGame}>
-                      خروج
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-          <div className="flex-grow flex flex-col overflow-hidden">
-            <SidebarTabs 
-              gameState={gameState}
-              onCraft={handleCrafting}
-              isCrafting={gameState.isLoading}
-              onFastTravel={processPlayerAction}
-            />
-          </div>
-        </div>
-      </main>
-    </TooltipProvider>
+    <>
+        <AudioManager gameState={gameState} />
+        {renderContent()}
+    </>
   );
 }
-
-    
