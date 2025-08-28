@@ -3,11 +3,13 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe } from "lucide-react";
+import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe, Loader2 } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
 import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
 import type { GameState } from "@/lib/types";
+import Image from 'next/image';
+
 
 import {
   Tooltip,
@@ -23,7 +25,7 @@ interface SidebarTabsProps {
 }
 
 export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps) {
-  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects } = gameState;
+  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects, mapImageUrl } = gameState;
   
   const tabs = [
     { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" /> },
@@ -112,10 +114,19 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
           </TabsContent>
           <TabsContent value="map" className="m-0 h-full">
               <Card className="bg-transparent border h-full flex flex-col items-center justify-center">
-                  <CardContent className="text-center">
-                      <h3 className="font-headline text-2xl tracking-wider text-foreground mb-2">نقشه جهان</h3>
-                      <p className="text-muted-foreground text-sm">داده‌های نقشه هنوز در دسترس نیست.</p>
-                      <Map className="w-24 h-24 mx-auto mt-4 text-muted-foreground/30"/>
+                  <CardHeader className="text-center">
+                      <CardTitle className="font-headline text-2xl tracking-wider text-foreground mb-2">نقشه منطقه</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center w-full aspect-square relative">
+                      {mapImageUrl ? (
+                          <Image src={mapImageUrl} alt="نقشه منطقه" fill className="object-contain rounded-md" data-ai-hint="fantasy map" />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                            <Map className="w-24 h-24 mx-auto mb-4 text-muted-foreground/30"/>
+                            <p className="text-sm">هنوز نقشه‌ای برای این منطقه کشف نشده است.</p>
+                            <p className="text-xs mt-1">به مکان‌های جدید سفر کنید تا نقشه آن‌ها را به دست آورید.</p>
+                        </div>
+                      )}
                   </CardContent>
               </Card>
           </TabsContent>

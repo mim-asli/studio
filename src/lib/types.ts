@@ -19,6 +19,7 @@ export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {
     isLoading: boolean;
     characterName: string;
     scenarioTitle: string;
+    mapImageUrl?: string;
 };
 
 // This represents a saved game file

@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { generateMapImage } from './generate-map-flow';
 
 const GenerateNextTurnInputSchema = z.object({
   gameState: z.string().describe('The current state of the game as a JSON string.'),
@@ -62,6 +63,7 @@ const GenerateNextTurnOutputSchema = z.object({
   isCombat: z.boolean().optional().describe('Whether combat is active.'),
   enemies: z.array(EnemySchema).optional().describe('A list of enemies in the combat.'),
   activeEffects: z.array(ActiveEffectSchema).optional().describe("A list of temporary buffs or debuffs affecting the player due to environment or status."),
+  mapImageUrl: z.string().optional().describe('A data URI for the newly generated map of the current location.'),
 });
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
 
@@ -72,7 +74,7 @@ export async function generateNextTurn(input: GenerateNextTurnInput): Promise<Ge
 const prompt = ai.definePrompt({
   name: 'generateNextTurnPrompt',
   input: {schema: GenerateNextTurnInputSchema},
-  output: {schema: GenerateNextTurnOutputSchema},
+  output: {schema: GenerateNextTurnOutputSchema.omit({ mapImageUrl: true })},
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
@@ -110,7 +112,7 @@ Enforce the following rules:
 Respond in the persona of the GM Personality specified in the story prompt.
 
 JSON Output Structure:
-ALWAYS return a JSON object with the specified structure. Ensure all fields are populated correctly based on the current turn.
+ALWAYS return a JSON object with the specified structure. Ensure all fields are populated correctly based on the current turn. DO NOT include mapImageUrl, it will be handled separately.
 
 Turn-Based Combat:
 If combat starts, set isCombat to true and populate the 'enemies' array with their stats. Player choices should include combat actions like [COMBAT: ATTACK] enemyId.
@@ -155,8 +157,21 @@ const generateNextTurnFlow = ai.defineFlow(
     inputSchema: GenerateNextTurnInputSchema,
     outputSchema: GenerateNextTurnOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const { output } = await prompt(input);
+    const nextTurnData = output! as GenerateNextTurnOutput;
+
+    // If a new location is discovered, generate a map for it.
+    if (nextTurnData.newLocation) {
+      try {
+        const mapResult = await generateMapImage({ locationName: nextTurnData.newLocation });
+        nextTurnData.mapImageUrl = mapResult.mapImageUrl;
+      } catch (error) {
+        console.error("Failed to generate map image:", error);
+        // Continue without a map if generation fails
+      }
+    }
+
+    return nextTurnData;
   }
 );

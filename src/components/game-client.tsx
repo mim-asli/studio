@@ -61,6 +61,7 @@ export const initialGameState: GameState = {
   isLoading: false,
   characterName: '',
   scenarioTitle: '',
+  mapImageUrl: undefined,
 };
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
@@ -163,7 +164,12 @@ export function GameClient() {
   
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
-    const stateBeforeAction = { ...gameState };
+    
+    // We need to preserve the map image url across turns if a new one isn't generated
+    const stateBeforeAction = { 
+        ...gameState,
+        mapImageUrl: gameState.mapImageUrl 
+    };
 
     setGameState(prev => ({ 
       ...prev, 
@@ -172,7 +178,6 @@ export function GameClient() {
       choices: [] 
     }));
     
-    // We pass the entire game state to the AI now, serialized as a string.
     const gameStateForAI = JSON.stringify(stateBeforeAction);
     
 
@@ -191,6 +196,8 @@ export function GameClient() {
             story: [...prevGameState.story, newStory], 
             gameStarted: true,
             isLoading: false,
+            // Keep the old map if a new one isn't provided
+            mapImageUrl: nextTurn.mapImageUrl || prevGameState.mapImageUrl,
         };
 
         if (updatedGameState.playerState.health <= 0) {
