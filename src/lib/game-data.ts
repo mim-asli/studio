@@ -10,8 +10,8 @@ export const initialGameState: GameState = {
   playerState: { 
     health: 100, 
     sanity: 100, 
-    hunger: 0, 
-    thirst: 0, 
+    hunger: 100, 
+    thirst: 100, 
     stamina: 100,
     ap: 4,
     maxAp: 4,

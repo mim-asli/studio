@@ -18,8 +18,10 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
   const percentage = max > 0 ? (value / max) * 100 : 0;
   let colorClass = "text-green-500"; // Default healthy color
 
-  const isDanger = variant === 'inverse' ? percentage > 70 : percentage < 30;
-  const isWarning = variant === 'inverse' ? percentage > 40 : percentage < 60;
+  // In 'default' variant, lower is worse (e.g., health).
+  // In 'inverse' variant, higher is worse (no longer used, but logic kept for reference).
+  const isDanger = percentage < 30;
+  const isWarning = percentage < 60;
 
   if (label === "امتیاز عمل") {
     colorClass = "text-blue-400";
@@ -92,28 +94,24 @@ export function PlayerHud({ playerState, activeEffects, isCombat }: PlayerHudPro
               value={health ?? 100} 
               max={100}
               icon={<HeartPulse />}
-              variant="default"
           />
           <HudGauge 
               label="عقلانیت" 
               value={sanity ?? 100} 
               max={100}
               icon={<BrainCircuit />}
-              variant="default"
           />
           <HudGauge 
-              label="گرسنگی" 
-              value={hunger ?? 0} 
+              label="سیری" 
+              value={hunger ?? 100} 
               max={100}
               icon={<Wheat />}
-              variant="inverse"
           />
           <HudGauge 
-              label="تشنگی" 
-              value={thirst ?? 0} 
+              label="آب بدن" 
+              value={thirst ?? 100} 
               max={100}
               icon={<Droplets />}
-              variant="inverse"
           />
           {stamina != null && (
             <HudGauge 
@@ -121,7 +119,6 @@ export function PlayerHud({ playerState, activeEffects, isCombat }: PlayerHudPro
                 value={stamina} 
                 max={100}
                 icon={<Zap />}
-                variant="default"
             />
           )}
           {mana != null && (
@@ -130,7 +127,6 @@ export function PlayerHud({ playerState, activeEffects, isCombat }: PlayerHudPro
                 value={mana} 
                 max={100}
                 icon={<Sparkles />}
-                variant="default"
             />
           )}
         </div>
