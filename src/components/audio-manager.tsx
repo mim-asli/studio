@@ -90,25 +90,38 @@ export function AudioManager({ gameState }: AudioManagerProps) {
   };
   
   const switchAudioSource = (audioRef: React.MutableRefObject<HTMLAudioElement | null>, newSrc: string, targetVolume: number) => {
-     const audio = audioRef.current;
+    const audio = audioRef.current;
     if (!audio) return;
-    
+
+    const hasCurrentSrc = audio.currentSrc && !audio.paused;
+
     // If the new source is empty, fade out and stop.
     if (!newSrc) {
-        if (audio.src && !audio.paused) {
-            fadeAudio(audio, 0);
+        if (hasCurrentSrc) {
+            fadeAudio(audio, 0, () => {
+                audio.src = '';
+            });
         }
         return;
     }
 
     if (audio.src !== newSrc) {
-        fadeAudio(audio, 0, () => {
-            audio.src = newSrc;
-            audio.volume = 0; // Start at 0 before playing
-            audio.play().catch(e => console.error("Audio play failed:", e));
-            setTimeout(() => fadeAudio(audio, targetVolume), 50);
-        });
-    } else if (!audio.paused) { // If src is the same, just adjust volume
+        // If there's currently a source playing, fade it out first.
+        if (hasCurrentSrc) {
+            fadeAudio(audio, 0, () => {
+                audio.src = newSrc;
+                audio.volume = 0; // Start at 0 before playing
+                audio.play().catch(e => console.error("Audio play failed:", e));
+                setTimeout(() => fadeAudio(audio, targetVolume), 50);
+            });
+        } else {
+             // If no source is playing, just start the new one and fade in.
+             audio.src = newSrc;
+             audio.volume = 0;
+             audio.play().catch(e => console.error("Audio play failed:", e));
+             setTimeout(() => fadeAudio(audio, targetVolume), 50);
+        }
+    } else if (hasCurrentSrc) { // If src is the same and it's playing, just adjust volume
         fadeAudio(audio, targetVolume);
     } else { // If src is the same but paused, start playing and fade in
         audio.volume = 0;
@@ -139,28 +152,23 @@ export function AudioManager({ gameState }: AudioManagerProps) {
 
   // --- Ambient Sound Logic ---
   useEffect(() => {
-    // Ambient sounds only play when the game is active
-    if (!gameState?.gameStarted) {
-        if (ambientAudioRef.current?.src) {
-           fadeAudio(ambientAudioRef.current, 0);
-        }
-        return;
-    }
-
     const ambientVolume = (settings.audio.master / 100) * (settings.audio.ambient / 100);
     let ambientSrc = "";
 
-    const locationLower = gameState.currentLocation.toLowerCase();
-    const weatherLower = gameState.worldState.weather?.toLowerCase() || "";
+    // Ambient sounds only play when the game is active
+    if (gameState?.gameStarted) {
+      const locationLower = gameState.currentLocation.toLowerCase();
+      const weatherLower = gameState.worldState.weather?.toLowerCase() || "";
 
-    if (weatherLower.includes('باران')) {
-      ambientSrc = audioSources.ambient.rain;
-    } else if (locationLower.includes('جنگل')) {
-      ambientSrc = audioSources.ambient.forest;
-    } else if (locationLower.includes('شهر') || locationLower.includes('بازار')) {
-      ambientSrc = audioSources.ambient.city;
-    } else if (locationLower.includes('غار') || locationLower.includes('زیرزمین')) {
-      ambientSrc = audioSources.ambient.cave;
+      if (weatherLower.includes('باران')) {
+        ambientSrc = audioSources.ambient.rain;
+      } else if (locationLower.includes('جنگل')) {
+        ambientSrc = audioSources.ambient.forest;
+      } else if (locationLower.includes('شهر') || locationLower.includes('بازار')) {
+        ambientSrc = audioSources.ambient.city;
+      } else if (locationLower.includes('غار') || locationLower.includes('زیرزمین')) {
+        ambientSrc = audioSources.ambient.cave;
+      }
     }
     
     switchAudioSource(ambientAudioRef, ambientSrc, ambientVolume);
