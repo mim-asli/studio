@@ -67,6 +67,9 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="scene" className="m-0">
+             <SceneDisplay entities={sceneEntities || []} companions={companions || []} />
+          </TabsContent>
           <TabsContent value="crafting" className="m-0 h-full">
             <CraftingPanel 
                 inventory={inventory}
@@ -85,9 +88,6 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
                       )}
                   </CardContent>
               </Card>
-          </TabsContent>
-          <TabsContent value="scene" className="m-0">
-             <SceneDisplay entities={sceneEntities || []} companions={companions || []} />
           </TabsContent>
           <TabsContent value="quests" className="m-0">
               <Card className="bg-transparent border">
