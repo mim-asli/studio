@@ -50,11 +50,11 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                     <Button onClick={onBack} variant="ghost" size="icon">
                         <ArrowLeft className="w-6 h-6" />
                     </Button>
-                    <h1 className="text-4xl font-headline text-accent">بارگذاری ماجراجویی</h1>
+                    <h1 className="text-4xl font-headline text-primary">بارگذاری ماجراجویی</h1>
                     <div className="w-10"></div>
                 </div>
 
-                <Card className="mb-6">
+                <Card className="mb-6 border-primary/20">
                     <CardHeader>
                         <CardTitle>بازی‌های ذخیره شده</CardTitle>
                         <CardDescription>یک ماجراجویی را برای ادامه انتخاب کنید.</CardDescription>
@@ -63,7 +63,7 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                         {savedGames.length > 0 ? (
                             <ul className="space-y-3">
                                 {savedGames.map((save) => (
-                                     <li key={save.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 group">
+                                     <li key={save.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 group border hover:border-primary/50 transition-colors">
                                         <div className="flex-1 overflow-hidden">
                                             <p className="font-semibold truncate">{save.characterName || 'شخصیت بی‌نام'}</p>
                                             <p className="text-sm text-muted-foreground truncate">{save.scenarioTitle}</p>
@@ -107,6 +107,12 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                         )}
                     </CardContent>
                 </Card>
+                 <div className="text-center mt-10">
+                    <Button onClick={onBack}>
+                        <ArrowLeft className="ml-2" />
+                        بازگشت به منوی اصلی
+                    </Button>
+                </div>
             </div>
         </div>
     );
