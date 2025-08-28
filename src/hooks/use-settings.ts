@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import type { AppSettings, ApiKey, HuggingFaceSettings, LocalLlmSettings, AudioSettings } from '@/lib/types';
+import type { AppSettings, ApiKey, HuggingFaceSettings, LocalLlmSettings } from '@/lib/types';
 import { produce } from 'immer';
 
 const SETTINGS_KEY = 'dastan-settings';
@@ -20,12 +21,6 @@ export const defaultSettings: AppSettings = {
     endpoint: 'http://127.0.0.1:11434',
     prioritize: false,
   },
-  audio: {
-    master: 80,
-    music: 60,
-    ambient: 70,
-    sfx: 90,
-  },
 };
 
 export function useSettings() {
@@ -43,7 +38,6 @@ export function useSettings() {
             ...parsed,
             huggingFace: {...defaultSettings.huggingFace, ...parsed.huggingFace},
             localLlm: {...defaultSettings.localLlm, ...parsed.localLlm},
-            audio: {...defaultSettings.audio, ...parsed.audio},
         }
         setSettings(mergedSettings);
       } else {
@@ -108,10 +102,6 @@ export function useSettings() {
     updateSettings(draft => { draft.localLlm = llmSettings; });
   }, [updateSettings]);
 
-  const setAudioSettings = useCallback((audioSettings: AudioSettings) => {
-     updateSettings(draft => { draft.audio = audioSettings; });
-  }, [updateSettings]);
-
   const setApiKeyStatus = useCallback((id: string, status: ApiKey['status']) => {
     updateGeminiApiKey(id, draft => {
         draft.status = status;
@@ -129,7 +119,6 @@ export function useSettings() {
     removeGeminiApiKey,
     setHuggingFaceSettings,
     setLocalLlmSettings,
-    setAudioSettings,
     setApiKeyStatus,
   };
 }

@@ -198,17 +198,9 @@ export type LocalLlmSettings = {
   prioritize: boolean;
 };
 
-export type AudioSettings = {
-  master: number;
-  music: number;
-  ambient: number;
-  sfx: number;
-};
-
 export type AppSettings = {
   theme: 'dark' | 'light';
   geminiApiKeys: ApiKey[];
   huggingFace: HuggingFaceSettings;
   localLlm: LocalLlmSettings;
-  audio: AudioSettings;
 };

@@ -11,15 +11,12 @@ interface HudStatProps {
   value: number;
   max?: number;
   icon: React.ReactNode;
-  variant?: 'default' | 'inverse';
 }
 
-const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudStatProps) => {
+const HudGauge = ({ label, value, max = 100, icon }: HudStatProps) => {
   const percentage = max > 0 ? (value / max) * 100 : 0;
   let colorClass = "text-green-500"; // Default healthy color
 
-  // In 'default' variant, lower is worse (e.g., health).
-  // In 'inverse' variant, higher is worse (no longer used, but logic kept for reference).
   const isDanger = percentage < 30;
   const isWarning = percentage < 60;
 

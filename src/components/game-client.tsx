@@ -20,7 +20,6 @@ import { SettingsPage } from "@/components/screens/settings-page";
 import { Scoreboard } from "@/components/screens/scoreboard";
 import { NewGameCreator } from "@/components/screens/new-game-creator";
 import { GameDirectorChat } from "./game-director-chat";
-import { AudioManager } from "./audio-manager";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -505,7 +504,6 @@ export function GameClient() {
 
   return (
     <>
-        <AudioManager gameState={gameState} />
         {renderContent()}
     </>
   );

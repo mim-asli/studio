@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
 import { useSettings } from "@/hooks/use-settings";
 import type { ApiKey } from "@/lib/types";
 import {
@@ -218,44 +217,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
-          
-           {/* --- Audio Settings --- */}
-          <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Volume2 className="text-accent"/>تنظیمات صدا</CardTitle>
-                <CardDescription>حجم بخش‌های مختلف صوتی بازی را تنظیم کنید.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6 pt-4">
-                <div className="grid gap-2">
-                    <div className="flex justify-between items-center">
-                        <Label htmlFor="master-volume" className="flex items-center gap-2"><Cog/> صدای اصلی</Label>
-                        <span className="text-sm font-mono w-12 text-center">{settings.audio.master}%</span>
-                    </div>
-                    <Slider id="master-volume" value={[settings.audio.master]} onValueChange={([value]) => updateSettings(draft => {draft.audio.master = value})} />
-                </div>
-                <div className="grid gap-2">
-                    <div className="flex justify-between items-center">
-                       <Label htmlFor="music-volume" className="flex items-center gap-2"><Music/> موسیقی</Label>
-                       <span className="text-sm font-mono w-12 text-center">{settings.audio.music}%</span>
-                    </div>
-                    <Slider id="music-volume" value={[settings.audio.music]} onValueChange={([value]) => updateSettings(draft => {draft.audio.music = value})}/>
-                </div>
-                <div className="grid gap-2">
-                    <div className="flex justify-between items-center">
-                        <Label htmlFor="ambient-volume" className="flex items-center gap-2"><Waves/> صدای محیط</Label>
-                        <span className="text-sm font-mono w-12 text-center">{settings.audio.ambient}%</span>
-                    </div>
-                    <Slider id="ambient-volume" value={[settings.audio.ambient]} onValueChange={([value]) => updateSettings(draft => {draft.audio.ambient = value})}/>
-                </div>
-                <div className="grid gap-2">
-                     <div className="flex justify-between items-center">
-                        <Label htmlFor="sfx-volume" className="flex items-center gap-2"><Volume2/> جلوه‌های صوتی</Label>
-                        <span className="text-sm font-mono w-12 text-center">{settings.audio.sfx}%</span>
-                    </div>
-                    <Slider id="sfx-volume" value={[settings.audio.sfx]} onValueChange={([value]) => updateSettings(draft => {draft.audio.sfx = value})}/>
-                </div>
             </CardContent>
           </Card>
         </main>
