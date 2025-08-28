@@ -3,8 +3,12 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Backpack, PersonStanding, ScrollText, Map, Hammer } from "lucide-react";
+import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
+import { PlayerHud } from "@/components/player-hud";
+import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
+import type { GameState } from "@/lib/types";
+
 import {
   Tooltip,
   TooltipContent,
@@ -13,26 +17,29 @@ import {
 } from "@/components/ui/tooltip"
 
 interface SidebarTabsProps {
-    inventory: string[];
-    skills: string[];
-    quests: string[];
+    gameState: GameState;
     onCraft: (ingredients: string[]) => void;
     isCrafting: boolean;
 }
 
-export function SidebarTabs({ inventory, skills, quests, onCraft, isCrafting }: SidebarTabsProps) {
+export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps) {
+  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions } = gameState;
+  
   const tabs = [
+    { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" /> },
     { value: "inventory", label: "موجودی", icon: <Backpack className="w-5 h-5" /> },
     { value: "crafting", label: "ساخت و ساز", icon: <Hammer className="w-5 h-5" /> },
     { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" /> },
+    { value: "scene", label: "صحنه", icon: <Microscope className="w-5 h-5" /> },
     { value: "quests", label: "مأموریت‌ها", icon: <ScrollText className="w-5 h-5" /> },
+    { value: "world", label: "جهان", icon: <Globe className="w-5 h-5" /> },
     { value: "map", label: "نقشه", icon: <Map className="w-5 h-5" /> },
   ]
   
   return (
     <TooltipProvider>
-      <Tabs defaultValue="inventory" className="h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-5 bg-transparent border rounded-md">
+      <Tabs defaultValue="vitals" className="h-full flex flex-col">
+        <TabsList className="grid w-full grid-cols-8 bg-transparent border rounded-md">
           {tabs.map((tab) => (
             <Tooltip key={tab.value}>
               <TooltipTrigger asChild>
@@ -45,6 +52,9 @@ export function SidebarTabs({ inventory, skills, quests, onCraft, isCrafting }: 
           ))}
         </TabsList>
         <div className="flex-grow mt-4">
+          <TabsContent value="vitals" className="m-0">
+             <PlayerHud playerState={playerState} />
+          </TabsContent>
           <TabsContent value="inventory" className="m-0">
             <Card className="bg-transparent border">
               <CardContent className="p-4 space-y-2">
@@ -57,7 +67,7 @@ export function SidebarTabs({ inventory, skills, quests, onCraft, isCrafting }: 
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="crafting" className="m-0">
+          <TabsContent value="crafting" className="m-0 h-full">
             <CraftingPanel 
                 inventory={inventory}
                 onCraft={onCraft}
@@ -76,6 +86,9 @@ export function SidebarTabs({ inventory, skills, quests, onCraft, isCrafting }: 
                   </CardContent>
               </Card>
           </TabsContent>
+          <TabsContent value="scene" className="m-0">
+             <SceneDisplay entities={sceneEntities || []} companions={companions || []} />
+          </TabsContent>
           <TabsContent value="quests" className="m-0">
               <Card className="bg-transparent border">
                   <CardContent className="p-4 space-y-2">
@@ -87,6 +100,9 @@ export function SidebarTabs({ inventory, skills, quests, onCraft, isCrafting }: 
                       )}
                   </CardContent>
               </Card>
+          </TabsContent>
+           <TabsContent value="world" className="m-0">
+             <WorldStateDisplay worldState={worldState} />
           </TabsContent>
           <TabsContent value="map" className="m-0">
               <Card className="bg-transparent border">

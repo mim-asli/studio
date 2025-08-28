@@ -8,10 +8,8 @@ import { craftItem } from "@/ai/flows/craft-item-flow";
 import { useToast } from "@/hooks/use-toast";
 
 import { StoryDisplay } from "@/components/story-display";
-import { PlayerHud } from "@/components/player-hud";
 import { InteractionPanel } from "@/components/interaction-panel";
 import { SidebarTabs } from "@/components/sidebar-tabs";
-import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
 import { Button } from "@/components/ui/button";
 import { Loader2, FilePlus, AlertTriangle, LogOut } from "lucide-react";
 import { StartScreen } from "./screens/start-screen";
@@ -410,14 +408,9 @@ export function GameClient() {
             </div>
           </div>
           <div className="flex-grow flex flex-col gap-4 overflow-y-auto pr-2">
-            <PlayerHud playerState={gameState.playerState} />
-            <WorldStateDisplay worldState={gameState.worldState} />
-            <SceneDisplay entities={gameState.sceneEntities || []} companions={gameState.companions || []} />
             <div className="flex-grow">
               <SidebarTabs 
-                inventory={gameState.inventory} 
-                skills={gameState.skills} 
-                quests={gameState.quests}
+                gameState={gameState}
                 onCraft={handleCrafting}
                 isCrafting={gameState.isLoading}
               />
