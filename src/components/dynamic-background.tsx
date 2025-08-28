@@ -15,7 +15,8 @@ export function DynamicBackground({ hint }: DynamicBackgroundProps) {
   useEffect(() => {
     // Using a seed based on the hint to get a consistent image for the same hint
     const seed = hint.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const newImageUrl = `https://picsum.photos/seed/${seed}/1920/1080`;
+    // Add grayscale and a slight blur to maintain a consistent, cinematic, and dark fantasy mood.
+    const newImageUrl = `https://picsum.photos/seed/${seed}/1920/1080?grayscale&blur=2`;
     
     // Preload the new image to ensure it's cached before swapping
     const img = new window.Image();
