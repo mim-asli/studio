@@ -46,8 +46,8 @@ The player is attempting to combine several items from their inventory. Evaluate
     *   *Bad Example:* Combining a 'Loaf of Bread' and a 'Sword' should probably result in failure and a funny message.
 2.  **Skill Influence:** Consider the player's skills. A character with a 'Blacksmith' skill might create a 'Sturdy Axe' instead of a 'Makeshift' one from the same ingredients. A character with 'Alchemy' might create a potion where others fail.
 3.  **Outcome:**
-    *   If the combination is logical, set `success` to true, `createdItem` to the name of the new item, `consumedItems` to the list of ingredients, and write a success message.
-    *   If the combination is illogical or fails, set `success` to false. Decide if the ingredients are consumed (e.g., a failed potion) or not (e.g., just trying to tie two rocks together). Populate `consumedItems` accordingly and write a descriptive failure message.
+    *   If the combination is logical, set 'success' to true, 'createdItem' to the name of the new item, 'consumedItems' to the list of ingredients, and write a success message.
+    *   If the combination is illogical or fails, set 'success' to false. Decide if the ingredients are consumed (e.g., a failed potion) or not (e.g., just trying to tie two rocks together). Populate 'consumedItems' accordingly and write a descriptive failure message.
 4.  **Be Creative:** Don't be afraid to allow for unexpected but clever combinations!
 
 **Player's Attempt:**

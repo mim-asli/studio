@@ -3,7 +3,8 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Backpack, PersonStanding, ScrollText, Map } from "lucide-react";
+import { Backpack, PersonStanding, ScrollText, Map, Hammer } from "lucide-react";
+import { CraftingPanel } from "@/components/crafting-panel";
 import {
   Tooltip,
   TooltipContent,
@@ -11,9 +12,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-export function SidebarTabs({ inventory, skills, quests }: { inventory: string[], skills: string[], quests: string[] }) {
+interface SidebarTabsProps {
+    inventory: string[];
+    skills: string[];
+    quests: string[];
+    onCraft: (ingredients: string[]) => void;
+    isCrafting: boolean;
+}
+
+export function SidebarTabs({ inventory, skills, quests, onCraft, isCrafting }: SidebarTabsProps) {
   const tabs = [
     { value: "inventory", label: "موجودی", icon: <Backpack className="w-5 h-5" /> },
+    { value: "crafting", label: "ساخت و ساز", icon: <Hammer className="w-5 h-5" /> },
     { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" /> },
     { value: "quests", label: "مأموریت‌ها", icon: <ScrollText className="w-5 h-5" /> },
     { value: "map", label: "نقشه", icon: <Map className="w-5 h-5" /> },
@@ -22,7 +32,7 @@ export function SidebarTabs({ inventory, skills, quests }: { inventory: string[]
   return (
     <TooltipProvider>
       <Tabs defaultValue="inventory" className="h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-4 bg-transparent border rounded-md">
+        <TabsList className="grid w-full grid-cols-5 bg-transparent border rounded-md">
           {tabs.map((tab) => (
             <Tooltip key={tab.value}>
               <TooltipTrigger asChild>
@@ -46,6 +56,13 @@ export function SidebarTabs({ inventory, skills, quests }: { inventory: string[]
                   )}
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="crafting" className="m-0">
+            <CraftingPanel 
+                inventory={inventory}
+                onCraft={onCraft}
+                isCrafting={isCrafting}
+            />
           </TabsContent>
           <TabsContent value="character" className="m-0">
               <Card className="bg-transparent border">

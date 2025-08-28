@@ -2,8 +2,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput } from "@/lib/types";
+import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput, CraftItemOutput } from "@/lib/types";
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
+import { craftItem } from "@/ai/flows/craft-item-flow";
 import { useToast } from "@/hooks/use-toast";
 
 import { StoryDisplay } from "@/components/story-display";
@@ -171,12 +172,7 @@ export function GameClient() {
     }));
     
     // We pass the entire game state to the AI now, serialized as a string.
-    // This gives the AI full context of inventory, quests, etc.
-    const gameStateForAI = JSON.stringify({
-      ...stateBeforeAction,
-      // The full story can be too long, so we still only send the last 10 segments for context.
-      story: stateBeforeAction.story.slice(-10).join('\n\n'),
-    });
+    const gameStateForAI = JSON.stringify(stateBeforeAction);
     
 
     try {
@@ -221,6 +217,56 @@ export function GameClient() {
         title: "خطای هوش مصنوعی",
         description: "داستان نتوانست ادامه یابد. لطفاً یک اقدام متفاوت را امتحان کنید.",
       });
+    }
+  };
+
+  const handleCrafting = async (ingredients: string[]) => {
+    setGameState(prev => ({ ...prev, isLoading: true }));
+    try {
+        const result: CraftItemOutput = await craftItem({
+            ingredients,
+            playerSkills: gameState.skills,
+        });
+
+        setGameState(prev => {
+            let newInventory = [...prev.inventory];
+            // Remove consumed items
+            result.consumedItems.forEach(consumed => {
+                const index = newInventory.findIndex(item => item === consumed);
+                if (index > -1) {
+                    newInventory.splice(index, 1);
+                }
+            });
+            // Add created item
+            if (result.success && result.createdItem) {
+                newInventory.push(result.createdItem);
+            }
+            
+            const updatedGameState: GameState = {
+                ...prev,
+                inventory: newInventory,
+                isLoading: false,
+                story: [...prev.story, `[ساخت و ساز]: ${result.message}`],
+            };
+
+            saveGame(updatedGameState);
+            return updatedGameState;
+        });
+
+        toast({
+            title: result.success ? "ساخت و ساز موفق" : "ساخت و ساز ناموفق",
+            description: result.message,
+            variant: result.success ? "default" : "destructive",
+        });
+
+    } catch (error) {
+        console.error("Crafting error:", error);
+        setGameState(prev => ({ ...prev, isLoading: false }));
+        toast({
+            variant: "destructive",
+            title: "خطای ساخت و ساز",
+            description: "یک خطای پیش‌بینی نشده در سیستم ساخت و ساز رخ داد.",
+        });
     }
   };
 
@@ -368,7 +414,13 @@ export function GameClient() {
             <WorldStateDisplay worldState={gameState.worldState} />
             <SceneDisplay entities={gameState.sceneEntities || []} companions={gameState.companions || []} />
             <div className="flex-grow">
-              <SidebarTabs inventory={gameState.inventory} skills={gameState.skills} quests={gameState.quests}/>
+              <SidebarTabs 
+                inventory={gameState.inventory} 
+                skills={gameState.skills} 
+                quests={gameState.quests}
+                onCraft={handleCrafting}
+                isCrafting={gameState.isLoading}
+              />
             </div>
           </div>
         </div>

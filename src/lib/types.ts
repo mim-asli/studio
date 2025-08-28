@@ -1,8 +1,12 @@
+
 import type {z} from 'genkit';
 import type {GenerateNextTurnOutputSchema} from '@/ai/flows/generate-next-turn';
+import type {CraftItemInputSchema, CraftItemOutputSchema} from '@/ai/flows/craft-item-flow';
 
 // This is the raw output from the AI flow. story is a single string.
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
+export type CraftItemInput = z.infer<typeof CraftItemInputSchema>;
+export type CraftItemOutput = z.infer<typeof CraftItemOutputSchema>;
 
 // This is the main state object for the game client. story is an array of strings.
 export type GameState = Omit<GenerateNextTurnOutput, 'story'> & {
