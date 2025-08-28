@@ -47,8 +47,12 @@ export function AudioManager({ gameState }: AudioManagerProps) {
     }
 
     const handleInteraction = () => {
-        musicAudioRef.current?.play().catch(e => console.error("Music play failed:", e));
-        ambientAudioRef.current?.play().catch(e => console.error("Ambient play failed:", e));
+        if (musicAudioRef.current?.src) {
+            musicAudioRef.current?.play().catch(e => console.error("Music play failed:", e));
+        }
+        if (ambientAudioRef.current?.src) {
+            ambientAudioRef.current?.play().catch(e => console.error("Ambient play failed:", e));
+        }
         document.removeEventListener('click', handleInteraction);
     }
     // Autoplay is restricted, so we need a user interaction to start audio.
