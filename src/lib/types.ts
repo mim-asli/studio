@@ -1,14 +1,5 @@
 import {z} from 'zod';
 
-// Schemas for generateNextTurn flow
-export const GenerateNextTurnInputSchema = z.object({
-  gameState: z.string().describe('The current state of the game as a JSON string.'),
-  playerAction: z.string().describe('The action taken by the player.'),
-  difficulty: z.string().optional().describe("The game's difficulty level (e.g., 'آسان', 'معمولی', 'سخت'). This must be respected on every turn."),
-  gmPersonality: z.string().optional().describe("The Game Master's personality (e.g., 'جدی و تاریک', 'شوخ و سرگرم‌کننده'). This must be respected on every turn."),
-});
-export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
-
 const EnemySchema = z.object({
     id: z.string().describe("A unique identifier for the enemy in this combat scene."),
     name: z.string().describe("The name of the enemy."),
@@ -19,6 +10,15 @@ const EnemySchema = z.object({
     ap: z.number().describe("The enemy's current action points."),
     maxAp: z.number().describe("The enemy's maximum action points."),
 });
+
+// Schemas for generateNextTurn flow
+export const GenerateNextTurnInputSchema = z.object({
+  gameState: z.string().describe('The current state of the game as a JSON string.'),
+  playerAction: z.string().describe('The action taken by the player.'),
+  difficulty: z.string().optional().describe("The game's difficulty level (e.g., 'آسان', 'معمولی', 'سخت'). This must be respected on every turn."),
+  gmPersonality: z.string().optional().describe("The Game Master's personality (e.g., 'جدی و تاریک', 'شوخ و سرگرم‌کننده'). This must be respected on every turn."),
+});
+export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
 
 const PlayerStateSchema = z.object({
   health: z.number().describe("Player's current health. Max 100."),
@@ -88,21 +88,10 @@ export type Enemy = z.infer<typeof EnemySchema>;
 
 
 // Schemas for manageCombatScenarioFlow
-const EnemyStateSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    health: z.number(),
-    maxHealth: z.number(),
-    attack: z.number(),
-    defense: z.number(),
-    ap: z.number(),
-    maxAp: z.number(),
-});
-
 export const ManageCombatScenarioInputSchema = z.object({
   playerAction: z.string().describe("The combat action taken by the player (e.g., '[COMBAT] Attack Goblin')."),
   playerState: PlayerStateSchema.describe('The current state of the player.'),
-  enemies: z.array(EnemyStateSchema).describe('The list of enemies currently in combat.'),
+  enemies: z.array(EnemySchema).describe('The list of enemies currently in combat.'),
   inventory: z.array(z.string()).describe("The player's current inventory."),
   skills: z.array(z.string()).describe("The player's current skills."),
   combatLog: z.array(z.string()).optional().describe('A log of recent events in this combat.'),
@@ -120,7 +109,7 @@ const CombatRewardSchema = z.object({
 export const ManageCombatScenarioOutputSchema = z.object({
   turnNarration: z.string().describe('A step-by-step narration of what happened this turn. First the player action, then the enemy actions.'),
   updatedPlayerState: PlayerStateSchema.describe("The player's state after this turn's events."),
-  updatedEnemies: z.array(EnemyStateSchema).describe('The updated state of all enemies after this turn. Include defeated enemies with 0 health.'),
+  updatedEnemies: z.array(EnemySchema).describe('The updated state of all enemies after this turn. Include defeated enemies with 0 health.'),
   choices: z.array(z.string()).describe("The available combat choices for the next player turn."),
   isCombatOver: z.boolean().describe('Set to true if all enemies are defeated or the player is defeated.'),
   rewards: CombatRewardSchema.optional().describe('If combat is over and the player won, populate this with rewards. Be realistic about loot.'),
