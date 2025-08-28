@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-const EnemySchema = z.object({
+export const EnemySchema = z.object({
     id: z.string().describe("A unique identifier for the enemy in this combat scene."),
     name: z.string().describe("The name of the enemy."),
     health: z.number().describe("The current health of the enemy."),
@@ -12,16 +12,17 @@ const EnemySchema = z.object({
 });
 export type Enemy = z.infer<typeof EnemySchema>;
 
-const PlayerStateSchema = z.object({
+export const PlayerStateSchema = z.object({
   health: z.number().describe("Player's current health. Max 100."),
   sanity: z.number().describe("Player's current sanity. Max 100. Low sanity can cause hallucinations or negative effects."),
-  hunger: z.number().describe("Player's current hunger level. 0 is not hungry, 100 is starving."),
-  thirst: z.number().describe("Player's current thirst level. 0 is not thirsty, 100 is dehydrated."),
+  hunger: z.number().describe("Player's current hunger level. 0 is not hungry, 100 is starving. At 100, the player starts losing health."),
+  thirst: z.number().describe("Player's current thirst level. 0 is not thirsty, 100 is dehydrated. At 100, the player starts losing health."),
   stamina: z.number().optional().describe("Player's current stamina/energy. Max 100. Physical actions consume stamina."),
   mana: z.number().optional().describe("Player's current magical energy. Max 100. Casting spells consumes mana."),
   ap: z.number().optional().describe("Player's current action points for combat."),
   maxAp: z.number().optional().describe("Player's maximum action points for combat."),
 });
+export type PlayerState = z.infer<typeof PlayerStateSchema>;
 
 const WorldStateSchema = z.object({
     day: z.number().describe("The current day number in the game world."),
@@ -86,7 +87,7 @@ export type CraftItemOutput = z.infer<typeof CraftItemOutputSchema>;
 
 // Schemas for manageCombatScenarioFlow
 export const ManageCombatScenarioInputSchema = z.object({
-  playerAction: z.string().describe("The combat action taken by the player (e.g., '[COMBAT] Attack Goblin')."),
+  playerAction: z.string().describe("The combat action taken by the player (e.g., '[مبارزه] حمله به گابلین')."),
   playerState: PlayerStateSchema.describe('The current state of the player.'),
   enemies: z.array(EnemySchema).describe('The list of enemies currently in combat.'),
   inventory: z.array(z.string()).describe("The player's current inventory."),

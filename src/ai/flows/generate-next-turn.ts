@@ -46,6 +46,13 @@ Your main job is to advance the story based on player actions outside of combat.
 
 Enforce the following rules:
 - **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions, activeEffects, discoveredLocations) MUST be reflected in the JSON output. The inventory, companions, activeEffects, and discoveredLocations in the output must always be the complete lists.
+- **Hunger & Thirst Mechanics:** With every action, the player's hunger and thirst will increase. You must manage this.
+    - If hunger exceeds 70, apply a 'گرسنه' debuff.
+    - If thirst exceeds 70, apply a 'تشنه' debuff.
+    - If hunger reaches 100, the player starts losing 5 health per turn.
+    - If thirst reaches 100, the player starts losing 10 health per turn.
+    - Your narration must reflect this state (e.g., "You feel weak from hunger," "Your throat is parched").
+    - These effects should be removed if the player eats or drinks.
 - **Location Management:**
     - The player's current location must ALWAYS be populated in the 'currentLocation' field.
     - When the player discovers a new place, populate 'newLocation'. This new location must then be added to the 'discoveredLocations' array.
