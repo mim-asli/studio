@@ -66,7 +66,7 @@ export function AudioManager({ gameState }: AudioManagerProps) {
     };
   }, []);
 
-  const fadeAudio = (audio: HTMLAudioElement, targetVolume: number, onFadeOut?: () => void) => {
+  const fadeAudio = (audio: HTMLAudioElement, targetVolume: number, onComplete?: () => void) => {
     const initialVolume = audio.volume;
     let startTime: number | null = null;
     
@@ -82,8 +82,8 @@ export function AudioManager({ gameState }: AudioManagerProps) {
       } else {
         if (targetVolume === 0) {
             audio.pause();
-            if (onFadeOut) onFadeOut();
         }
+        if (onComplete) onComplete();
       }
     };
     requestAnimationFrame(animateFade);
@@ -93,11 +93,11 @@ export function AudioManager({ gameState }: AudioManagerProps) {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const hasCurrentSrc = audio.currentSrc && !audio.paused;
+    const isPlaying = audio.currentSrc && !audio.paused;
 
-    // If the new source is empty, fade out and stop.
+    // Case 1: New source is empty. Fade out and stop.
     if (!newSrc) {
-        if (hasCurrentSrc) {
+        if (isPlaying) {
             fadeAudio(audio, 0, () => {
                 audio.src = '';
             });
@@ -105,28 +105,31 @@ export function AudioManager({ gameState }: AudioManagerProps) {
         return;
     }
 
-    if (audio.src !== newSrc) {
-        // If there's currently a source playing, fade it out first.
-        if (hasCurrentSrc) {
-            fadeAudio(audio, 0, () => {
-                audio.src = newSrc;
-                audio.volume = 0; // Start at 0 before playing
-                audio.play().catch(e => console.error("Audio play failed:", e));
-                setTimeout(() => fadeAudio(audio, targetVolume), 50);
-            });
-        } else {
-             // If no source is playing, just start the new one and fade in.
-             audio.src = newSrc;
+    // Case 2: Source is the same. Just adjust volume.
+    if (audio.src === newSrc) {
+        if (!isPlaying) { // If paused, start playing and fade in
              audio.volume = 0;
              audio.play().catch(e => console.error("Audio play failed:", e));
-             setTimeout(() => fadeAudio(audio, targetVolume), 50);
+             fadeAudio(audio, targetVolume);
+        } else { // If playing, just adjust volume
+            fadeAudio(audio, targetVolume);
         }
-    } else if (hasCurrentSrc) { // If src is the same and it's playing, just adjust volume
-        fadeAudio(audio, targetVolume);
-    } else { // If src is the same but paused, start playing and fade in
-        audio.volume = 0;
-        audio.play().catch(e => console.error("Audio play failed:", e));
-        setTimeout(() => fadeAudio(audio, targetVolume), 50);
+        return;
+    }
+
+    // Case 3: New source is different. Fade out, switch, then fade in.
+    if (isPlaying) {
+        fadeAudio(audio, 0, () => {
+            audio.src = newSrc;
+            audio.volume = 0; 
+            audio.play().catch(e => console.error("Audio play failed:", e));
+            fadeAudio(audio, targetVolume);
+        });
+    } else { // If not playing anything, just start the new source and fade in.
+         audio.src = newSrc;
+         audio.volume = 0;
+         audio.play().catch(e => console.error("Audio play failed:", e));
+         fadeAudio(audio, targetVolume);
     }
   }
 
