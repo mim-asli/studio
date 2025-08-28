@@ -170,8 +170,6 @@ export function GameClient() {
       choices: [] 
     }));
     
-    // Create a clean, summarized state object for the AI prompt.
-    // This is more explicit and less error-prone than copying and deleting fields.
     const { 
       id, 
       isGameOver, 
@@ -183,7 +181,7 @@ export function GameClient() {
     
     const gameStateForAI = {
       ...restOfState,
-      story: story.slice(-10).join('\n\n'), // Use a summary of the story
+      story: story.slice(-10).join('\n\n'), 
     };
 
     try {
@@ -260,7 +258,6 @@ export function GameClient() {
     setGameState(freshGameState);
     setView("game");
     
-    // The initial prompt for the AI to start the game
     const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
     
     processPlayerAction(startPrompt);
@@ -343,16 +340,16 @@ export function GameClient() {
             <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
             <div className="flex items-center gap-2">
               <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Tooltip>
+                <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button size="icon" variant="ghost"><LogOut/></Button>
+                      <AlertDialogTrigger asChild>
+                        <Button size="icon" variant="ghost"><LogOut/></Button>
+                      </AlertDialogTrigger>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>خروج به منوی اصلی</p>
                     </TooltipContent>
                   </Tooltip>
-                </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>بازگشت به منوی اصلی؟</AlertDialogTitle>
@@ -383,5 +380,7 @@ export function GameClient() {
     </TooltipProvider>
   );
 }
+
+    
 
     
