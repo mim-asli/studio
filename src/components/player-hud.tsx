@@ -64,11 +64,11 @@ export function PlayerHud({ playerState }: { playerState: GameState['playerState
   const { health, sanity, hunger, thirst, stamina, mana } = playerState || {};
   
   return (
-    <Card className="bg-transparent border">
-      <CardHeader className="pb-4 pt-4">
+    <Card className="bg-transparent border h-full">
+      <CardHeader className="pb-4">
         <CardTitle className="font-headline text-2xl tracking-wider">علائم حیاتی</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2">
+      <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-6 justify-items-center">
         <HudGauge 
             label="سلامتی" 
             value={health ?? 100} 

@@ -407,14 +407,12 @@ export function GameClient() {
               </AlertDialog>
             </div>
           </div>
-          <div className="flex-grow flex flex-col gap-4 overflow-y-auto pr-2">
-            <div className="flex-grow">
-              <SidebarTabs 
-                gameState={gameState}
-                onCraft={handleCrafting}
-                isCrafting={gameState.isLoading}
-              />
-            </div>
+          <div className="flex-grow flex flex-col overflow-hidden">
+            <SidebarTabs 
+              gameState={gameState}
+              onCraft={handleCrafting}
+              isCrafting={gameState.isLoading}
+            />
           </div>
         </div>
       </main>

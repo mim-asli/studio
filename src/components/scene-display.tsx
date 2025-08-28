@@ -36,18 +36,18 @@ const getEntityIcon = (entity: string, companions: string[]) => {
 
 export function SceneDisplay({ entities, companions }: { entities: string[], companions: string[] }) {
   return (
-    <Card className="bg-transparent border">
-        <CardHeader className="pb-4 pt-4">
+    <Card className="bg-transparent border h-full">
+        <CardHeader className="pb-4">
             <CardTitle className="font-headline text-2xl tracking-wider">صحنه</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="h-[calc(100%-4rem)] overflow-y-auto pr-2">
             <TooltipProvider>
                 {entities && entities.length > 0 ? (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {entities.map((entity, index) => (
                           <Tooltip key={index}>
                             <TooltipTrigger asChild>
-                              <div className="flex flex-col items-center justify-start gap-2 p-2 rounded-md bg-muted/50 w-20 h-24 text-center border">
+                              <div className="flex flex-col items-center justify-start gap-2 p-2 rounded-md bg-muted/50 w-24 h-28 text-center border">
                                   {getEntityIcon(entity, companions)}
                                   <p className="text-xs break-words leading-tight font-code">{entity}</p>
                               </div>
@@ -59,7 +59,7 @@ export function SceneDisplay({ entities, companions }: { entities: string[], com
                         ))}
                     </div>
                 ) : (
-                    <p className="text-muted-foreground text-sm">صحنه آرام است.</p>
+                    <p className="text-muted-foreground text-sm text-center pt-10">صحنه آرام است.</p>
                 )}
             </TooltipProvider>
         </CardContent>
@@ -82,32 +82,34 @@ export function WorldStateDisplay({ worldState }: { worldState: GameState['world
     const weatherIcon = getWeatherIcon(worldState.weather);
 
     return (
-        <Card className="bg-transparent border">
-            <CardContent className="p-4 flex justify-around items-center text-center">
-                 <div className="flex items-center gap-2">
-                    {isNight ? <Moon className="w-6 h-6 text-yellow-300" /> : <Sun className="w-6 h-6 text-yellow-500" />}
+        <Card className="bg-transparent border h-full flex flex-col justify-center">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl tracking-wider">وضعیت جهان</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+                 <div className="flex items-center gap-4 text-2xl">
+                    {isNight ? <Moon className="w-8 h-8 text-yellow-300" /> : <Sun className="w-8 h-8 text-yellow-500" />}
                     <div>
-                        <p className="font-headline text-xl">{worldState.time}</p>
-                        <p className="text-xs text-muted-foreground">زمان</p>
+                        <p className="font-headline">{worldState.time}</p>
+                        <p className="text-sm text-muted-foreground">زمان</p>
                     </div>
                  </div>
-                 <div className="border-l h-10 border-border/50"></div>
-                 <div className="flex items-center gap-2">
-                    <div className="font-headline text-3xl">{worldState.day}</div>
-                    <p className="text-xs text-muted-foreground mt-2">روز</p>
+                 <div className="flex items-center gap-4 text-2xl">
+                    <div className="font-headline text-4xl w-8 text-center">{worldState.day}</div>
+                    <p className="text-sm text-muted-foreground mt-2">روز</p>
                  </div>
                  {worldState.weather && weatherIcon && (
                     <>
-                        <div className="border-l h-10 border-border/50"></div>
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-4 text-2xl">
                                         {weatherIcon}
+                                         <p className="text-sm text-muted-foreground">{worldState.weather}</p>
                                     </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>{worldState.weather}</p>
+                                    <p>آب و هوا: {worldState.weather}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
