@@ -2,7 +2,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
