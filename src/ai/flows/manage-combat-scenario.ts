@@ -24,7 +24,7 @@ export type ManageCombatScenarioInput = z.infer<typeof ManageCombatScenarioInput
 const ManageCombatScenarioOutputSchema = z.object({
   story: z.string().describe('The narrative of the combat scenario.'),
   enemyActions: z.array(z.record(z.any())).describe('The actions of the enemies.'),
-  updatedEnemies: z.array(z.record(z.any())).describe('The updated state of the enemies.'),
+  updatedEnemies: z.array(z.record(z_any())).describe('The updated state of the enemies.'),
   combatLog: z.array(z.string()).describe('The updated combat log.'),
   sceneEntities: z.array(z.record(z.any())).describe('The entities present in the scene (player, enemies, objects).'),
   isCombatOver: z.boolean().describe('Whether the combat is over.'),
@@ -53,9 +53,14 @@ Here are the available player actions: {{{playerActions}}}
 
 Here is the current combat log, if any: {{{combatLog}}}
 
-Based on the player's state, the enemies, and the available actions, describe what happens in the combat turn. Include the enemy actions, update the state of the enemies, and update the combat log.  Make sure to set isCombatOver to true when appropriate, and describe any rewards for the player.  Always populate sceneEntities with the player and the enemies.
+Based on the player's state, the enemies, and the available actions, describe what happens in the combat turn. Include the enemy actions, update the state of the enemies, and update the combat log.
+- Set 'isCombatOver' to true only when the combat is definitively finished (player has won or lost).
+- If combat is over and the player has won, populate the 'rewards' field.
+- **Crucially, rewards MUST be appropriate to the defeated enemies.** A bandit might carry a few coins, but a wild wolf or a slime monster likely has no treasure. Be realistic.
 
-Output should be a JSON object conforming to ManageCombatScenarioOutputSchema. Make sure to set isCombatOver to true only when combat is actually over, and the player has won or lost.  If combat is over, you must populate the rewards field. Rewards can include gold, gems, or unique items.
+Always populate 'sceneEntities' with the player and the enemies.
+
+Output should be a JSON object conforming to ManageCombatScenarioOutputSchema.
 `,
 });
 
