@@ -3,13 +3,12 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe, Loader2, Waypoints } from "lucide-react";
+import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe, Waypoints } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
 import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
 import type { GameState } from "@/lib/types";
 import { Button } from "./ui/button";
-
 
 import {
   Tooltip,
