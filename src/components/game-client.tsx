@@ -61,7 +61,8 @@ export const initialGameState: GameState = {
   isLoading: false,
   characterName: '',
   scenarioTitle: '',
-  mapImageUrl: undefined,
+  currentLocation: 'مکان نامشخص',
+  discoveredLocations: [],
 };
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
@@ -165,11 +166,7 @@ export function GameClient() {
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
     
-    // We need to preserve the map image url across turns if a new one isn't generated
-    const stateBeforeAction = { 
-        ...gameState,
-        mapImageUrl: gameState.mapImageUrl 
-    };
+    const stateBeforeAction = { ...gameState };
 
     setGameState(prev => ({ 
       ...prev, 
@@ -196,8 +193,6 @@ export function GameClient() {
             story: [...prevGameState.story, newStory], 
             gameStarted: true,
             isLoading: false,
-            // Keep the old map if a new one isn't provided
-            mapImageUrl: nextTurn.mapImageUrl || prevGameState.mapImageUrl,
         };
 
         if (updatedGameState.playerState.health <= 0) {
@@ -304,6 +299,8 @@ export function GameClient() {
       choices: [],
       characterName: characterName,
       scenarioTitle: scenario.title,
+      currentLocation: 'شروع ماجرا', // Initial location
+      discoveredLocations: ['شروع ماجرا'], // Add initial location
     };
     
     setGameState(freshGameState);
@@ -423,6 +420,7 @@ export function GameClient() {
               gameState={gameState}
               onCraft={handleCrafting}
               isCrafting={gameState.isLoading}
+              onFastTravel={processPlayerAction}
             />
           </div>
         </div>

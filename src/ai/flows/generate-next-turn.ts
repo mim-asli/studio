@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { generateMapImage } from './generate-map-flow';
 
 const GenerateNextTurnInputSchema = z.object({
   gameState: z.string().describe('The current state of the game as a JSON string.'),
@@ -56,25 +55,27 @@ const GenerateNextTurnOutputSchema = z.object({
   worldState: WorldStateSchema.describe('The state of the game world (day, time, etc.).'),
   newCharacter: z.string().optional().describe('A new character introduced in this turn.'),
   newQuest: z.string().optional().describe('A new quest introduced in this turn.'),
-  newLocation: z.string().optional().describe('A new location introduced in this turn.'),
+  currentLocation: z.string().describe("The player's current location name. This MUST always be populated."),
+  newLocation: z.string().optional().describe('A new location introduced in this turn. If a new location is introduced, it must be different from the current location.'),
+  discoveredLocations: z.array(z.string()).describe("A list of all locations the player has discovered so far. This should be the complete list, including any new locations from this turn."),
   globalEvent: z.string().optional().describe('A global event that occurred in this turn.'),
   sceneEntities: z.array(z.string()).describe('List of all entities in the current scene (player, companions, enemies, important objects).'),
   companions: z.array(z.string()).optional().describe("A list of the player's current companions. This should be the complete list of companions."),
   isCombat: z.boolean().optional().describe('Whether combat is active.'),
   enemies: z.array(EnemySchema).optional().describe('A list of enemies in the combat.'),
   activeEffects: z.array(ActiveEffectSchema).optional().describe("A list of temporary buffs or debuffs affecting the player due to environment or status."),
-  mapImageUrl: z.string().optional().describe('A data URI for the newly generated map of the current location.'),
 });
 export type GenerateNextTurnOutput = z.infer<typeof GenerateNextTurnOutputSchema>;
 
 export async function generateNextTurn(input: GenerateNextTurnInput): Promise<GenerateNextTurnOutput> {
-  return generateNextTurnFlow(input);
+  const { output } = await generateNextTurnPrompt(input);
+  return output!;
 }
 
-const prompt = ai.definePrompt({
+const generateNextTurnPrompt = ai.definePrompt({
   name: 'generateNextTurnPrompt',
   input: {schema: GenerateNextTurnInputSchema},
-  output: {schema: GenerateNextTurnOutputSchema.omit({ mapImageUrl: true })},
+  output: {schema: GenerateNextTurnOutputSchema},
   prompt: `You are the game master for a dynamic text-based RPG called Dastan.
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
@@ -84,7 +85,11 @@ The user has specified a difficulty level. You MUST adjust the game's challenges
 - **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
 
 Enforce the following rules:
-- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions, activeEffects) MUST be reflected in the JSON output. The inventory, companions, and activeEffects in the output must always be the complete lists.
+- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions, activeEffects, discoveredLocations) MUST be reflected in the JSON output. The inventory, companions, activeEffects, and discoveredLocations in the output must always be the complete lists.
+- **Location Management:**
+    - The player's current location must ALWAYS be populated in the 'currentLocation' field.
+    - When the player discovers a new place, populate 'newLocation'. This new location must then be added to the 'discoveredLocations' array.
+    - 'discoveredLocations' should be a persistent, unique list of all places the player has ever been. Ensure the list is always complete and updated.
 - **Active Effects:** Based on the situation, apply status effects to the player. These can be positive (buffs) or negative (debuffs). For example:
     - Eating a good meal could result in a 'Well Fed' buff.
     - Being in a blizzard could apply a 'Freezing' debuff.
@@ -112,7 +117,7 @@ Enforce the following rules:
 Respond in the persona of the GM Personality specified in the story prompt.
 
 JSON Output Structure:
-ALWAYS return a JSON object with the specified structure. Ensure all fields are populated correctly based on the current turn. DO NOT include mapImageUrl, it will be handled separately.
+ALWAYS return a JSON object with the specified structure. Ensure all fields are populated correctly based on the current turn.
 
 Turn-Based Combat:
 If combat starts, set isCombat to true and populate the 'enemies' array with their stats. Player choices should include combat actions like [COMBAT: ATTACK] enemyId.
@@ -150,28 +155,3 @@ Player Action:
     ],
   },
 });
-
-const generateNextTurnFlow = ai.defineFlow(
-  {
-    name: 'generateNextTurnFlow',
-    inputSchema: GenerateNextTurnInputSchema,
-    outputSchema: GenerateNextTurnOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    const nextTurnData = output! as GenerateNextTurnOutput;
-
-    // If a new location is discovered, generate a map for it.
-    if (nextTurnData.newLocation) {
-      try {
-        const mapResult = await generateMapImage({ locationName: nextTurnData.newLocation });
-        nextTurnData.mapImageUrl = mapResult.mapImageUrl;
-      } catch (error) {
-        console.error("Failed to generate map image:", error);
-        // Continue without a map if generation fails
-      }
-    }
-
-    return nextTurnData;
-  }
-);

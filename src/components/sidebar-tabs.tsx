@@ -2,13 +2,13 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe, Loader2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe, Loader2, Waypoints } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
 import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
 import type { GameState } from "@/lib/types";
-import Image from 'next/image';
+import { Button } from "./ui/button";
 
 
 import {
@@ -22,10 +22,11 @@ interface SidebarTabsProps {
     gameState: GameState;
     onCraft: (ingredients: string[]) => void;
     isCrafting: boolean;
+    onFastTravel: (action: string) => void;
 }
 
-export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps) {
-  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects, mapImageUrl } = gameState;
+export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: SidebarTabsProps) {
+  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects, discoveredLocations, currentLocation } = gameState;
   
   const tabs = [
     { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" /> },
@@ -35,7 +36,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
     { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" /> },
     { value: "quests", label: "مأموریت‌ها", icon: <ScrollText className="w-5 h-5" /> },
     { value: "world", label: "جهان", icon: <Globe className="w-5 h-5" /> },
-    { value: "map", label: "نقشه", icon: <Map className="w-5 h-5" /> },
+    { value: "map", label: "سفر سریع", icon: <Map className="w-5 h-5" /> },
   ]
   
   return (
@@ -113,18 +114,31 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
              <WorldStateDisplay worldState={worldState} />
           </TabsContent>
           <TabsContent value="map" className="m-0 h-full">
-              <Card className="bg-transparent border h-full flex flex-col items-center justify-center">
-                  <CardHeader className="text-center">
-                      <CardTitle className="font-headline text-2xl tracking-wider text-foreground mb-2">نقشه منطقه</CardTitle>
+              <Card className="bg-transparent border h-full flex flex-col">
+                  <CardHeader>
+                      <CardTitle className="font-headline text-2xl tracking-wider text-foreground">سفر سریع</CardTitle>
+                      <CardContent className="text-sm text-muted-foreground p-0 pt-2">شما در حال حاضر در <span className="text-primary font-bold">{currentLocation}</span> هستید.</CardContent>
                   </CardHeader>
-                  <CardContent className="text-center w-full aspect-square relative">
-                      {mapImageUrl ? (
-                          <Image src={mapImageUrl} alt="نقشه منطقه" fill className="object-contain rounded-md" data-ai-hint="fantasy map" />
+                  <CardContent className="text-center w-full flex-grow overflow-y-auto pr-2">
+                      {discoveredLocations && discoveredLocations.length > 1 ? (
+                          <div className="space-y-2">
+                            {discoveredLocations.filter(loc => loc !== currentLocation).map((location, index) => (
+                                <Button 
+                                    key={index} 
+                                    variant="outline" 
+                                    className="w-full justify-start"
+                                    onClick={() => onFastTravel(`سفر به ${location}`)}
+                                    disabled={isCrafting} // Use isCrafting as a general isLoading flag
+                                >
+                                    <Waypoints className="ml-2 h-4 w-4"/>
+                                    {location}
+                                </Button>
+                            ))}
+                          </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                             <Map className="w-24 h-24 mx-auto mb-4 text-muted-foreground/30"/>
-                            <p className="text-sm">هنوز نقشه‌ای برای این منطقه کشف نشده است.</p>
-                            <p className="text-xs mt-1">به مکان‌های جدید سفر کنید تا نقشه آن‌ها را به دست آورید.</p>
+                            <p className="text-sm">هنوز مکان دیگری برای سفر کشف نکرده‌اید.</p>
                         </div>
                       )}
                   </CardContent>
