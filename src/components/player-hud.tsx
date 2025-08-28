@@ -72,7 +72,7 @@ export function PlayerHud({ playerState, activeEffects, isCombat }: PlayerHudPro
   const { health, sanity, hunger, thirst, stamina, mana, ap, maxAp } = playerState || {};
   
   return (
-    <Card className="bg-transparent border h-full">
+    <Card className="bg-card/80 backdrop-blur-sm border h-full">
       <CardHeader className="pb-4">
         <CardTitle className="font-headline text-2xl tracking-wider">علائم حیاتی</CardTitle>
       </CardHeader>

@@ -41,7 +41,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
   return (
     <TooltipProvider>
       <Tabs defaultValue="vitals" className="h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 bg-transparent border rounded-md">
+        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 bg-card/80 backdrop-blur-sm border rounded-md">
           {tabs.map((tab) => (
             <Tooltip key={tab.value}>
               <TooltipTrigger asChild>
@@ -58,7 +58,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
              <PlayerHud playerState={playerState} activeEffects={activeEffects} isCombat={isCombat} />
           </TabsContent>
           <TabsContent value="inventory" className="m-0 h-full">
-            <Card className="bg-transparent border h-full">
+            <Card className="bg-card/80 backdrop-blur-sm border h-full">
               <CardHeader>
                 <CardTitle className="font-headline text-2xl tracking-wider text-foreground">موجودی</CardTitle>
               </CardHeader>
@@ -82,7 +82,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
             />
           </TabsContent>
           <TabsContent value="character" className="m-0 h-full">
-              <Card className="bg-transparent border h-full">
+              <Card className="bg-card/80 backdrop-blur-sm border h-full">
                   <CardHeader>
                     <CardTitle className="font-headline text-2xl tracking-wider text-foreground">مهارت‌ها</CardTitle>
                   </CardHeader>
@@ -96,7 +96,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
               </Card>
           </TabsContent>
           <TabsContent value="quests" className="m-0 h-full">
-              <Card className="bg-transparent border h-full">
+              <Card className="bg-card/80 backdrop-blur-sm border h-full">
                  <CardHeader>
                     <CardTitle className="font-headline text-2xl tracking-wider text-foreground">مأموریت‌ها</CardTitle>
                   </CardHeader>
@@ -113,7 +113,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
              <WorldStateDisplay worldState={worldState} />
           </TabsContent>
           <TabsContent value="map" className="m-0 h-full">
-              <Card className="bg-transparent border h-full flex flex-col">
+              <Card className="bg-card/80 backdrop-blur-sm border h-full flex flex-col">
                   <CardHeader>
                       <CardTitle className="font-headline text-2xl tracking-wider text-foreground">نقشه جهان</CardTitle>
                       <CardContent className="text-sm text-muted-foreground p-0 pt-2">جهان را بچرخانید و مکان‌های کشف شده را ببینید.</CardContent>

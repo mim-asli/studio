@@ -48,7 +48,7 @@ const getEntityIcon = (entity: string, companions: string[]) => {
 
 export function SceneDisplay({ entities, companions }: { entities: string[], companions: string[] }) {
   return (
-    <Card className="bg-transparent border h-full">
+    <Card className="bg-card/80 backdrop-blur-sm border h-full">
         <CardHeader className="pb-4">
             <CardTitle className="font-headline text-2xl tracking-wider">صحنه</CardTitle>
         </CardHeader>
@@ -94,7 +94,7 @@ export function WorldStateDisplay({ worldState }: { worldState: GameState['world
     const weatherIcon = getWeatherIcon(worldState.weather);
 
     return (
-        <Card className="bg-transparent border h-full flex flex-col">
+        <Card className="bg-card/80 backdrop-blur-sm border h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl tracking-wider">وضعیت جهان</CardTitle>
             </CardHeader>

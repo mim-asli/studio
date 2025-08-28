@@ -34,7 +34,7 @@ export function CraftingPanel({ inventory, onCraft, isCrafting }: CraftingPanelP
     const uniqueInventory = Array.from(new Set(inventory));
 
     return (
-        <Card className="bg-transparent border h-full flex flex-col">
+        <Card className="bg-card/80 backdrop-blur-sm border h-full flex flex-col">
             <CardHeader className="pb-4">
                 <CardTitle className="font-headline text-2xl tracking-wider text-foreground">ساخت و ساز</CardTitle>
                 <CardDescription>آیتم‌ها را برای ترکیب انتخاب کنید.</CardDescription>

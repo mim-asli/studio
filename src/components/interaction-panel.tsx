@@ -34,7 +34,7 @@ export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat 
   
   return (
     <TooltipProvider>
-      <Card className="bg-transparent border">
+      <Card className="bg-card/80 backdrop-blur-sm border">
         <CardHeader className="pb-2 pt-4">
           <CardTitle className="font-headline text-2xl tracking-wider">اقدامات</CardTitle>
         </CardHeader>
@@ -44,7 +44,7 @@ export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat 
               <Button
                 key={index}
                 variant="outline"
-                className="justify-start text-right h-auto whitespace-normal py-2"
+                className="justify-start text-right h-auto whitespace-normal py-2 bg-background/50 hover:bg-background/80"
                 onClick={() => onAction(choice)}
                 disabled={isLoading}
               >
@@ -63,6 +63,7 @@ export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat 
                               onClick={onDirectorChat}
                               disabled={isLoading}
                               variant="outline"
+                              className="bg-background/50 hover:bg-background/80"
                           >
                               <Bot />
                               <span className="sr-only">گفتگو با کارگردان</span>
