@@ -316,8 +316,8 @@ export function GameClient() {
       playerState: { 
         health: 100, 
         sanity: 100, 
-        hunger: 0, 
-        thirst: 0,
+        hunger: 100, 
+        thirst: 100,
         stamina: 100, // Always start with stamina
         mana: isMagical ? 100 : undefined, // Only add mana for magical characters
         ap: 4, 
