@@ -64,7 +64,7 @@ export function StoryDisplay({ storySegments = [] }: StoryDisplayProps) {
   const finalLastSegmentContent = isLastSegmentPlayerAction ? lastSegment : typedStory;
 
   return (
-    <ScrollArea className="h-full w-full" viewportRef={scrollViewportRef}>
+    <ScrollArea className="h-full w-full relative z-10" viewportRef={scrollViewportRef}>
         <div 
           className="p-4 sm:p-6 font-code text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap min-h-full cursor-pointer"
           onClick={handleDisplayClick}

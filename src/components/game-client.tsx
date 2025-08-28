@@ -466,11 +466,11 @@ export function GameClient() {
                   />
                   <div className="relative w-full h-screen">
                     <DynamicBackground hint={backgroundHint} />
-                    <div className="absolute inset-0 bg-black/50" />
-
+                    
                     <main className="relative grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen text-foreground font-body p-2 sm:p-4 gap-4">
                       <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
                         <div className="relative flex-grow border rounded-md shadow-inner bg-card/80 backdrop-blur-sm overflow-hidden flex flex-col">
+                           <div className="absolute inset-0 bg-black/60" />
                           <StoryDisplay storySegments={gameState.story} />
                           {gameState.isLoading && (
                             <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
