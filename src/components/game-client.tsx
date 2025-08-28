@@ -20,6 +20,7 @@ import { SettingsPage } from "@/components/screens/settings-page";
 import { Scoreboard } from "@/components/screens/scoreboard";
 import { NewGameCreator } from "@/components/screens/new-game-creator";
 import { GameDirectorChat } from "./game-director-chat";
+import { AudioManager } from "./audio-manager";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -437,6 +438,7 @@ export function GameClient() {
         onClose={() => setIsDirectorChatOpen(false)}
         gameState={gameState}
       />
+      <AudioManager gameState={gameState} />
       <main className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen bg-background text-foreground font-body p-2 sm:p-4 gap-4">
         <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
           <div className="relative flex-grow border rounded-md shadow-inner bg-card overflow-hidden flex flex-col">
@@ -500,3 +502,5 @@ export function GameClient() {
     </TooltipProvider>
   );
 }
+
+    
