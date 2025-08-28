@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput, CraftItemOutput } from "@/lib/types";
+import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput, CraftItemOutput, ActiveEffect } from "@/lib/types";
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { craftItem } from "@/ai/flows/craft-item-flow";
 import { useToast } from "@/hooks/use-toast";
@@ -51,6 +51,9 @@ export const initialGameState: GameState = {
   worldState: { day: 1, time: "صبح", weather: "آفتابی" },
   sceneEntities: [],
   companions: [],
+  activeEffects: [
+    { name: "شروع پر انرژی", type: 'buff', description: "شما ماجراجویی را با قدرت و امید آغاز کرده‌اید." }
+  ],
   isCombat: false,
   enemies: [],
   isGameOver: false,
@@ -277,6 +280,7 @@ export function GameClient() {
       ...initialGameState,
       id: gameId,
       story: [], // Start with an empty story array
+      activeEffects: [], // Clear any test effects
       playerState: { 
         health: 100, 
         sanity: 100, 
