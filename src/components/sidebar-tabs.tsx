@@ -25,7 +25,7 @@ interface SidebarTabsProps {
 }
 
 export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: SidebarTabsProps) {
-  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects, discoveredLocations, currentLocation } = gameState;
+  const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects, discoveredLocations, currentLocation, isCombat } = gameState;
   
   const tabs = [
     { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" /> },
@@ -55,7 +55,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
         </TabsList>
         <div className="flex-grow mt-4">
           <TabsContent value="vitals" className="m-0 h-full">
-             <PlayerHud playerState={playerState} activeEffects={activeEffects} />
+             <PlayerHud playerState={playerState} activeEffects={activeEffects} isCombat={isCombat} />
           </TabsContent>
           <TabsContent value="inventory" className="m-0 h-full">
             <Card className="bg-transparent border h-full">

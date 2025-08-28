@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HeartPulse, BrainCircuit, Droplets, Wheat, Zap, Sparkles } from "lucide-react";
+import { HeartPulse, BrainCircuit, Droplets, Wheat, Zap, Sparkles, Star } from "lucide-react";
 import type { GameState, ActiveEffect } from "@/lib/types";
 import { EffectsDisplay } from "./effects-display";
 
@@ -15,13 +15,15 @@ interface HudStatProps {
 }
 
 const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudStatProps) => {
-  const percentage = (value / max) * 100;
+  const percentage = max > 0 ? (value / max) * 100 : 0;
   let colorClass = "text-green-500"; // Default healthy color
 
   const isDanger = variant === 'inverse' ? percentage > 70 : percentage < 30;
   const isWarning = variant === 'inverse' ? percentage > 40 : percentage < 60;
 
-  if (isDanger) {
+  if (label === "امتیاز عمل") {
+    colorClass = "text-blue-400";
+  } else if (isDanger) {
     colorClass = "text-red-500";
   } else if (isWarning) {
     colorClass = "text-yellow-500";
@@ -56,7 +58,7 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
         </div>
       </div>
       <span className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{label}</span>
-      <span className="text-sm font-bold">{value}</span>
+      <span className="text-sm font-bold">{value}{max > 0 && `/${max}`}</span>
     </div>
   );
 };
@@ -64,10 +66,11 @@ const HudGauge = ({ label, value, max = 100, icon, variant = 'default' }: HudSta
 interface PlayerHudProps {
     playerState: GameState['playerState'];
     activeEffects: GameState['activeEffects'];
+    isCombat: boolean;
 }
 
-export function PlayerHud({ playerState, activeEffects }: PlayerHudProps) {
-  const { health, sanity, hunger, thirst, stamina, mana } = playerState || {};
+export function PlayerHud({ playerState, activeEffects, isCombat }: PlayerHudProps) {
+  const { health, sanity, hunger, thirst, stamina, mana, ap, maxAp } = playerState || {};
   
   return (
     <Card className="bg-transparent border h-full">
@@ -76,27 +79,39 @@ export function PlayerHud({ playerState, activeEffects }: PlayerHudProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-y-6 justify-items-center">
+          {isCombat && ap != null && maxAp != null && (
+             <HudGauge 
+                label="امتیاز عمل" 
+                value={ap}
+                max={maxAp} 
+                icon={<Star />}
+            />
+          )}
           <HudGauge 
               label="سلامتی" 
               value={health ?? 100} 
+              max={100}
               icon={<HeartPulse />}
               variant="default"
           />
           <HudGauge 
               label="عقلانیت" 
               value={sanity ?? 100} 
+              max={100}
               icon={<BrainCircuit />}
               variant="default"
           />
           <HudGauge 
               label="گرسنگی" 
               value={hunger ?? 0} 
+              max={100}
               icon={<Wheat />}
               variant="inverse"
           />
           <HudGauge 
               label="تشنگی" 
               value={thirst ?? 0} 
+              max={100}
               icon={<Droplets />}
               variant="inverse"
           />
@@ -104,6 +119,7 @@ export function PlayerHud({ playerState, activeEffects }: PlayerHudProps) {
             <HudGauge 
                 label="انرژی" 
                 value={stamina} 
+                max={100}
                 icon={<Zap />}
                 variant="default"
             />
@@ -112,6 +128,7 @@ export function PlayerHud({ playerState, activeEffects }: PlayerHudProps) {
              <HudGauge 
                 label="مانا" 
                 value={mana} 
+                max={100}
                 icon={<Sparkles />}
                 variant="default"
             />

@@ -7,7 +7,15 @@ export const PLAYER_ACTION_PREFIX = "> ";
 export const initialGameState: GameState = {
   id: '',
   story: ["به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید."],
-  playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0, stamina: 100 },
+  playerState: { 
+    health: 100, 
+    sanity: 100, 
+    hunger: 0, 
+    thirst: 0, 
+    stamina: 100,
+    ap: 4,
+    maxAp: 4,
+  },
   inventory: [],
   skills: [],
   quests: [],

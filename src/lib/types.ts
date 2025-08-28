@@ -16,6 +16,8 @@ const EnemySchema = z.object({
     maxHealth: z.number().describe("The maximum health of the enemy."),
     attack: z.number().describe("The enemy's attack power."),
     defense: z.number().describe("The enemy's defense power."),
+    ap: z.number().describe("The enemy's current action points."),
+    maxAp: z.number().describe("The enemy's maximum action points."),
 });
 
 const PlayerStateSchema = z.object({
@@ -25,6 +27,8 @@ const PlayerStateSchema = z.object({
   thirst: z.number().describe("Player's current thirst level. 0 is not thirsty, 100 is dehydrated."),
   stamina: z.number().optional().describe("Player's current stamina/energy. Max 100. Physical actions consume stamina."),
   mana: z.number().optional().describe("Player's current magical energy. Max 100. Casting spells consumes mana."),
+  ap: z.number().optional().describe("Player's current action points for combat."),
+  maxAp: z.number().optional().describe("Player's maximum action points for combat."),
 });
 
 const WorldStateSchema = z.object({
@@ -91,20 +95,13 @@ const EnemyStateSchema = z.object({
     maxHealth: z.number(),
     attack: z.number(),
     defense: z.number(),
-});
-
-const PlayerCombatStateSchema = z.object({
-  health: z.number(),
-  sanity: z.number(),
-  hunger: z.number(),
-  thirst: z.number(),
-  stamina: z.number().optional(),
-  mana: z.number().optional(),
+    ap: z.number(),
+    maxAp: z.number(),
 });
 
 export const ManageCombatScenarioInputSchema = z.object({
   playerAction: z.string().describe("The combat action taken by the player (e.g., '[COMBAT] Attack Goblin')."),
-  playerState: PlayerCombatStateSchema.describe('The current state of the player.'),
+  playerState: PlayerStateSchema.describe('The current state of the player.'),
   enemies: z.array(EnemyStateSchema).describe('The list of enemies currently in combat.'),
   inventory: z.array(z.string()).describe("The player's current inventory."),
   skills: z.array(z.string()).describe("The player's current skills."),
@@ -122,7 +119,7 @@ const CombatRewardSchema = z.object({
 
 export const ManageCombatScenarioOutputSchema = z.object({
   turnNarration: z.string().describe('A step-by-step narration of what happened this turn. First the player action, then the enemy actions.'),
-  updatedPlayerState: PlayerCombatStateSchema.describe("The player's state after this turn's events."),
+  updatedPlayerState: PlayerStateSchema.describe("The player's state after this turn's events."),
   updatedEnemies: z.array(EnemyStateSchema).describe('The updated state of all enemies after this turn. Include defeated enemies with 0 health.'),
   choices: z.array(z.string()).describe("The available combat choices for the next player turn."),
   isCombatOver: z.boolean().describe('Set to true if all enemies are defeated or the player is defeated.'),
