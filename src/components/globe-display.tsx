@@ -175,12 +175,21 @@ export function GlobeDisplay({ locations, onLocationClick }: GlobeDisplayProps) 
             isDragging = false;
         }
 
+        const onWheel = (e: WheelEvent) => {
+            const zoomSpeed = 0.1;
+            let newZ = camera.position.z + e.deltaY * zoomSpeed;
+            // Clamp the zoom level
+            newZ = Math.max(1.5, Math.min(newZ, 5));
+            camera.position.z = newZ;
+        }
+
         currentMount.addEventListener('mousedown', onMouseDown);
         currentMount.addEventListener('mousemove', onMouseMove);
         currentMount.addEventListener('mouseup', onMouseUp);
         currentMount.addEventListener('touchstart', onMouseDown, { passive: false });
         currentMount.addEventListener('touchmove', onMouseMove, { passive: false });
         currentMount.addEventListener('touchend', onMouseUp);
+        currentMount.addEventListener('wheel', onWheel);
 
 
         // Animation loop
@@ -213,6 +222,7 @@ export function GlobeDisplay({ locations, onLocationClick }: GlobeDisplayProps) 
                 currentMount.removeEventListener('touchstart', onMouseDown);
                 currentMount.removeEventListener('touchmove', onMouseMove);
                 currentMount.removeEventListener('touchend', onMouseUp);
+                currentMount.removeEventListener('wheel', onWheel);
                 currentMount.removeChild(renderer.domElement);
             }
             cancelAnimationFrame(animationFrameId);
