@@ -20,7 +20,6 @@ import { SettingsPage } from "@/components/screens/settings-page";
 import { Scoreboard } from "@/components/screens/scoreboard";
 import { NewGameCreator } from "@/components/screens/new-game-creator";
 import { GameDirectorChat } from "./game-director-chat";
-import { DynamicBackground } from "./dynamic-background";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,28 +44,6 @@ const HALL_OF_FAME_KEY = "dastan-hall-of-fame";
 
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
-
-const getLocationHint = (location: string): string => {
-    if (!location) return "fantasy";
-    const lowerLoc = location.toLowerCase();
-
-    const keywords: Record<string, string[]> = {
-        "forest": ["forest", "jungle", "wood", "جنگل", "بیشه"],
-        "city": ["city", "town", "village", "market", "inn", "شهر", "روستا", "بازار", "مهمانسرا"],
-        "dungeon": ["dungeon", "cave", "crypt", "ruins", "tower", "سیاهچال", "غار", "دخمه", "خرابه", "برج"],
-        "mountain": ["mountain", "peak", "cliff", "کوه", "قله", "صخره"],
-        "desert": ["desert", "sand", "بیابان", "شن"],
-        "water": ["sea", "ocean", "river", "lake", "coast", "دریا", "اقیانوس", "رودخانه", "دریاچه", "ساحل"],
-    };
-
-    for (const hint in keywords) {
-        if (keywords[hint].some(keyword => lowerLoc.includes(keyword))) {
-            return hint;
-        }
-    }
-    return "fantasy"; // Default hint
-};
-
 
 export function GameClient() {
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -418,12 +395,6 @@ export function GameClient() {
     setView("start");
   }
 
-  const backgroundHint = useMemo(() => {
-    if (view !== 'game' || !gameState) return 'fantasy';
-    return getLocationHint(gameState.currentLocation);
-  }, [view, gameState]);
-
-
   const renderContent = () => {
       switch (view) {
         case "start":
@@ -465,7 +436,6 @@ export function GameClient() {
                     gameState={gameState}
                   />
                   <div className="relative w-full h-screen">
-                    <DynamicBackground hint={backgroundHint} />
                     
                     <main className="relative grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen text-foreground font-body p-2 sm:p-4 gap-4">
                       <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
