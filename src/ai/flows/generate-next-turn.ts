@@ -52,7 +52,7 @@ const GenerateNextTurnOutputSchema = z.object({
   newLocation: z.string().optional().describe('A new location introduced in this turn.'),
   globalEvent: z.string().optional().describe('A global event that occurred in this turn.'),
   sceneEntities: z.array(z.string()).describe('List of all entities in the current scene (player, companions, enemies, important objects).'),
-  companions: z.array(z.string()).optional().describe("A list of the player's current companions."),
+  companions: z.array(z.string()).optional().describe("A list of the player's current companions. This should be the complete list of companions."),
   isCombat: z.boolean().optional().describe('Whether combat is active.'),
   enemies: z.array(EnemySchema).optional().describe('A list of enemies in the combat.'),
 });
@@ -75,7 +75,7 @@ The user has specified a difficulty level. You MUST adjust the game's challenges
 - **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
 
 Enforce the following rules:
-- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests) MUST be reflected in the JSON output. The inventory in the output must always be the complete inventory.
+- **State Synchronization Philosophy:** Any changes to the game world or player state (health, hunger, thirst, sanity, inventory, skills, quests, companions) MUST be reflected in the JSON output. The inventory and companions in the output must always be the complete lists.
 - **Treasure and Economy:** The world contains valuable items. Players can find Bronze, Silver, and Gold Coins, as well as precious gems like Rubies, Sapphires, and Diamonds as loot, in chests, or as rewards. Make sure to include these as part of the story and inventory when appropriate.
 - **Economic System:** You must manage a dynamic economy. Use the following as a guideline, but feel free to adjust prices based on location (a big city vs. a remote village), scarcity, or player reputation.
     - **Currency Exchange:** 10 Bronze Coins = 1 Silver Coin. 10 Silver Coins = 1 Gold Coin.
@@ -147,5 +147,3 @@ const generateNextTurnFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

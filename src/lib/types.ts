@@ -28,6 +28,7 @@ export interface CustomScenario {
     title: string;
     character: string[];
     initialItems: string[];
+    initialCompanions?: string[];
     storyPrompt: string;
 }
 
