@@ -86,7 +86,7 @@ export function GameDirectorChat({ isOpen, onClose, gameState }: GameDirectorCha
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] h-[70vh] flex flex-col">
+      <DialogContent className="sm:max-w-[500px] h-[70vh] flex flex-col bg-background">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2"><Bot /> گفتگو با کارگردان بازی</DialogTitle>
           <DialogDescription>
