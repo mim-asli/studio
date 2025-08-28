@@ -1,5 +1,36 @@
 
+import type { GameState } from './types';
 import { Wand, Rocket, Skull, Fingerprint, Bot, Landmark, Swords, Ghost, FlaskConical, ShieldCheck, Crosshair, User, Shield, HeartCrack, Rabbit, Brain, Eye, Sun, Moon, Gem, Angry, Shell, HeartPulse, Zap, Music, Leaf, Briefcase, Wrench, Feather, BookOpen, Clover, ShieldQuestion, Bone, PawPrint, VenetianMask, TestTube, Bug, GhostIcon, BrainCog, Book, Handshake, SkullIcon, Heart, CircleDashed, MinusCircle, PlusCircle, Pencil } from "lucide-react";
+
+export const PLAYER_ACTION_PREFIX = "> ";
+
+export const initialGameState: GameState = {
+  id: '',
+  story: ["به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید."],
+  playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0, stamina: 100 },
+  inventory: [],
+  skills: [],
+  quests: [],
+  choices: [],
+  worldState: { day: 1, time: "صبح", weather: "آفتابی" },
+  sceneEntities: [],
+  companions: [],
+  activeEffects: [
+    { name: "شروع پر انرژی", type: 'buff', description: "شما ماجراجویی را با قدرت و امید آغاز کرده‌اید." }
+  ],
+  isCombat: false,
+  enemies: [],
+  isGameOver: false,
+  gameStarted: false,
+  isLoading: false,
+  characterName: '',
+  scenarioTitle: '',
+  currentLocation: 'مکان نامشخص',
+  discoveredLocations: [],
+  difficulty: 'معمولی',
+  gmPersonality: 'روایی و سینمایی',
+};
+
 
 export const genres = {
     'فانتزی': { icon: Wand },

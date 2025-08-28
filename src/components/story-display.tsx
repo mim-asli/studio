@@ -4,7 +4,7 @@
 import { useTypewriter } from '@/hooks/use-typewriter';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEffect, useRef } from 'react';
-import { PLAYER_ACTION_PREFIX } from './game-client';
+import { PLAYER_ACTION_PREFIX } from '@/lib/game-data';
 
 interface StoryDisplayProps {
   storySegments: string[];

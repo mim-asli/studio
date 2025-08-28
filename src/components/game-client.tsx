@@ -6,6 +6,7 @@ import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput, Craft
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { craftItem } from "@/ai/flows/craft-item-flow";
 import { useToast } from "@/hooks/use-toast";
+import { initialGameState, PLAYER_ACTION_PREFIX } from '@/lib/game-data';
 
 import { StoryDisplay } from "@/components/story-display";
 import { InteractionPanel } from "@/components/interaction-panel";
@@ -38,34 +39,6 @@ import {
 
 
 const SAVES_KEY = "dastan-saves";
-export const PLAYER_ACTION_PREFIX = "> ";
-
-export const initialGameState: GameState = {
-  id: '',
-  story: ["به داستان خوش آمدید. ماجراجویی شما در انتظار است. دنیای جدیدی بسازید یا یک سفر قبلی را بارگذاری کنید."],
-  playerState: { health: 100, sanity: 100, hunger: 0, thirst: 0, stamina: 100 },
-  inventory: [],
-  skills: [],
-  quests: [],
-  choices: [],
-  worldState: { day: 1, time: "صبح", weather: "آفتابی" },
-  sceneEntities: [],
-  companions: [],
-  activeEffects: [
-    { name: "شروع پر انرژی", type: 'buff', description: "شما ماجراجویی را با قدرت و امید آغاز کرده‌اید." }
-  ],
-  isCombat: false,
-  enemies: [],
-  isGameOver: false,
-  gameStarted: false,
-  isLoading: false,
-  characterName: '',
-  scenarioTitle: '',
-  currentLocation: 'مکان نامشخص',
-  discoveredLocations: [],
-  difficulty: 'معمولی',
-  gmPersonality: 'روایی و سینمایی',
-};
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
 
