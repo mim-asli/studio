@@ -170,19 +170,14 @@ export function GameClient() {
       choices: [] 
     }));
     
-    const { 
-      id, 
-      isGameOver, 
-      gameStarted, 
-      isLoading, 
-      story, 
-      ...restOfState 
-    } = stateBeforeAction;
+    // We pass the entire game state to the AI now, serialized as a string.
+    // This gives the AI full context of inventory, quests, etc.
+    const gameStateForAI = JSON.stringify({
+      ...stateBeforeAction,
+      // The full story can be too long, so we still only send the last 10 segments for context.
+      story: stateBeforeAction.story.slice(-10).join('\n\n'),
+    });
     
-    const gameStateForAI = {
-      ...restOfState,
-      story: story.slice(-10).join('\n\n'), 
-    };
 
     try {
       const nextTurn: GenerateNextTurnOutput = await generateNextTurn({

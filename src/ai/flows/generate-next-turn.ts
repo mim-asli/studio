@@ -13,7 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateNextTurnInputSchema = z.object({
-  gameState: z.any().describe('The current state of the game.'),
+  gameState: z.string().describe('The current state of the game as a JSON string.'),
   playerAction: z.string().describe('The action taken by the player.'),
 });
 export type GenerateNextTurnInput = z.infer<typeof GenerateNextTurnInputSchema>;
@@ -108,7 +108,7 @@ Populate the 'companions' array with the names of any allies currently with the 
 
 Use the current game state and player action to generate the next turn of the story. Adhere to the rules and output structure above.
 
-Current Game State:
+Current Game State (JSON String):
 {{{gameState}}}
 
 Player Action:
