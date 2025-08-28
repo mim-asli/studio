@@ -10,7 +10,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import type { ManageCombatScenarioInput, ManageCombatScenarioOutput } from '@/lib/types';
 import { ManageCombatScenarioInputSchema, ManageCombatScenarioOutputSchema } from '@/lib/types';
 
@@ -33,7 +32,6 @@ IMPORTANT: Your entire response, including all fields in the JSON output, MUST b
     *   **Attack:** 2 AP.
     *   **Defend:** 1 AP. Increases defense for one round.
     *   **Use Item:** 2 AP.
-    *   **Use Skill:** Varies. (You can decide based on the skill's power).
     *   **End Turn:** 0 AP.
 4.  **Damage Calculation:** Damage is calculated simply as: (Attacker's Attack - Defender's Defense). Minimum damage is 1. Be creative with attack descriptions.
 5.  **Enemy AI & AP:** Enemies also have and use AP.
