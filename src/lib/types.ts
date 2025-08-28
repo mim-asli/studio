@@ -1,3 +1,4 @@
+
 import {z} from 'zod';
 
 export const EnemySchema = z.object({
@@ -162,6 +163,17 @@ export interface CustomScenario {
     difficulty: 'آسان' | 'معمولی' | 'سخت';
     gmPersonality: string;
 }
+
+// Represents an entry in the Hall of Fame
+export interface HallOfFameEntry {
+    id: string; // Unique ID from the game session
+    characterName: string;
+    scenarioTitle: string;
+    outcome: string; // The final story segment describing the end
+    daysSurvived: number;
+    timestamp: number; // When the game ended
+}
+
 
 // --- Settings Types ---
 

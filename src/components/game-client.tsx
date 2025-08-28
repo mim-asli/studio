@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput, CraftItemOutput, ActiveEffect } from "@/lib/types";
+import type { GameState, SaveFile, CustomScenario, GenerateNextTurnOutput, CraftItemOutput, ActiveEffect, HallOfFameEntry } from "@/lib/types";
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { manageCombatScenario, ManageCombatScenarioOutput } from "@/ai/flows/manage-combat-scenario";
 import { craftItem } from "@/ai/flows/craft-item-flow";
@@ -40,6 +40,8 @@ import {
 
 
 const SAVES_KEY = "dastan-saves";
+const HALL_OF_FAME_KEY = "dastan-hall-of-fame";
+
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
 
@@ -69,6 +71,35 @@ export function GameClient() {
     handleLowSanityEffect();
     handleLowHealthEffect();
   }, [handleLowSanityEffect, handleLowHealthEffect]);
+
+  const saveToHallOfFame = useCallback((finalState: GameState) => {
+    try {
+        const hallOfFameJson = localStorage.getItem(HALL_OF_FAME_KEY);
+        const entries: HallOfFameEntry[] = hallOfFameJson ? JSON.parse(hallOfFameJson) : [];
+
+        const newEntry: HallOfFameEntry = {
+            id: finalState.id,
+            characterName: finalState.characterName,
+            scenarioTitle: finalState.scenarioTitle,
+            outcome: finalState.story[finalState.story.length - 1] || "سرنوشت نامعلوم",
+            daysSurvived: finalState.worldState.day,
+            timestamp: Date.now(),
+        };
+
+        // Avoid duplicate entries for the same game session
+        if (!entries.some(entry => entry.id === newEntry.id)) {
+            entries.push(newEntry);
+            localStorage.setItem(HALL_OF_FAME_KEY, JSON.stringify(entries));
+            toast({
+                title: "یک حماسه به پایان رسید!",
+                description: `داستان ${finalState.characterName} در تالار افتخارات ثبت شد.`,
+            });
+        }
+    } catch (error) {
+        console.error("Failed to save to Hall of Fame:", error);
+    }
+  }, [toast]);
+
 
   const saveGame = useCallback((stateToSave: GameState) => {
     if (!stateToSave.gameStarted || !stateToSave.id) return;
@@ -138,6 +169,15 @@ export function GameClient() {
       });
     }
   }, [toast]);
+
+  const handleGameOver = useCallback((state: GameState) => {
+    const finalState = { ...state, isGameOver: true };
+    if (finalState.playerState.health <= 0) {
+        finalState.story.push("شما مرده‌اید. داستان شما در اینجا به پایان می‌رسد.");
+    }
+    saveToHallOfFame(finalState);
+    return finalState;
+  }, [saveToHallOfFame]);
   
   const processPlayerAction = async (playerAction: string) => {
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
@@ -184,7 +224,7 @@ export function GameClient() {
     setGameState(prevGameState => {
         const { story: newStory, ...restOfNextTurn } = nextTurn;
 
-        const updatedGameState: GameState = {
+        let updatedGameState: GameState = {
             ...prevGameState,
             ...restOfNextTurn,
             story: [...prevGameState.story, newStory], 
@@ -193,8 +233,7 @@ export function GameClient() {
         };
 
         if (updatedGameState.playerState.health <= 0) {
-            updatedGameState.isGameOver = true;
-            updatedGameState.story.push("شما مرده‌اید. داستان شما در اینجا به پایان می‌رسد.");
+            updatedGameState = handleGameOver(updatedGameState);
         }
 
         saveGame(updatedGameState);
@@ -232,7 +271,7 @@ export function GameClient() {
             }
         }
         
-        const updatedGameState: GameState = {
+        let updatedGameState: GameState = {
             ...prev,
             story: newStory,
             playerState: updatedPlayerState,
@@ -244,8 +283,7 @@ export function GameClient() {
         };
 
         if (updatedPlayerState.health <= 0) {
-            updatedGameState.isGameOver = true;
-            updatedGameState.story.push("شما در مبارزه شکست خوردید. داستان شما در اینجا به پایان می‌رسد.");
+            updatedGameState = handleGameOver(updatedGameState);
         }
 
         saveGame(updatedGameState);
