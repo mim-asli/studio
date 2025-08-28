@@ -241,8 +241,8 @@ export function GameClient() {
     const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
         gameState: gameStateForAI,
         playerAction,
-        difficulty: gameState.difficulty,
-        gmPersonality: gameState.gmPersonality,
+        difficulty: stateBeforeAction.difficulty,
+        gmPersonality: stateBeforeAction.gmPersonality,
     });
     
     setGameState(prevGameState => {
@@ -542,3 +542,5 @@ export function GameClient() {
     </>
   );
 }
+
+    
