@@ -28,9 +28,9 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
   const tabs = [
     { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" /> },
     { value: "inventory", label: "موجودی", icon: <Backpack className="w-5 h-5" /> },
+    { value: "scene", label: "صحنه", icon: <Microscope className="w-5 h-5" /> },
     { value: "crafting", label: "ساخت و ساز", icon: <Hammer className="w-5 h-5" /> },
     { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" /> },
-    { value: "scene", label: "صحنه", icon: <Microscope className="w-5 h-5" /> },
     { value: "quests", label: "مأموریت‌ها", icon: <ScrollText className="w-5 h-5" /> },
     { value: "world", label: "جهان", icon: <Globe className="w-5 h-5" /> },
     { value: "map", label: "نقشه", icon: <Map className="w-5 h-5" /> },
