@@ -82,6 +82,7 @@ export function AudioManager({ gameState }: AudioManagerProps) {
       } else {
         if (targetVolume === 0) {
             audio.pause();
+            audio.src = ''; // Clear the source after fading out
         }
         if (onComplete) onComplete();
       }
@@ -92,46 +93,32 @@ export function AudioManager({ gameState }: AudioManagerProps) {
   const switchAudioSource = (audioRef: React.MutableRefObject<HTMLAudioElement | null>, newSrc: string, targetVolume: number) => {
     const audio = audioRef.current;
     if (!audio) return;
-
+  
     const isPlaying = audio.currentSrc && !audio.paused;
-
-    // Case 1: New source is empty. Fade out and stop.
-    if (!newSrc) {
-        if (isPlaying) {
-            fadeAudio(audio, 0, () => {
-                audio.src = '';
-            });
-        }
-        return;
-    }
-
-    // Case 2: Source is the same. Just adjust volume.
+  
     if (audio.src === newSrc) {
-        if (!isPlaying) { // If paused, start playing and fade in
-             audio.volume = 0;
-             audio.play().catch(e => console.error("Audio play failed:", e));
-             fadeAudio(audio, targetVolume);
-        } else { // If playing, just adjust volume
-            fadeAudio(audio, targetVolume);
-        }
-        return;
+      if (isPlaying && audio.volume !== targetVolume) {
+        fadeAudio(audio, targetVolume);
+      }
+      return;
     }
-
-    // Case 3: New source is different. Fade out, switch, then fade in.
+  
     if (isPlaying) {
-        fadeAudio(audio, 0, () => {
-            audio.src = newSrc;
-            audio.volume = 0; 
-            audio.play().catch(e => console.error("Audio play failed:", e));
-            fadeAudio(audio, targetVolume);
-        });
-    } else { // If not playing anything, just start the new source and fade in.
-         audio.src = newSrc;
-         audio.volume = 0;
-         audio.play().catch(e => console.error("Audio play failed:", e));
-         fadeAudio(audio, targetVolume);
+      fadeAudio(audio, 0, () => {
+        if (newSrc) {
+          audio.src = newSrc;
+          audio.volume = 0;
+          audio.play().catch(e => console.error("Audio play failed:", e));
+          fadeAudio(audio, targetVolume);
+        }
+      });
+    } else if (newSrc) {
+      audio.src = newSrc;
+      audio.volume = 0;
+      audio.play().catch(e => console.error("Audio play failed:", e));
+      fadeAudio(audio, targetVolume);
     }
-  }
+  };
 
   // --- Music Logic ---
   useEffect(() => {
