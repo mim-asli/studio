@@ -39,7 +39,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting }: SidebarTabsProps
   return (
     <TooltipProvider>
       <Tabs defaultValue="vitals" className="h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-8 bg-transparent border rounded-md">
+        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 bg-transparent border rounded-md">
           {tabs.map((tab) => (
             <Tooltip key={tab.value}>
               <TooltipTrigger asChild>
