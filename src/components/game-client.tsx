@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { GameState, CustomScenario } from "@/lib/types";
+import type { GameState, CustomScenario, DirectorMessage } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 
 import { StoryDisplay } from "@/components/story-display";
@@ -36,6 +36,7 @@ import {
 import { useSettings } from "@/hooks/use-settings";
 import { useGameLoop } from "@/hooks/use-game-loop";
 import { useGameSaves } from "@/hooks/use-game-saves";
+import { queryGameDirector } from "@/ai/flows/query-game-director";
 
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
@@ -61,6 +62,8 @@ const handleLowHealthEffect = (gameState: GameState | null) => {
 export function GameClient() {
   const [view, setView] = useState<View>("start");
   const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
+  const [directorMessages, setDirectorMessages] = useState<DirectorMessage[]>([]);
+  const [isDirectorLoading, setIsDirectorLoading] = useState(false);
   const { toast } = useToast();
   const { isLoaded: settingsLoaded } = useSettings();
   const { loadGame, saveToHallOfFame } = useGameSaves();
@@ -81,6 +84,51 @@ export function GameClient() {
       saveToHallOfFame(gameState);
     }
   }, [gameState, saveToHallOfFame]);
+  
+  // Effect to add initial director message only once when a game starts
+  useEffect(() => {
+    if(gameState && gameState.gameStarted && directorMessages.length === 0) {
+        setDirectorMessages([
+            { role: 'model', content: "سلام! من کارگردان بازی هستم. هر سوالی در مورد دنیای بازی، شخصیت‌ها، یا سناریوهای 'چه می‌شد اگر...' دارید، از من بپرسید. من اینجا هستم تا به شما کمک کنم داستان خود را عمیق‌تر کشف کنید." },
+        ]);
+    }
+    if (!gameState) {
+        setDirectorMessages([]);
+    }
+  }, [gameState, directorMessages.length]);
+
+  const handleDirectorQuery = useCallback(async (input: string) => {
+      if (!input.trim() || isDirectorLoading || !gameState) return;
+
+      const userMessage: DirectorMessage = { role: 'user', content: input };
+      const newMessages = [...directorMessages, userMessage];
+      setDirectorMessages(newMessages);
+      setIsDirectorLoading(true);
+
+      try {
+          const gameStateString = JSON.stringify(gameState, null, 2);
+          const conversationHistory = newMessages.map(msg => ({
+              role: msg.role,
+              content: msg.content
+          }));
+
+          const response = await queryGameDirector({
+              playerQuery: input,
+              gameState: gameStateString,
+              conversationHistory: conversationHistory
+          });
+
+          const directorMessage: DirectorMessage = { role: 'model', content: response.directorResponse };
+          setDirectorMessages(prev => [...prev, directorMessage]);
+
+      } catch (error) {
+          console.error("Error querying game director:", error);
+          const errorMessage: DirectorMessage = { role: 'model', content: "متاسفانه در حال حاضر نمی‌توانم پاسخ دهم. لطفاً بعداً دوباره تلاش کنید." };
+          setDirectorMessages(prev => [...prev, errorMessage]);
+      } finally {
+          setIsDirectorLoading(false);
+      }
+  }, [isDirectorLoading, gameState, directorMessages]);
 
 
   const handleLoadGame = useCallback(async (saveId: string) => {
@@ -155,7 +203,9 @@ export function GameClient() {
                   <GameDirectorChat 
                     isOpen={isDirectorChatOpen}
                     onClose={() => setIsDirectorChatOpen(false)}
-                    gameState={gameState}
+                    messages={directorMessages}
+                    onSend={handleDirectorQuery}
+                    isLoading={isDirectorLoading}
                   />
                   <div className="relative w-full h-screen">
                     <main className="relative grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen text-foreground font-body p-2 sm:p-4 gap-4">
@@ -233,3 +283,5 @@ export function GameClient() {
     </>
   );
 }
+
+    

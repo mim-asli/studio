@@ -104,13 +104,15 @@ export interface ManageCombatScenarioOutput {
 }
 
 // Types for query-game-director.ts
+export type DirectorMessage = {
+  role: 'user' | 'model';
+  content: string;
+};
+
 export interface QueryGameDirectorInput {
     playerQuery: string;
     gameState: string;
-    conversationHistory?: Array<{
-        role: 'user' | 'model';
-        content: string;
-    }>;
+    conversationHistory?: Array<DirectorMessage>;
 }
 export interface QueryGameDirectorOutput {
     directorResponse: string;
@@ -188,3 +190,5 @@ export type AppSettings = {
   huggingFace: HuggingFaceSettings;
   localLlm: LocalLlmSettings;
 };
+
+    

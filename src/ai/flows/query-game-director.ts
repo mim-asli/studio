@@ -11,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
-import type { QueryGameDirectorInput, QueryGameDirectorOutput } from '@/lib/types';
+import type { QueryGameDirectorInput, QueryGameDirectorOutput, DirectorMessage } from '@/lib/types';
 
 
 // Schemas for queryGameDirector flow
@@ -72,3 +72,5 @@ const queryGameDirectorFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
