@@ -3,11 +3,10 @@
 
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { generateNextTurn } from "@/ai/flows/generate-next-turn";
-import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
 import { craftItem } from "@/ai/flows/craft-item-flow";
-import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput, CraftItemOutput, CustomScenario } from "@/lib/types";
+import type { GameState, CraftItemOutput, CustomScenario } from "@/lib/types";
 import { initialGameState } from "@/lib/game-data";
+import { handleCombatTurn, handleExplorationTurn } from "@/lib/game-manager";
 
 export const PLAYER_ACTION_PREFIX = "> ";
 
@@ -25,102 +24,16 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
     if (finalState.playerState.health <= 0) {
         finalState.story.push("شما مرده‌اید. داستان شما در اینجا به پایان می‌رسد.");
     }
-    // The actual saving to hall of fame is handled by an effect in GameClient
+    // The actual saving to hall of fame is handled by an effect in AppManager
     // watching for the isGameOver flag.
     return finalState;
   }, []);
 
-
-  const handleExplorationTurn = useCallback(async (playerAction: string, stateBeforeAction: GameState) => {
-    const gameStateForAI = JSON.stringify(stateBeforeAction);
-
-    const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
-        gameState: gameStateForAI,
-        playerAction,
-        difficulty: stateBeforeAction.difficulty,
-        gmPersonality: stateBeforeAction.gmPersonality,
-    });
-    
-    // Trigger image generation if prompt is provided
-    if (nextTurn.imagePrompt) {
-        onImagePrompt(nextTurn.imagePrompt);
-    }
-    
-    setGameState(prevGameState => {
-        if (!prevGameState) return null;
-        const { story: newStory, ...restOfNextTurn } = nextTurn;
-
-        let updatedGameState: GameState = {
-            ...prevGameState,
-            ...restOfNextTurn,
-            story: [...prevGameState.story, newStory], 
-            gameStarted: true,
-            isLoading: false,
-        };
-
-        if (updatedGameState.playerState.health <= 0) {
-            updatedGameState = handleGameOver(updatedGameState);
-        }
-
-        onSaveGame(updatedGameState);
-        return updatedGameState;
-    });
-
-    if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
-    if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
-    if (nextTurn.newLocation) toast({ title: "مکان جدید کشف شد", description: `شما ${nextTurn.newLocation} را پیدا کردید.` });
-  }, [handleGameOver, onSaveGame, toast, onImagePrompt]);
-  
-  const handleCombatTurn = useCallback(async (playerAction: string, stateBeforeAction: GameState) => {
-    const combatResult: ManageCombatScenarioOutput = await manageCombatScenario({
-        playerAction,
-        playerState: stateBeforeAction.playerState,
-        enemies: stateBeforeAction.enemies || [],
-        combatLog: stateBeforeAction.story.slice(-5),
-    });
-
-    setGameState(prev => {
-        if (!prev) return null;
-        const { turnNarration, updatedPlayerState, updatedEnemies, choices, isCombatOver, rewards } = combatResult;
-        
-        const newStory = [...prev.story, turnNarration];
-        let newInventory = prev.inventory;
-        
-        if (isCombatOver) {
-            newStory.push("مبارزه تمام شد.");
-            if (rewards && rewards.items) {
-                newInventory = [...newInventory, ...rewards.items];
-                const rewardText = `شما به دست آوردید: ${rewards.items.join(', ')}`;
-                newStory.push(rewardText);
-                toast({ title: "غنائم جنگی!", description: rewardText });
-            }
-        }
-        
-        let updatedGameState: GameState = {
-            ...prev,
-            story: newStory,
-            playerState: updatedPlayerState,
-            enemies: updatedEnemies,
-            choices: isCombatOver ? ["ادامه بده..."] : choices,
-            isCombat: !isCombatOver,
-            inventory: newInventory,
-            isLoading: false,
-        };
-
-        if (updatedPlayerState.health <= 0) {
-            updatedGameState = handleGameOver(updatedGameState);
-        }
-
-        onSaveGame(updatedGameState);
-        return updatedGameState;
-    });
-  }, [handleGameOver, onSaveGame, toast]);
-
   const processPlayerAction = useCallback(async (playerAction: string, currentState: GameState | null) => {
     if (!currentState) return;
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
-    const stateBeforeAction = { ...currentState };
-
+    
+    // Set loading state and add player action to story immediately
     setGameState(prev => (prev ? { 
       ...prev, 
       story: [...prev.story, formattedPlayerAction],
@@ -129,25 +42,36 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
     }: null));
 
     try {
-        if (stateBeforeAction.isCombat) {
-            await handleCombatTurn(playerAction, stateBeforeAction);
+        let nextState;
+        if (currentState.isCombat) {
+            nextState = await handleCombatTurn(currentState, playerAction, toast);
         } else {
-            await handleExplorationTurn(playerAction, stateBeforeAction);
+            nextState = await handleExplorationTurn(currentState, playerAction, onImagePrompt, toast);
         }
+
+        // Check for game over condition
+        if (nextState.playerState.health <= 0) {
+            nextState = handleGameOver(nextState);
+        }
+        
+        onSaveGame(nextState);
+        setGameState(nextState);
+
     } catch (error) {
       console.error("Error processing player action:", error);
-      setGameState(prev => (prev ? { 
-          ...prev, 
-          isLoading: false, 
-          choices: stateBeforeAction.choices.length > 0 ? stateBeforeAction.choices : ["دوباره تلاش کن"] 
-      }: null));
       toast({
         variant: "destructive",
         title: "خطای هوش مصنوعی",
         description: "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.",
       });
+      // Revert to the state before the failed action, but stop loading
+      setGameState(prev => (prev ? { 
+          ...currentState, 
+          isLoading: false, 
+          choices: currentState.choices.length > 0 ? currentState.choices : ["دوباره تلاش کن"] 
+      }: null));
     }
-  }, [handleCombatTurn, handleExplorationTurn, toast]);
+  }, [gameState, onImagePrompt, onSaveGame, toast, handleGameOver]);
 
   const handleCrafting = useCallback(async (ingredients: string[]) => {
     if (!gameState) return;
@@ -236,8 +160,7 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
       isGameOver: false,
     };
     
-    setGameState(freshGameState);
-    
+    // We don't set the state here directly. Instead, we start the first turn.
     const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
     
     processPlayerAction(startPrompt, freshGameState);
@@ -253,5 +176,3 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
     isLoading: gameState?.isLoading ?? false,
   };
 }
-
-    
