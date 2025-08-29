@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameContext } from '@/context/game-context';
-import { GameClient } from '@/components/game-client';
+import { GameClient } from '@/components/game/game-client';
 import { Loader2 } from 'lucide-react';
 
 export default function PlayPage() {
