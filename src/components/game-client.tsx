@@ -62,7 +62,7 @@ export function GameClient() {
   const [view, setView] = useState<View>("start");
   const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
   const { toast } = useToast();
-  const { settings, isLoaded: settingsLoaded } = useSettings();
+  const { isLoaded: settingsLoaded } = useSettings();
   const { loadGame, saveToHallOfFame } = useGameSaves();
 
   const {
@@ -106,6 +106,11 @@ export function GameClient() {
       setView("game");
   };
 
+  const handleFastTravel = useCallback((location: string) => {
+    if (gameState) {
+      processPlayerAction(location, gameState);
+    }
+  }, [gameState, processPlayerAction]);
 
   const resetGame = () => {
     setGameState(null);
@@ -209,7 +214,7 @@ export function GameClient() {
                             gameState={gameState}
                             onCraft={handleCrafting}
                             isCrafting={gameState.isLoading}
-                            onFastTravel={(location) => processPlayerAction(location, gameState)}
+                            onFastTravel={handleFastTravel}
                           />
                         </div>
                       </div>
