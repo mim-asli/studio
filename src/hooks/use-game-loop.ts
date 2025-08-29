@@ -1,0 +1,200 @@
+
+"use client";
+
+import { useState, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { generateNextTurn } from "@/ai/flows/generate-next-turn";
+import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
+import { craftItem } from "@/ai/flows/craft-item-flow";
+import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput, CraftItemOutput } from "@/lib/types";
+import { PLAYER_ACTION_PREFIX } from "@/lib/game-data";
+import { useGameSaves } from "./use-game-saves";
+
+export function useGameLoop() {
+  const [gameState, setGameState] = useState<GameState | null>(null);
+  const { toast } = useToast();
+  const { saveGame } = useGameSaves();
+
+  const handleGameOver = useCallback((state: GameState): GameState => {
+    const finalState = { ...state, isGameOver: true, isLoading: false, choices: [] };
+    if (finalState.playerState.health <= 0) {
+        finalState.story.push("شما مرده‌اید. داستان شما در اینجا به پایان می‌رسد.");
+    }
+    // The actual saving to hall of fame is handled by an effect in GameClient
+    // watching for the isGameOver flag.
+    return finalState;
+  }, []);
+
+  const handleExplorationTurn = useCallback(async (playerAction: string, stateBeforeAction: GameState) => {
+    const gameStateForAI = JSON.stringify(stateBeforeAction);
+
+    const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
+        gameState: gameStateForAI,
+        playerAction,
+        difficulty: stateBeforeAction.difficulty,
+        gmPersonality: stateBeforeAction.gmPersonality,
+    });
+    
+    setGameState(prevGameState => {
+        if (!prevGameState) return null;
+        const { story: newStory, ...restOfNextTurn } = nextTurn;
+
+        let updatedGameState: GameState = {
+            ...prevGameState,
+            ...restOfNextTurn,
+            story: [...prevGameState.story, newStory], 
+            gameStarted: true,
+            isLoading: false,
+        };
+
+        if (updatedGameState.playerState.health <= 0) {
+            updatedGameState = handleGameOver(updatedGameState);
+        }
+
+        saveGame(updatedGameState);
+        return updatedGameState;
+    });
+
+    if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
+    if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
+    if (nextTurn.newLocation) toast({ title: "مکان جدید کشف شد", description: `شما ${nextTurn.newLocation} را پیدا کردید.` });
+  }, [handleGameOver, saveGame, toast]);
+  
+  const handleCombatTurn = useCallback(async (playerAction: string, stateBeforeAction: GameState) => {
+    const combatResult: ManageCombatScenarioOutput = await manageCombatScenario({
+        playerAction,
+        playerState: stateBeforeAction.playerState,
+        enemies: stateBeforeAction.enemies || [],
+        combatLog: stateBeforeAction.story.slice(-5),
+    });
+
+    setGameState(prev => {
+        if (!prev) return null;
+        const { turnNarration, updatedPlayerState, updatedEnemies, choices, isCombatOver, rewards } = combatResult;
+        
+        const newStory = [...prev.story, turnNarration];
+        let newInventory = prev.inventory;
+        
+        if (isCombatOver) {
+            newStory.push("مبارزه تمام شد.");
+            if (rewards && rewards.items) {
+                newInventory = [...newInventory, ...rewards.items];
+                const rewardText = `شما به دست آوردید: ${rewards.items.join(', ')}`;
+                newStory.push(rewardText);
+                toast({ title: "غنائم جنگی!", description: rewardText });
+            }
+        }
+        
+        let updatedGameState: GameState = {
+            ...prev,
+            story: newStory,
+            playerState: updatedPlayerState,
+            enemies: updatedEnemies,
+            choices: isCombatOver ? ["ادامه بده..."] : choices,
+            isCombat: !isCombatOver,
+            inventory: newInventory,
+            isLoading: false,
+        };
+
+        if (updatedPlayerState.health <= 0) {
+            updatedGameState = handleGameOver(updatedGameState);
+        }
+
+        saveGame(updatedGameState);
+        return updatedGameState;
+    });
+  }, [handleGameOver, saveGame, toast]);
+
+  const processPlayerAction = useCallback(async (playerAction: string, currentState: GameState | null) => {
+    if (!currentState) return;
+    const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
+    const stateBeforeAction = { ...currentState };
+
+    setGameState(prev => (prev ? { 
+      ...prev, 
+      story: [...prev.story, formattedPlayerAction],
+      isLoading: true, 
+      choices: [] 
+    }: null));
+
+    try {
+        if (stateBeforeAction.isCombat) {
+            await handleCombatTurn(playerAction, stateBeforeAction);
+        } else {
+            await handleExplorationTurn(playerAction, stateBeforeAction);
+        }
+    } catch (error) {
+      console.error("Error processing player action:", error);
+      setGameState(prev => (prev ? { 
+          ...prev, 
+          isLoading: false, 
+          choices: stateBeforeAction.choices.length > 0 ? stateBeforeAction.choices : ["دوباره تلاش کن"] 
+      }: null));
+      toast({
+        variant: "destructive",
+        title: "خطای هوش مصنوعی",
+        description: "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.",
+      });
+    }
+  }, [handleCombatTurn, handleExplorationTurn, toast]);
+
+  const handleCrafting = useCallback(async (ingredients: string[]) => {
+    if (!gameState) return;
+    setGameState(prev => (prev ? { ...prev, isLoading: true } : null));
+    try {
+        const result: CraftItemOutput = await craftItem({
+            ingredients,
+            playerSkills: gameState.skills,
+        });
+
+        setGameState(prev => {
+            if (!prev) return null;
+            let newInventory = [...prev.inventory];
+            
+            result.consumedItems.forEach(consumed => {
+                const index = newInventory.findIndex(item => item === consumed);
+                if (index > -1) {
+                    newInventory.splice(index, 1);
+                }
+            });
+            
+            if (result.success && result.createdItem) {
+                newInventory.push(result.createdItem);
+            }
+            
+            const updatedGameState: GameState = {
+                ...prev,
+                inventory: newInventory,
+                isLoading: false,
+                story: [...prev.story, `[ساخت و ساز]: ${result.message}`],
+            };
+
+            saveGame(updatedGameState);
+            return updatedGameState;
+        });
+
+        toast({
+            title: result.success ? "ساخت و ساز موفق" : "ساخت و ساز ناموفق",
+            description: result.message,
+            variant: result.success ? "default" : "destructive",
+        });
+
+    } catch (error) {
+        console.error("Crafting error:", error);
+        setGameState(prev => (prev ? { ...prev, isLoading: false } : null));
+        toast({
+            variant: "destructive",
+            title: "خطای ساخت و ساز",
+            description: "یک خطای پیش‌بینی نشده در سیستم ساخت و ساز رخ داد.",
+        });
+    }
+  }, [gameState, saveGame, toast]);
+
+  return {
+    gameState,
+    setGameState,
+    processPlayerAction,
+    handleCrafting,
+    isLoading: gameState?.isLoading ?? false,
+  };
+}

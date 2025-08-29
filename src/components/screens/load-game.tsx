@@ -17,8 +17,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import type { SaveFile } from '@/lib/types';
-
-const SAVES_KEY = "dastan-saves";
+import { useGameSaves } from '@/hooks/use-game-saves';
 
 interface LoadGameProps {
     onBack: () => void;
@@ -26,21 +25,20 @@ interface LoadGameProps {
 }
 
 export function LoadGame({ onBack, onLoad }: LoadGameProps) {
-    const [savedGames, setSavedGames] = useState<SaveFile[]>([]);
-
+    const { savedGames, deleteSave, loadSavedGames } = useGameSaves();
+    const [games, setGames] = useState<SaveFile[]>([]);
+    
     useEffect(() => {
-        const savesJson = localStorage.getItem(SAVES_KEY);
-        if (savesJson) {
-            const saves: SaveFile[] = JSON.parse(savesJson);
-            saves.sort((a, b) => b.timestamp - a.timestamp);
-            setSavedGames(saves);
+        const fetchGames = async () => {
+            const loadedGames = await loadSavedGames();
+            setGames(loadedGames);
         }
-    }, []);
+        fetchGames();
+    }, [loadSavedGames]);
 
     const handleDeleteGame = (saveId: string) => {
-        const newSaves = savedGames.filter(game => game.id !== saveId);
-        setSavedGames(newSaves);
-        localStorage.setItem(SAVES_KEY, JSON.stringify(newSaves));
+        deleteSave(saveId);
+        setGames(currentGames => currentGames.filter(game => game.id !== saveId));
     };
 
     return (
@@ -60,9 +58,9 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                         <CardDescription>یک ماجراجویی را برای ادامه انتخاب کنید.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {savedGames.length > 0 ? (
+                        {games.length > 0 ? (
                             <ul className="space-y-3">
-                                {savedGames.map((save) => (
+                                {games.map((save) => (
                                      <li key={save.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 group border hover:border-primary/50 transition-colors">
                                         <div className="flex-1 overflow-hidden">
                                             <p className="font-semibold truncate">{save.characterName || 'شخصیت بی‌نام'}</p>
