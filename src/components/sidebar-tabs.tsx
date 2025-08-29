@@ -27,18 +27,12 @@ export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProp
 
   useEffect(() => {
     if (gameState) {
-      // Switch to combat tab only when combat *starts*
       if (gameState.isCombat && !prevIsCombatRef.current) {
         setActiveTab("combat");
       }
-      // When combat is over, if the user is on the combat tab, switch them to vitals.
-      else if (!gameState.isCombat && prevIsCombatRef.current && activeTab === "combat") {
-        setActiveTab("vitals");
-      }
-      // Update the ref for the next render
       prevIsCombatRef.current = gameState.isCombat;
     }
-  }, [gameState?.isCombat, activeTab]);
+  }, [gameState?.isCombat]);
 
   if (!gameState) return null;
 
@@ -57,7 +51,7 @@ export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProp
       case "crafting":
         return <CraftingPanel inventory={gameState.inventory} onCraft={onCraft} isCrafting={isLoading} />;
       case "character":
-        return <InfoPanel title="مهارت‌ها" items={gameState.skills} emptyMessage="شما هنوز مهارت خاصی ندارید." />;
+        return <InfoPanel title="مهارت‌ها و ویژگی‌ها" description="توانایی‌ها و خصوصیات منحصر به فرد شما." items={gameState.skills} emptyMessage="شما هنوز مهارت خاصی ندارید." />;
       case "quests":
         return <InfoPanel title="مأموریت‌ها" items={gameState.quests} emptyMessage="هیچ مأموریت فعالی وجود ندارد." />;
       case "world":
@@ -81,6 +75,7 @@ export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProp
           <TabsTrigger 
             key={tab.value} 
             value={tab.value}
+            disabled={!availableTabs.find(t => t.value === tab.value)}
             className={cn(
               "w-full flex-col md:flex-row justify-center md:justify-start p-2 md:p-3 gap-2 h-auto data-[state=active]:bg-card/80 data-[state=active]:border data-[state=active]:shadow-sm data-[state=active]:border-border",
               "bg-card/30 border border-transparent"

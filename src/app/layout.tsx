@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
-import { Inter, VT323 } from 'next/font/google'
+import { Inter, Space_Grotesk } from 'next/font/google'
 import './globals.css';
 import { GameProvider } from '@/context/game-context';
 import { SettingsProvider } from '@/context/settings-context';
 import { ThemeWatcher } from '@/components/theme-watcher';
 
 export const metadata: Metadata = {
-  title: 'داستان - یک بازی نقش‌آفرینی با هوش مصنوعی',
-  description: 'یک بازی نقش‌آفرینی بی‌پایان با هوش مصنوعی',
+  title: 'Dastan AI RPG',
+  description: 'An endless AI-powered text-based RPG.',
 };
 
 const inter = Inter({
@@ -16,10 +16,10 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-const vt323 = VT323({
+const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
-  weight: '400',
-  variable: '--font-vt323',
+  weight: ['400', '700'],
+  variable: '--font-space-grotesk',
 });
 
 export default function RootLayout({
@@ -28,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fa" dir="rtl" className={`${inter.variable} ${vt323.variable}`}>
+    <html lang="fa" dir="rtl" className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body className="font-body antialiased">
         <SettingsProvider>
           <GameProvider>

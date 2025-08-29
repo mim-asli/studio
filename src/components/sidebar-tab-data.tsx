@@ -64,6 +64,6 @@ export const tabsConfig: TabConfig[] = [
         value: "map", 
         label: "نقشه", 
         icon: <Map className="w-5 h-5" />, 
-        show: (gameState) => !gameState.isCombat,
+        show: (gameState) => !gameState.isCombat && !!gameState.discoveredLocations && gameState.discoveredLocations.length > 0,
     },
 ];
