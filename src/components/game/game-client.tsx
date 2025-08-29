@@ -73,11 +73,11 @@ export function GameClient() {
                 isOpen={isDirectorChatOpen}
                 onClose={() => setIsDirectorChatOpen(false)}
             />
-            <div className="relative w-full h-screen overflow-hidden">
-            <main className="grid h-screen grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px] text-foreground font-body">
-                {/* Main Content */}
-                <div className="flex flex-col h-full">
-                    <div className="flex justify-between items-center p-2 sm:p-4">
+            <div className="lg:grid lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px] w-full h-screen">
+                {/* Main Content Area */}
+                <div className="flex flex-col h-screen bg-background">
+                    {/* Header */}
+                    <div className="flex justify-between items-center p-2 sm:p-4 border-b">
                         <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
                         <div className="flex items-center gap-2">
                           <div className="lg:hidden">
@@ -131,9 +131,10 @@ export function GameClient() {
                           </AlertDialog>
                         </div>
                     </div>
-                    <div className="flex flex-col gap-4 flex-grow p-2 sm:p-4 pt-0">
-                        <div className="relative flex-grow border rounded-md shadow-inner bg-card/80 backdrop-blur-sm overflow-hidden flex flex-col">
-                            <div className="absolute inset-0 bg-black/60" />
+
+                    {/* Story Display - takes up remaining space and scrolls */}
+                    <div className="flex-grow overflow-y-auto">
+                        <div className="relative border-b">
                             <StoryDisplay 
                                 storySegments={gameState.story} 
                                 image={currentImage}
@@ -145,6 +146,10 @@ export function GameClient() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                    
+                    {/* Interaction Panel - fixed at the bottom */}
+                    <div className="p-2 sm:p-4 border-t bg-card/50">
                         <InteractionPanel 
                             choices={gameState.choices} 
                             onAction={handleAction} 
@@ -158,7 +163,6 @@ export function GameClient() {
                 <div className="hidden lg:block h-full bg-background/50 backdrop-blur-md p-4 border-l">
                     <Sidebar />
                 </div>
-            </main>
             </div>
         </TooltipProvider>
     );
