@@ -4,11 +4,13 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { useGameLoop } from "@/hooks/use-game-loop";
 import { useGameSaves } from "@/hooks/use-game-saves";
 import { useImageGenerator } from "@/hooks/use-image-generator";
 import type { GameState, SaveFile, CustomScenario } from "@/lib/types";
 import { useSettingsContext } from './settings-context';
+import { useGameInitializer } from '@/hooks/useGameInitializer';
+import { useGameActions } from '@/hooks/useGameActions';
+import { useCraftingHandler } from '@/hooks/useCraftingHandler';
 
 interface GameContextType {
     gameState: GameState | null;
@@ -35,36 +37,38 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { savedGames, loadGame: loadGameFromStorage, saveGame, deleteSave, saveToHallOfFame } = useGameSaves();
     const { currentImage, isImageLoading, generateImage, clearImage } = useImageGenerator(settings.generateImages);
     
+    const [gameState, setGameState] = useState<GameState | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [isGameLoading, setIsGameLoading] = useState(true);
+
 
     const onGameLoad = (state: GameState) => {
         router.push('/play');
     };
 
-    const {
-        gameState,
-        setGameState,
-        processPlayerAction,
-        handleCrafting,
-        startGame: startNewGame,
-        isLoading,
-    } = useGameLoop({
-        onImagePrompt: generateImage,
-        onSaveGame: saveGame,
-        onGameLoad: onGameLoad,
-    });
+    const onStateUpdate = (newState: GameState) => {
+        setGameState(newState);
+        saveGame(newState);
+        if (newState.playerState.health <= 0) {
+            setGameState(prev => prev ? {...prev, isGameOver: true, isLoading: false, choices: []} : null);
+        }
+    };
+    
+    const { startGame } = useGameInitializer({ setGameState, setIsLoading, onGameLoad, onStateUpdate, onImagePrompt: generateImage });
+    const { processPlayerAction } = useGameActions({ setIsLoading, onStateUpdate, onImagePrompt: generateImage });
+    const { handleCrafting } = useCraftingHandler({ gameState, setIsLoading, onStateUpdate, toast });
+
 
     useEffect(() => {
         if (gameState?.isGameOver) {
             saveToHallOfFame(gameState);
         }
-    }, [gameState?.isGameOver, saveToHallOfFame]);
+    }, [gameState?.isGameOver, saveToHallOfFame, gameState]);
 
-    const startGame = useCallback((scenario: CustomScenario, characterName: string) => {
+    const startNewGame = useCallback((scenario: CustomScenario, characterName: string) => {
         clearImage();
-        startNewGame(scenario, characterName);
-        // The game loop will call onGameLoad, which triggers the redirect
-    }, [startNewGame, clearImage]);
+        startGame(scenario, characterName);
+    }, [startGame, clearImage]);
 
     const loadGame = useCallback(async (saveId: string) => {
         setIsGameLoading(true);
@@ -102,7 +106,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         handleAction(`سفر به ${location}`);
     }, [handleAction]);
 
-    // This effect runs once on initial load to set the loading state correctly.
     useEffect(() => {
         setIsGameLoading(false);
     }, []);
@@ -114,7 +117,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentImage,
         isImageLoading,
         savedGames,
-        startGame,
+        startGame: startNewGame,
         loadGame,
         deleteSave,
         resetGame,
