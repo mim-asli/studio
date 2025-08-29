@@ -2,9 +2,9 @@
 "use client";
 
 import { useState } from "react";
-import { StoryDisplay } from "@/components/story-display";
-import { InteractionPanel } from "@/components/interaction-panel";
-import { SidebarTabs } from "@/components/sidebar-tabs";
+import { StoryDisplay } from "@/components/game/story-display";
+import { InteractionPanel } from "@/components/game/interaction-panel";
+import { Sidebar } from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle, LogOut, FilePlus } from "lucide-react";
 import { GameDirectorChat } from "./game-director-chat";
@@ -125,7 +125,7 @@ export function GameClient() {
                     </div>
                 </div>
                 <div className="flex-grow flex flex-col overflow-hidden">
-                    <SidebarTabs 
+                    <Sidebar 
                         onCraft={handleCrafting}
                         onAction={handleAction}
                         onFastTravel={handleFastTravel}

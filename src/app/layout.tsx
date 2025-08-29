@@ -4,7 +4,7 @@ import { Inter, Space_Grotesk } from 'next/font/google'
 import './globals.css';
 import { GameProvider } from '@/context/game-context';
 import { SettingsProvider } from '@/context/settings-context';
-import { ThemeWatcher } from '@/components/theme-watcher';
+import { ThemeWatcher } from '@/components/game/theme-watcher';
 
 export const metadata: Metadata = {
   title: 'Dastan AI RPG',

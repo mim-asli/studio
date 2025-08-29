@@ -3,24 +3,24 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { tabsConfig } from './sidebar-tab-data';
+import { tabsConfig } from './tab-data';
 import { cn } from '@/lib/utils';
-import { PlayerHud } from "@/components/player-hud";
-import { InfoPanel } from "./sidebar/info-panel";
-import { SceneDisplay } from "@/components/scene-display";
-import { CraftingPanel } from "@/components/crafting-panel";
-import { WorldStateDisplay } from "@/components/world-state-display";
-import { MapDisplay } from "@/components/map-display";
+import { PlayerHud } from "@/components/hud/player-hud";
+import { InfoPanel } from "./info-panel";
+import { SceneDisplay } from "@/components/hud/scene-display";
+import { CraftingPanel } from "@/components/hud/crafting-panel";
+import { WorldStateDisplay } from "@/components/hud/world-state-display";
+import { MapDisplay } from "@/components/hud/map-display";
 import { CombatControls } from "@/components/combat/combat-controls";
 import { useGameContext } from '@/context/game-context';
 
-interface SidebarTabsProps {
+interface SidebarProps {
     onCraft: (ingredients: string[]) => void;
     onAction: (action: string) => void;
     onFastTravel: (action: string) => void;
 }
 
-export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProps) {
+export function Sidebar({ onCraft, onAction, onFastTravel }: SidebarProps) {
   const { gameState, isLoading } = useGameContext();
   const [activeTab, setActiveTab] = useState("vitals");
   const prevIsCombatRef = useRef<boolean>();

@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Bot, Box, User, Sun, Moon, Cloud, Snowflake, Leaf, UserCheck } from "lucide-react";
+import { Users, Bot, Box, User, UserCheck } from "lucide-react";
 import type { GameState } from "@/lib/types";
 import {
   Tooltip,

@@ -4,7 +4,7 @@
 import React, { useRef, useState, useEffect, useCallback, memo } from 'react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 interface MapDisplayProps {
     locations: string[];

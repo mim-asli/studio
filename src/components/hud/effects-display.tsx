@@ -2,8 +2,7 @@
 "use client";
 
 import type { ActiveEffect } from "@/lib/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { Zap, ZapOff, Shield, ShieldAlert, PlusCircle, MinusCircle } from "lucide-react";
+import { PlusCircle, MinusCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -16,9 +15,7 @@ interface EffectsDisplayProps {
   effects: ActiveEffect[];
 }
 
-const getEffectIcon = (type: 'buff' | 'debuff', name: string) => {
-    if (name.toLowerCase().includes('protect')) return <Shield className="w-5 h-5"/>;
-    if (name.toLowerCase().includes('poison')) return <ShieldAlert className="w-5 h-5"/>;
+const getEffectIcon = (type: 'buff' | 'debuff') => {
     if (type === 'buff') return <PlusCircle className="w-5 h-5"/>;
     return <MinusCircle className="w-5 h-5"/>
 }
@@ -42,7 +39,7 @@ export function EffectsDisplay({ effects }: EffectsDisplayProps) {
                                 "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-semibold cursor-default",
                                 isBuff ? "bg-green-500/10 border-green-500/30 text-green-300" : "bg-red-500/10 border-red-500/30 text-red-400"
                             )}>
-                                {getEffectIcon(effect.type, effect.name)}
+                                {getEffectIcon(effect.type)}
                                 <span>{effect.name}</span>
                             </div>
                         </TooltipTrigger>

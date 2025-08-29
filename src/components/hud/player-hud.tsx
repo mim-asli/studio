@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HeartPulse, BrainCircuit, Droplets, Wheat, Zap, Sparkles, Star } from "lucide-react";
-import type { GameState, ActiveEffect } from "@/lib/types";
+import type { GameState } from "@/lib/types";
 import { EffectsDisplay } from "./effects-display";
 
 interface HudStatProps {
