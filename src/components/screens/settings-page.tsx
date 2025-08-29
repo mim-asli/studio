@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Link } from "next/link";
+import Link from "next/link";
 import { ArrowLeft, Cog, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSettingsContext } from "@/context/settings-context";
