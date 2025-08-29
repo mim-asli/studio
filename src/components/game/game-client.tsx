@@ -6,7 +6,7 @@ import { StoryDisplay } from "@/components/game/story-display";
 import { InteractionPanel } from "@/components/game/interaction-panel";
 import { Sidebar } from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, LogOut, FilePlus } from "lucide-react";
+import { Loader2, AlertTriangle, LogOut, FilePlus, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { GameDirectorChat } from "./game-director-chat";
 import {
   AlertDialog,
@@ -26,18 +26,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useGameContext } from "@/context/game-context";
+import { cn } from "@/lib/utils";
 
 export function GameClient() {
     const { 
         gameState, 
         handleAction, 
-        handleCrafting,
-        handleFastTravel,
         resetGame,
         currentImage,
         isImageLoading,
     } = useGameContext();
     const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
     if (!gameState) {
         // This should ideally be handled by the page, but as a fallback:
@@ -68,69 +68,88 @@ export function GameClient() {
                 isOpen={isDirectorChatOpen}
                 onClose={() => setIsDirectorChatOpen(false)}
             />
-            <div className="relative w-full h-screen">
-            <main className="relative grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen text-foreground font-body p-2 sm:p-4 gap-4">
-                <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
-                <div className="relative flex-grow border rounded-md shadow-inner bg-card/80 backdrop-blur-sm overflow-hidden flex flex-col">
-                    <div className="absolute inset-0 bg-black/60" />
-                    <StoryDisplay 
-                        storySegments={gameState.story} 
-                        image={currentImage}
-                        isImageLoading={isImageLoading}
-                    />
-                    {gameState.isLoading && !isImageLoading && (
-                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
-                            <Loader2 className="w-16 h-16 text-primary animate-spin" />
+            <div className="relative w-full h-screen overflow-hidden">
+            <main className={cn(
+                "grid h-screen text-foreground font-body transition-all duration-300 ease-in-out",
+                isSidebarOpen ? "grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px]" : "grid-cols-[1fr_auto]"
+            )}>
+                {/* Main Content */}
+                <div className="flex flex-col gap-4 h-full p-2 sm:p-4">
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
+                        <div className="flex items-center gap-2">
+                        <AlertDialog>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                <AlertDialogTrigger asChild>
+                                    <Button size="icon" variant="ghost"><LogOut/></Button>
+                                </AlertDialogTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                <p>خروج به منوی اصلی</p>
+                                </TooltipContent>
+                            </Tooltip>
+                            <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>بازگشت به منوی اصلی؟</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                پیشرفت شما به صورت خودکار ذخیره شده است. آیا می‌خواهید به منوی اصلی بازگردید؟
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>لغو</AlertDialogCancel>
+                                <AlertDialogAction onClick={resetGame}>
+                                خروج
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                         </div>
-                    )}
-                </div>
-                <InteractionPanel 
-                    choices={gameState.choices} 
-                    onAction={handleAction} 
-                    isLoading={gameState.isLoading}
-                    onDirectorChat={() => setIsDirectorChatOpen(true)}
-                />
+                    </div>
+                    <div className="relative flex-grow border rounded-md shadow-inner bg-card/80 backdrop-blur-sm overflow-hidden flex flex-col">
+                        <div className="absolute inset-0 bg-black/60" />
+                        <StoryDisplay 
+                            storySegments={gameState.story} 
+                            image={currentImage}
+                            isImageLoading={isImageLoading}
+                        />
+                        {gameState.isLoading && !isImageLoading && (
+                            <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
+                                <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                            </div>
+                        )}
+                    </div>
+                    <InteractionPanel 
+                        choices={gameState.choices} 
+                        onAction={handleAction} 
+                        isLoading={gameState.isLoading}
+                        onDirectorChat={() => setIsDirectorChatOpen(true)}
+                    />
                 </div>
 
-                <div className="flex flex-col gap-4 h-[calc(100vh-2rem)]">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
-                    <div className="flex items-center gap-2">
-                    <AlertDialog>
-                        <Tooltip>
+                {/* Sidebar */}
+                <div className={cn(
+                    "h-full bg-background/50 backdrop-blur-md transition-all duration-300 ease-in-out flex",
+                    isSidebarOpen ? "w-[400px] xl:w-[450px]" : "w-16"
+                )}>
+                    <div className="w-16 flex flex-col items-center py-4 border-l">
+                         <Tooltip>
                             <TooltipTrigger asChild>
-                            <AlertDialogTrigger asChild>
-                                <Button size="icon" variant="ghost"><LogOut/></Button>
-                            </AlertDialogTrigger>
+                                <Button size="icon" variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                                    {isSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
+                                </Button>
                             </TooltipTrigger>
-                            <TooltipContent>
-                            <p>خروج به منوی اصلی</p>
+                            <TooltipContent side="left">
+                                <p>{isSidebarOpen ? 'بستن نوار کناری' : 'باز کردن نوار کناری'}</p>
                             </TooltipContent>
                         </Tooltip>
-                        <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>بازگشت به منوی اصلی؟</AlertDialogTitle>
-                            <AlertDialogDescription>
-                            پیشرفت شما به صورت خودکار ذخیره شده است. آیا می‌خواهید به منوی اصلی بازگردید؟
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>لغو</AlertDialogCancel>
-                            <AlertDialogAction onClick={resetGame}>
-                            خروج
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
                     </div>
-                </div>
-                <div className="flex-grow flex flex-col overflow-hidden">
-                    <Sidebar 
-                        onCraft={handleCrafting}
-                        onAction={handleAction}
-                        onFastTravel={handleFastTravel}
-                    />
-                </div>
+                    <div className={cn(
+                        "flex-grow overflow-hidden transition-opacity duration-300",
+                        isSidebarOpen ? "opacity-100" : "opacity-0"
+                    )}>
+                        {isSidebarOpen && <div className="py-4 pl-0 pr-4 h-full"><Sidebar /></div>}
+                    </div>
                 </div>
             </main>
             </div>
