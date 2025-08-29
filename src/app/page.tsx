@@ -1,5 +1,5 @@
-import { GameClient } from "@/components/game-client";
+import { AppManager } from "@/components/app-manager";
 
 export default function Home() {
-  return <GameClient />;
+  return <AppManager />;
 }
