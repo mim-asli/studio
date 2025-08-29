@@ -18,10 +18,7 @@ import type { QueryGameDirectorInput, QueryGameDirectorOutput, DirectorMessage }
 const QueryGameDirectorInputSchema = z.object({
   playerQuery: z.string().describe('The question the player wants to ask the game director.'),
   gameState: z.string().describe('The current game state in JSON format.'),
-  conversationHistory: z.array(z.object({
-    role: z.enum(['user', 'model']),
-    content: z.string(),
-  })).optional().describe('The history of the conversation so far.'),
+  conversationHistory: z.custom<DirectorMessage[]>().optional().describe('The history of the conversation so far.'),
 });
 
 const QueryGameDirectorOutputSchema = z.object({
