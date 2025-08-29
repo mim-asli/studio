@@ -3,8 +3,8 @@
 
 import { useState } from 'react';
 import { Button } from "../ui/button";
-import { ArrowLeft, Pencil, MinusCircle, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { ArrowLeft, Pencil } from "lucide-react";
+import { Card, CardContent } from '../ui/card';
 import { Input, Textarea } from '../ui/input';
 import { Progress } from '../ui/progress';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,9 @@ import {
     difficultyPoints, 
     openingScenes 
 } from '@/lib/game-data';
+import { Step } from './new-game/step';
+import { ItemManager } from './new-game/item-manager';
+import { FeatureSelection } from './new-game/feature-selection';
 
 const TOTAL_STEPS = 6;
 
@@ -47,33 +50,6 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     const [difficulty, setDifficulty] = useState<'آسان'|'معمولی'|'سخت'>('معمولی');
     const [gmPersonality, setGmPersonality] = useState('روایی و سینمایی');
     const [writingCustomScene, setWritingCustomScene] = useState(false);
-
-    const totalPoints = difficultyPoints[difficulty];
-    const usedPoints = Object.entries(initialItems).reduce((acc, [item, count]) => {
-        const itemCost = startingEquipment[item as keyof typeof startingEquipment]?.cost || 0;
-        return acc + (itemCost * count);
-    }, 0);
-    const remainingPoints = totalPoints - usedPoints;
-
-    const handleAddItem = (item: keyof typeof startingEquipment) => {
-        if (remainingPoints >= startingEquipment[item].cost) {
-            setInitialItems(prev => ({...prev, [item]: (prev[item] || 0) + 1 }));
-        }
-    }
-    
-    const handleRemoveItem = (item: keyof typeof startingEquipment) => {
-        if (initialItems[item] > 0) {
-            setInitialItems(prev => {
-                const newItems = {...prev};
-                if (newItems[item] > 1) {
-                    newItems[item]--;
-                } else {
-                    delete newItems[item];
-                }
-                return newItems;
-            });
-        }
-    }
 
     const handleNext = () => setStep(s => Math.min(s + 1, TOTAL_STEPS));
     const handlePrev = () => setStep(s => Math.max(s - 1, 1));
@@ -136,7 +112,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             case 1: return <Step title="۱. مبانی جهان" description="قوانین و حال و هوای کلی دنیای خود را مشخص کنید.">
                  <div className="space-y-6">
                     <Input placeholder="عنوان سناریو (مثلا: انتقام جادوگر تاریکی)" value={scenarioTitle} onChange={e => setScenarioTitle(e.target.value)} className="text-center text-lg" />
-                     <SelectionGrid items={genres} selected={genre} onSelect={(key) => setGenre(key as keyof typeof genres)} columns="3" title="ژانر" />
+                     <FeatureSelection items={genres} selected={genre} onSelect={(key) => setGenre(key as keyof typeof genres)} columns="3" title="ژانر" />
                     <div>
                         <Label className="text-lg font-bold text-primary mb-2 block">سطح دشواری</Label>
                         <RadioGroup value={difficulty} className="mt-2 grid grid-cols-3 gap-4" onValueChange={value => setDifficulty(value as 'آسان'|'معمولی'|'سخت')}>
@@ -166,8 +142,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 <div className="space-y-6">
                     <Input placeholder="نام شخصیت" value={characterName} onChange={e => setCharacterName(e.target.value)} className="text-center text-lg" />
                     <div>
-                        <Label className="text-lg font-bold text-primary mb-2 block">کهن الگو (Archetype)</Label>
-                        <SelectionGrid 
+                        <FeatureSelection 
                             items={archetypes} 
                             selected={selectedArchetype} 
                             onSelect={(key) => {
@@ -175,6 +150,8 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                                 setCustomArchetype(''); 
                             }} 
                             columns="4"
+                            title="کهن الگو (Archetype)"
+                            showDescription={true}
                         />
                         <div className="flex items-center gap-4 my-4">
                             <hr className="flex-grow border-border/50"/>
@@ -196,59 +173,16 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             </Step>
             case 3: return <Step title="۳. انتخاب ویژگی‌ها" description="یک نقطه قوت (Perk) و یک نقطه ضعف (Flaw) انتخاب کنید تا به شخصیت خود عمق ببخشید.">
                 <div className="grid md:grid-cols-2 gap-8">
-                    <FeatureSelection title="نقاط قوت (Perks)" items={perks} selected={perk} onSelect={setPerk} />
-                    <FeatureSelection title="نقاط ضعف (Flaws)" items={flaws} selected={flaw} onSelect={setFlaw} />
+                    <FeatureSelection title="نقاط قوت (Perks)" items={perks} selected={perk} onSelect={setPerk as (key: string) => void} showDescription={true} layout="list" />
+                    <FeatureSelection title="نقاط ضعف (Flaws)" items={flaws} selected={flaw} onSelect={setFlaw as (key: string) => void} showDescription={true} layout="list" />
                 </div>
             </Step>
             case 4: return <Step title="۴. تجهیزات اولیه" description="با استفاده از امتیازهای خود، تجهیزات شروع ماجراجویی را انتخاب کنید.">
-                 <div className="grid md:grid-cols-2 gap-6">
-                     {/* Available Items Column */}
-                    <div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>آیتم‌های موجود</CardTitle>
-                                <CardDescription>امتیاز باقی‌مانده: <span className="font-bold text-primary">{remainingPoints} / {totalPoints}</span></CardDescription>
-                            </CardHeader>
-                            <CardContent className="max-h-80 overflow-y-auto pr-2 space-y-2">
-                                {Object.entries(startingEquipment).map(([name, data]) => (
-                                    <div key={name} className="flex items-center justify-between p-2 rounded-md bg-muted/50 border">
-                                        <div>
-                                            <p className="font-semibold">{name} <span className="text-xs text-primary">({data.cost} امتیاز)</span></p>
-                                            <p className="text-xs text-muted-foreground">{data.description}</p>
-                                        </div>
-                                        <Button size="icon" variant="ghost" onClick={() => handleAddItem(name as keyof typeof startingEquipment)} disabled={remainingPoints < data.cost}>
-                                            <PlusCircle className="text-green-500"/>
-                                        </Button>
-                                    </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Selected Items Column */}
-                    <div>
-                        <Card>
-                             <CardHeader>
-                                <CardTitle>کوله پشتی شما</CardTitle>
-                                <CardDescription>آیتم‌هایی که انتخاب کرده‌اید.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="max-h-80 overflow-y-auto pr-2 space-y-2">
-                                {Object.keys(initialItems).length > 0 ? Object.entries(initialItems).map(([name, count]) => (
-                                     <div key={name} className="flex items-center justify-between p-2 rounded-md bg-muted/50 border">
-                                        <div>
-                                            <p className="font-semibold">{name} <span className="text-muted-foreground">x{count}</span></p>
-                                        </div>
-                                        <Button size="icon" variant="ghost" onClick={() => handleRemoveItem(name as keyof typeof startingEquipment)}>
-                                            <MinusCircle className="text-red-500"/>
-                                        </Button>
-                                    </div>
-                                )) : (
-                                    <p className="text-center text-muted-foreground py-10">کوله پشتی شما خالی است.</p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                 </div>
+                <ItemManager 
+                    totalPoints={difficultyPoints[difficulty]}
+                    items={initialItems}
+                    setItems={setInitialItems}
+                />
             </Step>
             case 5: return <Step title="۵. صحنه افتتاحیه" description="یک نقطه شروع برای داستان انتخاب کنید یا خودتان بنویسید.">
                 <div className="space-y-4">
@@ -334,74 +268,4 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
     );
 }
 
-const Step = ({ title, description, children }: { title: string, description: string, children: React.ReactNode }) => (
-    <Card className="border-none shadow-none">
-        <CardHeader className="text-center">
-            <CardTitle className="text-2xl sm:text-3xl font-bold">{title}</CardTitle>
-            <CardDescription className="text-base">{description}</CardDescription>
-        </CardHeader>
-        <CardContent className="mt-6">
-            {children}
-        </CardContent>
-    </Card>
-);
-
-const SelectionGrid = ({ items, selected, onSelect, columns = "3", title }: { items: any, selected: string | null, onSelect: (key: string) => void, columns?: "2" | "3" | "4", title?: string }) => {
-    const columnClasses: Record<string, string> = {
-        "2": "grid-cols-2",
-        "3": "grid-cols-2 md:grid-cols-3",
-        "4": "grid-cols-2 md:grid-cols-4",
-    };
     
-    return (
-    <div>
-        {title && <Label className="text-lg font-bold text-primary mb-2 block">{title}</Label>}
-        <div className={cn("grid gap-4", columnClasses[columns])}>
-            {Object.entries(items).map(([key, value]: [string, any]) => (
-                <Card 
-                    key={key}
-                    onClick={() => onSelect(key)}
-                    className={cn(
-                        "cursor-pointer transition-all hover:shadow-primary/50 hover:shadow-md hover:-translate-y-1",
-                        selected === key ? "ring-2 ring-primary" : "border-primary/20"
-                    )}
-                >
-                    <CardHeader className="items-center text-center p-4">
-                        <div className="p-3 bg-muted rounded-full mb-2">
-                            <value.icon className="w-7 h-7 text-foreground" />
-                        </div>
-                        <CardTitle className="text-base">{key}</CardTitle>
-                        {value.description && <CardDescription className="text-xs">{value.description}</CardDescription>}
-                    </CardHeader>
-                </Card>
-            ))}
-        </div>
-    </div>
-    )
-};
-
-const FeatureSelection = ({ title, items, selected, onSelect }: { title: string, items: any, selected: string | null, onSelect: (key: string) => void }) => (
-    <div>
-        <h3 className="text-xl font-bold text-center mb-4 text-primary">{title}</h3>
-        <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
-            {Object.entries(items).map(([key, value]: [string, any]) => (
-                <Card 
-                    key={key} 
-                    onClick={() => onSelect(key)} 
-                    className={cn(
-                        "cursor-pointer transition-colors", 
-                        selected === key ? "bg-primary/20 border-primary" : "hover:bg-muted/50"
-                    )}
-                >
-                    <CardContent className="p-4 flex items-center gap-4">
-                        <value.icon className="w-6 h-6 text-primary" />
-                        <div>
-                            <p className="font-bold">{key}</p>
-                            <p className="text-sm text-muted-foreground">{value.description}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-    </div>
-);
