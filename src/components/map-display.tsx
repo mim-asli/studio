@@ -147,4 +147,4 @@ const MapDisplayComponent = ({ locations, onLocationClick }: MapDisplayProps) =>
     );
 }
 
-export const GlobeDisplay = memo(MapDisplayComponent);
+export const MapDisplay = memo(MapDisplayComponent);

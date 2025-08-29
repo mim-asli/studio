@@ -7,9 +7,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
-import { SceneDisplay, WorldStateDisplay } from "@/components/scene-display";
+import { SceneDisplay } from "@/components/scene-display";
+import { WorldStateDisplay } from "@/components/world-state-display";
 import type { GameState } from "@/lib/types";
-import { GlobeDisplay } from "./globe-display";
+import { MapDisplay } from "./map-display";
 
 import {
   Tooltip,
@@ -83,7 +84,7 @@ export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: Si
             <CardContent className="text-sm text-muted-foreground p-0 pt-2">جهان را بچرخانید و مکان‌های کشف شده را ببینید.</CardContent>
         </CardHeader>
         <CardContent className="text-center w-full flex-grow overflow-hidden p-0">
-            <GlobeDisplay 
+            <MapDisplay 
               locations={discoveredLocations || []}
               onLocationClick={onFastTravel}
             />
