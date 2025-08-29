@@ -62,7 +62,6 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-        'player-action': 'hsl(24 96% 54%)',
       },
       borderRadius: {
         lg: "var(--radius)",

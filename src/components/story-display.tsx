@@ -30,13 +30,17 @@ const StorySegment = ({ segment, onFinished, isLastSegment }: StorySegmentProps)
   const content = useMemo(() => {
     if (!displayText) return null;
     if (displayText.startsWith(PLAYER_ACTION_PREFIX)) {
-        return <span className="text-player-action font-bold">{displayText}</span>
+        return <span className="text-orange-500 font-bold">{displayText}</span>
     }
     return displayText;
   },[displayText]);
 
   return <p onClick={isLastSegment ? handleClick : undefined} className={isLastSegment ? 'cursor-pointer' : ''}>{content}</p>;
 };
+
+interface StoryDisplayProps {
+  storySegments?: string[];
+}
 
 export function StoryDisplay({ storySegments = [] }: StoryDisplayProps) {
   const segments = Array.isArray(storySegments) ? storySegments : [];
