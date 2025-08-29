@@ -25,9 +25,8 @@ export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProp
   const [activeTab, setActiveTab] = useState("vitals");
   
   useEffect(() => {
-    if (gameState?.isCombat && activeTab !== "combat") {
-      setActiveTab("combat");
-    } else if (gameState && !gameState.isCombat && activeTab === "combat") {
+    // When combat is over, if the user is on the combat tab, switch them to vitals.
+    if (gameState && !gameState.isCombat && activeTab === "combat") {
       setActiveTab("vitals");
     }
   }, [gameState?.isCombat, activeTab]);
@@ -55,12 +54,7 @@ export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProp
       case "world":
         return <WorldStateDisplay worldState={gameState.worldState} />;
       case "map":
-        return (
-          <MapDisplay 
-            locations={gameState.discoveredLocations || []}
-            onFastTravel={onFastTravel}
-          />
-        );
+        return <MapDisplay locations={gameState.discoveredLocations || []} onFastTravel={onFastTravel} />;
       default:
         return null;
     }
