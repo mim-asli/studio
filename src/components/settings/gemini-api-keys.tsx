@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useSettingsContext } from "@/context/settings-context";
+import { testApiKey } from "@/ai/flows/test-api-key-flow";
 
 export function GeminiApiKeys() {
     const { settings, updateSettings, setApiKeyStatus } = useSettingsContext();
@@ -33,16 +34,15 @@ export function GeminiApiKeys() {
 
     const handleTestKey = async (key: ApiKey) => {
         setIsTesting(key.id);
-        // This is a mock test. In a real app, you'd make an API call.
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Simulate different outcomes for demonstration
-        let status: ApiKey['status'] = 'invalid';
-        if (key.value.startsWith("valid")) status = 'valid';
-        if (key.value.startsWith("quota")) status = 'quota_exceeded';
-
-        setApiKeyStatus(key.id, status);
-        setIsTesting(null);
+        try {
+            const result = await testApiKey(key.value);
+            setApiKeyStatus(key.id, result.status);
+        } catch (error) {
+            console.error("Failed to test API key:", error);
+            setApiKeyStatus(key.id, 'invalid');
+        } finally {
+            setIsTesting(null);
+        }
     };
 
     const handleTestAllKeys = () => {
