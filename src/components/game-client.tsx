@@ -37,6 +37,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useSettings } from "@/hooks/use-settings";
 
 
 const SAVES_KEY = "dastan-saves";
@@ -46,6 +47,7 @@ const HALL_OF_FAME_KEY = "dastan-hall-of-fame";
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
 
 const handleLowSanityEffect = (gameState: GameState | null) => {
+  if (typeof document === 'undefined') return;
   if (gameState && gameState.playerState?.sanity < 30) {
     document.body.classList.add("sanity-glitch");
   } else {
@@ -54,6 +56,7 @@ const handleLowSanityEffect = (gameState: GameState | null) => {
 };
 
 const handleLowHealthEffect = (gameState: GameState | null) => {
+  if (typeof document === 'undefined') return;
   if (gameState && gameState.playerState?.health < 30) {
     document.body.classList.add("low-health-pulse");
   } else {
@@ -66,6 +69,7 @@ export function GameClient() {
   const [view, setView] = useState<View>("start");
   const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
   const { toast } = useToast();
+  const { settings, isLoaded: settingsLoaded } = useSettings();
 
   useEffect(() => {
     handleLowSanityEffect(gameState);

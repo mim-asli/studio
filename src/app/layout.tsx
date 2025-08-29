@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fa" dir="rtl" className={`dark ${inter.variable} ${vt323.variable}`}>
+    <html lang="fa" dir="rtl" className={`${inter.variable} ${vt323.variable}`}>
       <body className="font-body antialiased">
         {children}
         <Toaster />
