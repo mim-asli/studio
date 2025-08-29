@@ -206,5 +206,3 @@ const MapDisplayComponent = ({ locations, onFastTravel, currentLocation }: MapDi
 
 // Wrap with memo to prevent unnecessary re-renders
 export const MapDisplay = memo(MapDisplayComponent);
-
-    
