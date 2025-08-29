@@ -33,25 +33,25 @@ export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTr
     <Tabs 
       value={activeTab} 
       onValueChange={setActiveTab} 
-      className="h-full grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-4"
+      className="h-full flex flex-col md:flex-row gap-4"
       orientation="vertical"
     >
-      <TabsList className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-1 md:h-full bg-transparent p-0 gap-2">
+      <TabsList className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-1 md:h-full bg-transparent p-0 gap-2 shrink-0">
         {tabs.map((tab) => (
           <TabsTrigger 
             key={tab.value} 
             value={tab.value}
             className={cn(
-              "w-full justify-start p-3 gap-3 h-auto data-[state=active]:bg-card/80 data-[state=active]:border data-[state=active]:shadow-sm data-[state=active]:border-border",
+              "w-full flex-col md:flex-row justify-center md:justify-start p-2 md:p-3 gap-2 h-auto data-[state=active]:bg-card/80 data-[state=active]:border data-[state=active]:shadow-sm data-[state=active]:border-border",
               "bg-card/30 border border-transparent"
             )}
           >
             {tab.icon}
-            <span className="hidden sm:inline-block md:hidden lg:inline-block">{tab.label}</span>
+            <span className="text-[10px] md:text-sm">{tab.label}</span>
           </TabsTrigger>
         ))}
       </TabsList>
-      <div className="md:col-span-2 xl:col-span-3 h-full">
+      <div className="w-full h-full">
         {tabs.map((tab) => (
           <TabsContent key={tab.value} value={tab.value} className="m-0 h-full">
             {tab.component}

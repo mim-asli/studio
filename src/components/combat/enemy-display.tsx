@@ -5,7 +5,7 @@ import type { Enemy } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Bot, Heart, Shield } from "lucide-react";
+import { ShieldAlert, Heart, Shield } from "lucide-react";
 
 interface EnemyDisplayProps {
     enemy: Enemy;
@@ -20,7 +20,7 @@ export function EnemyDisplay({ enemy, onAttack }: EnemyDisplayProps) {
             <CardContent className="p-3">
                 <div className="flex justify-between items-center gap-4">
                     <div className="flex-shrink-0">
-                        <Bot className="w-8 h-8 text-destructive" />
+                        <ShieldAlert className="w-8 h-8 text-destructive" />
                     </div>
                     <div className="flex-grow space-y-2">
                         <h4 className="font-bold text-lg leading-tight">{enemy.name}</h4>

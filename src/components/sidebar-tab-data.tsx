@@ -46,7 +46,7 @@ export const tabsData = ({ gameState, onCraft, onAction, isCrafting, onFastTrave
           </Card>
         ), show: true },
         { value: "scene", label: "صحنه", icon: <Microscope className="w-5 h-5" />, component: <SceneDisplay entities={sceneEntities || []} companions={companions || []} />, show: true },
-        { value: "crafting", label: "ساخت و ساز", icon: <Hammer className="w-5 h-5" />, component: <CraftingPanel inventory={inventory} onCraft={onCraft} isCrafting={isCrafting}/>, show: true },
+        { value: "crafting", label: "ساخت و ساز", icon: <Hammer className="w-5 h-5" />, component: <CraftingPanel inventory={inventory} onCraft={onCraft} isCrafting={isCrafting}/>, show: !isCombat },
         { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" />, component: (
           <Card className="bg-card/80 backdrop-blur-sm border h-full">
             <CardHeader>
@@ -89,7 +89,7 @@ export const tabsData = ({ gameState, onCraft, onAction, isCrafting, onFastTrave
                 />
             </CardContent>
           </Card>
-        ), show: true },
+        ), show: !isCombat },
       ];
     
     return allTabs.filter(tab => tab.show);
