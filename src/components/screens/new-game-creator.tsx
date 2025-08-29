@@ -281,7 +281,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 </div>
             </Step>
             case 6: return <Step title="۶. بازبینی و شروع" description="خلاصه‌ای از دنیایی که خلق کرده‌اید. اگر همه چیز درست است، ماجراجویی را آغاز کنید.">
-                <Card className="max-h-96 overflow-y-auto">
+                <Card className="max-h-[50vh] overflow-y-auto">
                     <CardContent className="p-6 space-y-4 text-sm">
                         <div><strong className="text-primary">عنوان:</strong> {scenarioTitle}</div>
                         <div><strong className="text-primary">ژانر:</strong> {genre}</div>
@@ -293,7 +293,12 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                         <div><strong className="text-primary">نقطه قوت:</strong> {perk}</div>
                         <div><strong className="text-primary">نقطه ضعف:</strong> {flaw}</div>
                         <hr className="border-border/50"/>
-                        <div><strong className="text-primary">تجهیزات:</strong> <pre className="whitespace-pre-wrap font-body">{finalItemsListForReview.join('\n')}</pre></div>
+                        <div>
+                            <strong className="text-primary">تجهیزات:</strong>
+                            <div className="mt-1 space-y-1">
+                                {finalItemsListForReview.map(item => <div key={item}>{item}</div>)}
+                            </div>
+                        </div>
                          <hr className="border-border/50"/>
                         <div><strong className="text-primary">شروع داستان:</strong> <p className="mt-1">{storyPrompt}</p></div>
                     </CardContent>
@@ -401,3 +406,5 @@ const FeatureSelection = ({ title, items, selected, onSelect }: { title: string,
         </div>
     </div>
 );
+
+    

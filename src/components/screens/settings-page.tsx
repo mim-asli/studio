@@ -105,7 +105,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Theme Settings --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Monitor className="text-accent"/>پوسته برنامه</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Monitor className="w-6 h-6 text-accent"/>پوسته برنامه</CardTitle>
               <CardDescription>ظاهر کلی برنامه را انتخاب کنید.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -125,7 +125,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
            {/* --- Image Generation --- */}
            <Card>
               <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Image className="text-accent" /> تولید تصویر با هوش مصنوعی</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><Image className="w-6 h-6 text-accent" /> تولید تصویر با هوش مصنوعی</CardTitle>
                   <CardDescription>
                       به‌طور خودکار برای لحظات کلیدی داستان، تصاویر تولید کنید. (ممکن است هزینه اضافی داشته باشد)
                   </CardDescription>
@@ -145,7 +145,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Gemini API Keys --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><KeyRound className="text-accent"/>کلیدهای Google Gemini API</CardTitle>
+              <CardTitle className="flex items-center gap-2"><KeyRound className="w-6 h-6 text-accent"/>کلیدهای Google Gemini API</CardTitle>
               <CardDescription>
                 موتور اصلی تولید داستان. می‌توانید چندین کلید برای چرخش خودکار اضافه کنید.
               </CardDescription>
@@ -187,7 +187,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Hugging Face --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><BrainCircuit className="text-accent"/>هوش مصنوعی Hugging Face (اختیاری)</CardTitle>
+              <CardTitle className="flex items-center gap-2"><BrainCircuit className="w-6 h-6 text-accent"/>هوش مصنوعی Hugging Face (اختیاری)</CardTitle>
               <CardDescription>از مدل‌های زبان هاگینگ فیس به عنوان جایگزین یا پشتیبان استفاده کنید.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -217,7 +217,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Local LLM --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Server className="text-accent"/>هوش مصنوعی محلی (اختیاری)</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Server className="w-6 h-6 text-accent"/>هوش مصنوعی محلی (اختیاری)</CardTitle>
               <CardDescription>بازی را به یک مدل زبان در حال اجرا روی سیستم خود (مانند Ollama) متصل کنید.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -245,3 +245,5 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     </TooltipProvider>
   );
 }
+
+    
