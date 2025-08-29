@@ -9,7 +9,6 @@ import {
   Settings,
   Trophy,
   AlertTriangle,
-  Github,
 } from "lucide-react";
 import {
   Tooltip,
@@ -30,22 +29,6 @@ export function StartScreen({
     <TooltipProvider>
       <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 overflow-hidden">
         
-        <div className="absolute top-4 right-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-                <a href="https://github.com/google/genkit/tree/main/examples/dastan" target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost" size="icon">
-                    <Github />
-                  </Button>
-                </a>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>مشاهده پروژه در گیت‌هاب</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-
         <div className="text-center mb-12">
           <h1 className="text-8xl md:text-9xl font-headline text-primary mb-2 tracking-widest">
             داستان
