@@ -46,7 +46,11 @@ const CraftingTab = () => {
 
 const MapTab = () => {
     const { gameState, handleFastTravel } = useGameContext();
-    return <MapDisplay locations={gameState!.discoveredLocations || []} onFastTravel={handleFastTravel} />;
+    return <MapDisplay 
+              locations={gameState!.discoveredLocations || []} 
+              onFastTravel={handleFastTravel} 
+              currentLocation={gameState!.currentLocation} 
+           />;
 };
 
 const CombatTab = () => {
@@ -133,3 +137,5 @@ export const tabsConfig: TabConfig[] = [
         condition: () => true 
     },
 ];
+
+    

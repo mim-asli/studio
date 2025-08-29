@@ -3,37 +3,27 @@
 
 import React, { useRef, useState, useEffect, useCallback, memo } from 'react';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ZoomIn, ZoomOut } from 'lucide-react';
+import { ZoomIn, ZoomOut, MapPin, Building2, Trees, Mountain, Home } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface MapDisplayProps {
     locations: string[];
+    currentLocation: string;
     onFastTravel: (location: string) => void;
 }
 
 const MAP_WIDTH = 2048;
 const MAP_HEIGHT = 1536;
 
-const MapControlButton = ({ onClick, children, 'aria-label': ariaLabel }: { onClick: () => void, children: React.ReactNode, 'aria-label': string }) => (
-    <Button
-        size="icon"
-        variant="default"
-        className="w-10 h-10 rounded-full shadow-lg bg-background/80 text-foreground hover:bg-background"
-        onClick={onClick}
-        aria-label={ariaLabel}
-    >
-        {children}
-    </Button>
-);
+const locationIcons = [Building2, Trees, Mountain, Home];
 
-const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
+const MapDisplayComponent = ({ locations, onFastTravel, currentLocation }: MapDisplayProps) => {
     const mapRef = useRef<HTMLDivElement>(null);
     const [viewState, setViewState] = useState({ x: -MAP_WIDTH / 4, y: -MAP_HEIGHT / 4, zoom: 0.5 });
     const [isDragging, setIsDragging] = useState(false);
     const dragStart = useRef({ x: 0, y: 0 });
-    const locationCoordsRef = useRef<Map<string, { x: number, y: number }>>(new Map());
+    const locationCoordsRef = useRef<Map<string, { x: number, y: number, icon: React.ElementType }>>(new Map());
 
     const generatePseudoRandom = useCallback((str: string) => {
         let hash = 0;
@@ -56,7 +46,8 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                 const paddingY = MAP_HEIGHT * 0.1;
                 const x = rng(1) * (MAP_WIDTH - 2 * paddingX) + paddingX;
                 const y = rng(2) * (MAP_HEIGHT - 2 * paddingY) + paddingY;
-                locationCoordsRef.current.set(loc, { x, y });
+                const icon = locationIcons[Math.floor(rng(3) * locationIcons.length)];
+                locationCoordsRef.current.set(loc, { x, y, icon });
             }
         });
     }, [locations, generatePseudoRandom]);
@@ -107,7 +98,6 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
     const handleTouchStart = (e: React.TouchEvent) => { if (e.touches.length === 1) startDrag(e.touches[0].clientX, e.touches[0].clientY); };
     const handleTouchMove = (e: React.TouchEvent) => { if (e.touches.length === 1) handleDrag(e.touches[0].clientX, e.touches[0].clientY); };
 
-
     return (
         <Card className="bg-card/80 backdrop-blur-sm border h-full flex flex-col">
             <CardHeader>
@@ -128,7 +118,7 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                     onTouchEnd={endDrag}
                 >
                     <div 
-                        className="absolute top-0 left-0"
+                        className="absolute top-0 left-0 bg-slate-900"
                         style={{
                             width: `${MAP_WIDTH}px`,
                             height: `${MAP_HEIGHT}px`,
@@ -136,23 +126,27 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                             transformOrigin: 'top left',
                         }}
                     >
-                        <Image
-                            src="https://picsum.photos/seed/dastanmap/2048/1536"
-                            alt="World Map"
-                            width={MAP_WIDTH}
-                            height={MAP_HEIGHT}
-                            className="pointer-events-none select-none"
-                            data-ai-hint="fantasy map"
-                            priority
-                        />
+                       <svg width="100%" height="100%" className="absolute inset-0">
+                          <defs>
+                            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+                              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#4a5568" strokeWidth="0.5" opacity="0.5"/>
+                            </pattern>
+                          </defs>
+                          <rect width="100%" height="100%" fill="url(#grid)" />
+                           <path d="M 50 300 Q 200 250 400 280 T 1700 320" stroke="#4FC3F7" strokeWidth="12" fill="none" opacity="0.3" />
+                           <path d="M 1200 50 Q 1000 250 1400 480 T 1800 520" stroke="#4FC3F7" strokeWidth="10" fill="none" opacity="0.3" />
+                        </svg>
+
 
                         {locations.map(loc => {
                             const coords = locationCoordsRef.current.get(loc);
                             if (!coords) return null;
+                            const isCurrent = loc === currentLocation;
+                            const Icon = coords.icon || Building2;
                             return (
                                 <div
                                     key={loc}
-                                    className="absolute -translate-x-1/2 -translate-y-full"
+                                    className="absolute -translate-x-1/2 -translate-y-1/2"
                                     style={{ left: `${coords.x}px`, top: `${coords.y}px` }}
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -160,12 +154,19 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                                     }}
                                 >
                                     <div className="relative flex flex-col items-center cursor-pointer group">
-                                        <div className="absolute bottom-full mb-2 w-max px-3 py-1.5 bg-black/80 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none" style={{ transform: `scale(${1 / viewState.zoom})` }}>
-                                            سفر سریع به {loc}
+                                        <div className={cn(
+                                            "w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center border-2 transition-all duration-300",
+                                            isCurrent ? "border-yellow-400 scale-125 shadow-lg shadow-yellow-400/50" : "border-white group-hover:border-primary"
+                                        )}>
+                                            <Icon className="w-5 h-5 text-white"/>
                                         </div>
-                                        <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg group-hover:scale-125 transition-transform" style={{ transform: `scale(${1 / viewState.zoom})` }}></div>
-                                        <div className="w-px h-4 bg-white/70" style={{ transform: `scale(${1 / viewState.zoom})` }}></div>
-                                        <div className="text-white font-bold px-2 py-1 rounded-md" style={{ transform: `scale(${1 / viewState.zoom})`, textShadow: '1px 1px 3px black, -1px -1px 3px black, 1px -1px 3px black, -1px 1px 3px black' }}>
+                                        <div 
+                                            className={cn(
+                                                "text-white font-bold px-2 py-1 rounded-md mt-2 text-sm",
+                                                isCurrent ? "bg-yellow-400 text-black" : "bg-black/70"
+                                            )}
+                                            style={{ transform: `scale(${1 / viewState.zoom})` }}
+                                        >
                                             {loc}
                                         </div>
                                     </div>
@@ -175,12 +176,22 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                     </div>
                 </div>
                  <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-                    <MapControlButton onClick={() => zoom(1.2)} aria-label="بزرگنمایی">
+                    <Button
+                        size="icon"
+                        variant="default"
+                        className="w-10 h-10 rounded-full shadow-lg bg-background/80 text-foreground hover:bg-background"
+                        onClick={() => zoom(1.2)} aria-label="بزرگنمایی"
+                    >
                         <ZoomIn />
-                    </MapControlButton>
-                    <MapControlButton onClick={() => zoom(1 / 1.2)} aria-label="کوچک نمایی">
+                    </Button>
+                    <Button
+                        size="icon"
+                        variant="default"
+                        className="w-10 h-10 rounded-full shadow-lg bg-background/80 text-foreground hover:bg-background"
+                        onClick={() => zoom(1 / 1.2)} aria-label="کوچک نمایی"
+                    >
                         <ZoomOut />
-                    </MapControlButton>
+                    </Button>
                 </div>
             </CardContent>
         </Card>
@@ -188,3 +199,5 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
 }
 
 export const MapDisplay = memo(MapDisplayComponent);
+
+    
