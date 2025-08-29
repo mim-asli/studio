@@ -13,7 +13,7 @@ import { CraftingPanel } from "@/components/crafting-panel";
 import { WorldStateDisplay } from "@/components/world-state-display";
 import { MapDisplay } from "@/components/map-display";
 import { CombatControls } from "@/components/combat/combat-controls";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 
 
 interface SidebarTabsProps {
@@ -60,7 +60,7 @@ export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTr
           <Card className="bg-card/80 backdrop-blur-sm border h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="font-headline text-2xl tracking-wider text-foreground">نقشه جهان</CardTitle>
-                <CardContent className="text-sm text-muted-foreground p-0 pt-2">جهان را بچرخانید و مکان‌های کشف شده را ببینید.</CardContent>
+                <CardDescription className="text-sm text-muted-foreground p-0 pt-2">جهان را بچرخانید و مکان‌های کشف شده را ببینید.</CardDescription>
             </CardHeader>
             <CardContent className="text-center w-full flex-grow overflow-hidden p-0">
                 <MapDisplay 
