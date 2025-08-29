@@ -2,9 +2,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { GameState, SaveFile, CustomScenario, HallOfFameEntry } from "@/lib/types";
+import type { GameState, CustomScenario } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
-import { initialGameState, PLAYER_ACTION_PREFIX } from '@/lib/game-data';
 
 import { StoryDisplay } from "@/components/story-display";
 import { InteractionPanel } from "@/components/interaction-panel";
@@ -71,13 +70,17 @@ export function GameClient() {
       setGameState,
       processPlayerAction,
       handleCrafting,
+      startGame,
       isLoading: isGameLoading,
   } = useGameLoop();
 
   useEffect(() => {
     handleLowSanityEffect(gameState);
     handleLowHealthEffect(gameState);
-  }, [gameState]);
+    if (gameState?.isGameOver) {
+      saveToHallOfFame(gameState);
+    }
+  }, [gameState, saveToHallOfFame]);
 
 
   const handleLoadGame = useCallback(async (saveId: string) => {
@@ -99,47 +102,8 @@ export function GameClient() {
   }, [loadGame, setGameState, toast]);
 
    const handleStartGame = (scenario: CustomScenario, characterName: string) => {
-    const gameId = crypto.randomUUID();
-    const characterSkills = Array.isArray(scenario.character) ? scenario.character : scenario.character.split(',').map(s => s.trim());
-    const isMagical = characterSkills.some(skill => skill.toLowerCase().includes('جادوگر'));
-
-    const freshGameState: GameState = {
-      ...initialGameState,
-      id: gameId,
-      story: [], // Start with an empty story array
-      activeEffects: [], // Clear any test effects
-      playerState: { 
-        health: 100, 
-        sanity: 100, 
-        hunger: 100, 
-        thirst: 100,
-        stamina: 100, // Always start with stamina
-        mana: isMagical ? 100 : undefined, // Only add mana for magical characters
-        ap: 4, 
-        maxAp: 4,
-      },
-      inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
-      skills: characterSkills,
-      companions: [],
-      gameStarted: true,
-      isLoading: true, // We will be loading the first turn
-      choices: [],
-      characterName: characterName,
-      scenarioTitle: scenario.title,
-      currentLocation: 'شروع ماجرا', // Initial location
-      discoveredLocations: ['شروع ماجرا'], // Add initial location
-      difficulty: scenario.difficulty,
-      gmPersonality: scenario.gmPersonality,
-      isGameOver: false,
-    };
-    
-    setGameState(freshGameState);
-    setView("game");
-    
-    const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
-    
-    // Use the action processor from the hook
-    processPlayerAction(startPrompt, freshGameState);
+      startGame(scenario, characterName);
+      setView("game");
   };
 
 
@@ -147,14 +111,6 @@ export function GameClient() {
     setGameState(null);
     setView("start");
   }
-
-  // Effect for handling game over state changes
-  useEffect(() => {
-    if (gameState?.isGameOver) {
-      saveToHallOfFame(gameState);
-    }
-  }, [gameState?.isGameOver, gameState, saveToHallOfFame]);
-
 
   const renderContent = () => {
       switch (view) {

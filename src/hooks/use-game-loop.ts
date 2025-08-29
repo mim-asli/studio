@@ -6,8 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
 import { craftItem } from "@/ai/flows/craft-item-flow";
-import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput, CraftItemOutput } from "@/lib/types";
-import { PLAYER_ACTION_PREFIX } from "@/lib/game-data";
+import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput, CraftItemOutput, CustomScenario } from "@/lib/types";
+import { PLAYER_ACTION_PREFIX, initialGameState } from "@/lib/game-data";
 import { useGameSaves } from "./use-game-saves";
 
 export function useGameLoop() {
@@ -189,12 +189,56 @@ export function useGameLoop() {
         });
     }
   }, [gameState, saveGame, toast]);
+  
+  const startGame = useCallback((scenario: CustomScenario, characterName: string) => {
+    const gameId = crypto.randomUUID();
+    const characterSkills = Array.isArray(scenario.character) ? scenario.character : scenario.character.split(',').map(s => s.trim());
+    const isMagical = characterSkills.some(skill => skill.toLowerCase().includes('جادوگر'));
+
+    const freshGameState: GameState = {
+      ...initialGameState,
+      id: gameId,
+      story: [],
+      activeEffects: [],
+      playerState: { 
+        health: 100, 
+        sanity: 100, 
+        hunger: 100, 
+        thirst: 100,
+        stamina: 100,
+        mana: isMagical ? 100 : undefined,
+        ap: 4, 
+        maxAp: 4,
+      },
+      inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
+      skills: characterSkills,
+      companions: [],
+      gameStarted: true,
+      isLoading: true,
+      choices: [],
+      characterName: characterName,
+      scenarioTitle: scenario.title,
+      currentLocation: 'شروع ماجرا',
+      discoveredLocations: ['شروع ماجرا'],
+      difficulty: scenario.difficulty,
+      gmPersonality: scenario.gmPersonality,
+      isGameOver: false,
+    };
+    
+    setGameState(freshGameState);
+    
+    const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
+    
+    processPlayerAction(startPrompt, freshGameState);
+  }, [processPlayerAction]);
+
 
   return {
     gameState,
     setGameState,
     processPlayerAction,
     handleCrafting,
+    startGame,
     isLoading: gameState?.isLoading ?? false,
   };
 }
