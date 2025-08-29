@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { Button } from "../ui/button";
 import { ArrowLeft, Pencil, MinusCircle, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Input } from '../ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Input, Textarea } from '../ui/input';
 import { Progress } from '../ui/progress';
 import { cn } from '@/lib/utils';
 import type { CustomScenario } from '@/lib/types';
@@ -406,5 +405,3 @@ const FeatureSelection = ({ title, items, selected, onSelect }: { title: string,
         </div>
     </div>
 );
-
-    
