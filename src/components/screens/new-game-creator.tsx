@@ -267,5 +267,3 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
         </div>
     );
 }
-
-    

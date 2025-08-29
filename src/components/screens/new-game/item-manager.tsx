@@ -89,5 +89,3 @@ export function ItemManager({ totalPoints, items, setItems }: ItemManagerProps) 
         </div>
     )
 }
-
-    
