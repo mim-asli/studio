@@ -70,6 +70,7 @@ export interface GenerateNextTurnOutput {
     isCombat?: boolean;
     enemies?: Enemy[];
     activeEffects?: ActiveEffect[];
+    imagePrompt?: string;
 }
 
 // Types for craft-item-flow.ts
@@ -186,9 +187,8 @@ export type LocalLlmSettings = {
 
 export type AppSettings = {
   theme: 'dark' | 'light';
+  generateImages: boolean;
   geminiApiKeys: ApiKey[];
   huggingFace: HuggingFaceSettings;
   localLlm: LocalLlmSettings;
 };
-
-    

@@ -9,6 +9,7 @@ const SETTINGS_KEY = 'dastan-settings';
 
 export const defaultSettings: AppSettings = {
   theme: 'dark',
+  generateImages: false,
   geminiApiKeys: [],
   huggingFace: {
     enabled: false,

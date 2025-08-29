@@ -65,7 +65,7 @@ export function GameClient() {
   const [directorMessages, setDirectorMessages] = useState<DirectorMessage[]>([]);
   const [isDirectorLoading, setIsDirectorLoading] = useState(false);
   const { toast } = useToast();
-  const { isLoaded: settingsLoaded } = useSettings();
+  const { settings, isLoaded: settingsLoaded } = useSettings();
   const { loadGame, saveToHallOfFame } = useGameSaves();
 
   const {
@@ -75,7 +75,9 @@ export function GameClient() {
       handleCrafting,
       startGame,
       isLoading: isGameLoading,
-  } = useGameLoop();
+      currentImage,
+      isImageLoading,
+  } = useGameLoop(settings.generateImages);
 
   useEffect(() => {
     handleLowSanityEffect(gameState);
@@ -212,9 +214,13 @@ export function GameClient() {
                       <div className="lg:col-span-2 xl:col-span-3 flex flex-col gap-4 h-[calc(100vh-2rem)]">
                         <div className="relative flex-grow border rounded-md shadow-inner bg-card/80 backdrop-blur-sm overflow-hidden flex flex-col">
                            <div className="absolute inset-0 bg-black/60" />
-                          <StoryDisplay storySegments={gameState.story} />
-                          {gameState.isLoading && (
-                            <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
+                          <StoryDisplay 
+                            storySegments={gameState.story} 
+                            image={currentImage}
+                            isImageLoading={isImageLoading}
+                          />
+                          {gameState.isLoading && !isImageLoading && (
+                            <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
                               <Loader2 className="w-16 h-16 text-primary animate-spin" />
                             </div>
                           )}

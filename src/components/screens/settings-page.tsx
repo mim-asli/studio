@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, HelpCircle, KeyRound, Loader2, Plus, Save, Trash2, XCircle, AlertTriangle, Monitor, Moon, Sun, Server, BrainCircuit, Waves, Music, Volume2, Cog } from "lucide-react";
+import { ArrowLeft, CheckCircle, HelpCircle, KeyRound, Loader2, Plus, Save, Trash2, XCircle, AlertTriangle, Monitor, Moon, Sun, Server, BrainCircuit, Waves, Music, Volume2, Cog, Image } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,6 +122,26 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
             </CardContent>
           </Card>
 
+           {/* --- Image Generation --- */}
+           <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Image className="text-accent" /> تولید تصویر با هوش مصنوعی</CardTitle>
+                  <CardDescription>
+                      به‌طور خودکار برای لحظات کلیدی داستان، تصاویر تولید کنید. (ممکن است هزینه اضافی داشته باشد)
+                  </CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <div className="flex items-center justify-between">
+                      <Label htmlFor="image-gen-enabled">فعال‌سازی تولید تصویر</Label>
+                      <Switch 
+                          id="image-gen-enabled" 
+                          checked={settings.generateImages} 
+                          onCheckedChange={(checked) => updateSettings(draft => { draft.generateImages = checked; })} 
+                      />
+                  </div>
+              </CardContent>
+          </Card>
+
           {/* --- Gemini API Keys --- */}
           <Card>
             <CardHeader>
@@ -225,5 +245,3 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     </TooltipProvider>
   );
 }
-
-    

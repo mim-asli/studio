@@ -41,6 +41,7 @@ const GenerateNextTurnOutputSchema = z.object({
   isCombat: z.boolean().optional().describe('If the player action initiates combat, set this to true. Otherwise, leave it undefined.'),
   enemies: z.array(EnemySchema).optional().describe("If isCombat is true, populate this list with the enemies the player is facing. Define their stats (health, attack, defense)."),
   activeEffects: z.array(ActiveEffectSchema).optional().describe("A list of temporary buffs or debuffs affecting the player due to environment or status."),
+  imagePrompt: z.string().optional().describe('A short, descriptive, English prompt for an AI image generator to create a visual for this turn\'s key moment (e.g., "A dark castle on a mountain, fantasy art"). Generate this only for significant moments like discovering a new location, meeting a key character, or a major plot twist.'),
 });
 
 
@@ -62,6 +63,7 @@ IMPORTANT: Your entire response, including all fields in the JSON output, MUST b
     *   **آسان (Easy):** Resources are more abundant. Enemies are less frequent and weaker. NPCs are generally more helpful.
     *   **معمولی (Normal):** A balanced experience with standard challenges and rewards.
     *   **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
+3.  **Image Generation:** For significant moments—like discovering a new, visually interesting location, meeting a unique character for the first time, or a major plot twist—provide a short, descriptive, English prompt in the 'imagePrompt' field. This prompt will be used to generate a picture. Examples: "A majestic griffin soaring through a cloudy sky, fantasy art", "A futuristic city with flying cars, neon lights, cyberpunk", "An old, haunted mansion on a hill at night, horror". Do NOT generate prompts for mundane actions.
 
 **Your Primary Role (Non-Combat):**
 Your main job is to advance the story based on player actions outside of combat. You will describe the world, handle interactions with non-player characters (NPCs), present puzzles, and manage exploration.

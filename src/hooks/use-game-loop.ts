@@ -1,21 +1,33 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
 import { craftItem } from "@/ai/flows/craft-item-flow";
+import { generateImage } from "@/ai/flows/generate-image-flow";
 import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput, CraftItemOutput, CustomScenario } from "@/lib/types";
 import { initialGameState } from "@/lib/game-data";
 import { useGameSaves } from "./use-game-saves";
 
 export const PLAYER_ACTION_PREFIX = "> ";
 
-export function useGameLoop() {
+export function useGameLoop(imageGenEnabled: boolean) {
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [isImageLoading, setIsImageLoading] = useState(false);
   const { toast } = useToast();
   const { saveGame } = useGameSaves();
+
+  useEffect(() => {
+    // Clear image when game starts or resets
+    if (!gameState) {
+      setCurrentImage(null);
+      setIsImageLoading(false);
+    }
+  }, [gameState]);
+
 
   const handleGameOver = useCallback((state: GameState): GameState => {
     const finalState = { ...state, isGameOver: true, isLoading: false, choices: [] };
@@ -27,6 +39,24 @@ export function useGameLoop() {
     return finalState;
   }, []);
 
+  const handleImageGeneration = useCallback(async (prompt: string) => {
+    if (!imageGenEnabled) return;
+    setIsImageLoading(true);
+    try {
+      const imageUrl = await generateImage(prompt);
+      setCurrentImage(imageUrl);
+    } catch (error) {
+      console.error("Image generation failed:", error);
+      toast({
+        variant: "destructive",
+        title: "خطا در تولید تصویر",
+        description: "متاسفانه تولید تصویر با مشکل مواجه شد.",
+      });
+    } finally {
+      setIsImageLoading(false);
+    }
+  }, [imageGenEnabled, toast]);
+
   const handleExplorationTurn = useCallback(async (playerAction: string, stateBeforeAction: GameState) => {
     const gameStateForAI = JSON.stringify(stateBeforeAction);
 
@@ -36,6 +66,11 @@ export function useGameLoop() {
         difficulty: stateBeforeAction.difficulty,
         gmPersonality: stateBeforeAction.gmPersonality,
     });
+    
+    // Trigger image generation if prompt is provided
+    if (nextTurn.imagePrompt) {
+        handleImageGeneration(nextTurn.imagePrompt);
+    }
     
     setGameState(prevGameState => {
         if (!prevGameState) return null;
@@ -60,7 +95,7 @@ export function useGameLoop() {
     if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
     if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
     if (nextTurn.newLocation) toast({ title: "مکان جدید کشف شد", description: `شما ${nextTurn.newLocation} را پیدا کردید.` });
-  }, [handleGameOver, saveGame, toast]);
+  }, [handleGameOver, saveGame, toast, handleImageGeneration]);
   
   const handleCombatTurn = useCallback(async (playerAction: string, stateBeforeAction: GameState) => {
     const combatResult: ManageCombatScenarioOutput = await manageCombatScenario({
@@ -242,5 +277,7 @@ export function useGameLoop() {
     handleCrafting,
     startGame,
     isLoading: gameState?.isLoading ?? false,
+    currentImage,
+    isImageLoading,
   };
 }

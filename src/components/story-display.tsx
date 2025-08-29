@@ -4,95 +4,82 @@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { PLAYER_ACTION_PREFIX } from '@/hooks/use-game-loop';
-import { useTypewriter } from '@/hooks/use-typewriter';
+import { Skeleton } from './ui/skeleton';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
-interface StorySegmentProps {
-  segment: string;
-  onFinished: () => void;
-  isLastSegment: boolean;
-}
-
-const StorySegment = ({ segment, onFinished, isLastSegment }: StorySegmentProps) => {
-  const { displayText, isDone, skip } = useTypewriter(segment, 20);
-
-  useEffect(() => {
-    if (isDone) {
-      onFinished();
-    }
-  }, [isDone, onFinished]);
-  
-  const handleClick = () => {
-      if (!isDone) {
-          skip();
-      }
-  }
-
-  const content = useMemo(() => {
-    if (!displayText) return null;
-    if (displayText.startsWith(PLAYER_ACTION_PREFIX)) {
-        return <span className="text-orange-500 font-bold">{displayText}</span>
-    }
-    return displayText;
-  },[displayText]);
-
-  return <p onClick={isLastSegment ? handleClick : undefined} className={isLastSegment ? 'cursor-pointer' : ''}>{content}</p>;
-};
 
 interface StoryDisplayProps {
   storySegments?: string[];
+  image?: string | null;
+  isImageLoading?: boolean;
 }
 
-export function StoryDisplay({ storySegments = [] }: StoryDisplayProps) {
+export function StoryDisplay({ storySegments = [], image, isImageLoading }: StoryDisplayProps) {
   const segments = Array.isArray(storySegments) ? storySegments : [];
   const scrollViewportRef = useRef<HTMLDivElement>(null);
-  const [finishedSegments, setFinishedSegments] = useState<boolean[]>([]);
+  const [internalImage, setInternalImage] = useState<string | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    setFinishedSegments(new Array(segments.length).fill(false));
-  }, [segments.length]);
-
-  const handleSegmentFinished = (index: number) => {
-    setFinishedSegments(prev => {
-        const newFinished = [...prev];
-        newFinished[index] = true;
-        return newFinished;
-    });
-  }
+    if (image) {
+      setIsAnimating(true);
+      setInternalImage(image);
+      // Animation duration is 500ms
+      setTimeout(() => setIsAnimating(false), 500);
+    }
+  }, [image]);
 
   useEffect(() => {
     const viewport = scrollViewportRef.current;
     if (viewport) {
       setTimeout(() => {
         viewport.scrollTop = viewport.scrollHeight;
-      }, 50); 
+      }, 50);
     }
-  }, [segments, finishedSegments, scrollViewportRef]);
+  }, [segments, scrollViewportRef]);
 
-
-  if (segments.length === 0) {
-    return null;
+  const renderSegment = (segment: string) => {
+    if (!segment) return null;
+    if (segment.startsWith(PLAYER_ACTION_PREFIX)) {
+        return <span className="text-orange-500 font-bold">{segment}</span>
+    }
+    return segment;
   }
-  
-  const lastSegmentIndex = segments.length - 1;
-  
+
   return (
     <ScrollArea className="h-full w-full relative z-10" viewportRef={scrollViewportRef}>
-        <div 
-          className="p-4 sm:p-6 font-code text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap min-h-full"
-        >
+      <div className="p-4 sm:p-6 font-code text-lg leading-relaxed text-foreground/90 whitespace-pre-wrap min-h-full flex flex-col">
+        
+        {(isImageLoading || internalImage) && (
+          <div className="mb-4 rounded-lg overflow-hidden border shadow-lg w-full max-w-xl mx-auto aspect-video">
+            {isImageLoading ? (
+              <Skeleton className="w-full h-full" />
+            ) : internalImage ? (
+               <Image
+                src={internalImage}
+                alt="AI-generated scene"
+                width={1280}
+                height={720}
+                className={cn(
+                  "w-full h-full object-cover transition-opacity duration-500",
+                  isAnimating ? "opacity-0" : "opacity-100"
+                )}
+                onLoadingComplete={() => setIsAnimating(false)}
+              />
+            ) : null}
+          </div>
+        )}
+
+        <div className="flex-grow">
           {segments.map((segment, index) => (
-             <div key={index}>
-                 { (index === 0 || finishedSegments[index - 1]) && 
-                    <StorySegment 
-                        segment={segment} 
-                        onFinished={() => handleSegmentFinished(index)}
-                        isLastSegment={index === lastSegmentIndex}
-                    />
-                 }
-                 { index < lastSegmentIndex && finishedSegments[index] && <><br/></> }
-             </div>
-           ))}
+            <p key={index}>
+              {renderSegment(segment)}
+            </p>
+          ))}
         </div>
+
+      </div>
     </ScrollArea>
   );
 }
