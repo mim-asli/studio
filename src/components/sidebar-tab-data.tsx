@@ -7,12 +7,10 @@ import { PlayerHud } from "@/components/player-hud";
 import { SceneDisplay } from "@/components/scene-display";
 import { WorldStateDisplay } from "@/components/world-state-display";
 import type { GameState } from "@/lib/types";
-import { MapDisplay } from "./map-display";
-import { CombatControls } from "./combat/combat-controls";
-import { InventoryPanel } from "./sidebar/inventory-panel";
-import { CharacterPanel } from "./sidebar/character-panel";
-import { QuestsPanel } from "./sidebar/quests-panel";
-import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+import { MapDisplay } from "@/components/map-display";
+import { CombatControls } from "@/components/combat/combat-controls";
+import { InfoPanel } from "./sidebar/info-panel";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 
 interface TabDataArgs {
@@ -39,7 +37,7 @@ export const tabsData = ({ gameState, onCraft, onAction, isCrafting, onFastTrave
             value: "inventory", 
             label: "موجودی", 
             icon: <Backpack className="w-5 h-5" />, 
-            component: <InventoryPanel inventory={inventory} />,
+            component: <InfoPanel title="موجودی" items={inventory} emptyMessage="کوله پشتی شما خالی است." />,
             show: true 
         },
         { 
@@ -60,14 +58,14 @@ export const tabsData = ({ gameState, onCraft, onAction, isCrafting, onFastTrave
             value: "character", 
             label: "شخصیت", 
             icon: <PersonStanding className="w-5 h-5" />, 
-            component: <CharacterPanel skills={skills} />, 
+            component: <InfoPanel title="مهارت‌ها" items={skills} emptyMessage="شما هنوز مهارت خاصی ندارید." />, 
             show: true 
         },
         { 
             value: "quests", 
             label: "مأموریت‌ها", 
             icon: <ScrollText className="w-5 h-5" />, 
-            component: <QuestsPanel quests={quests} />, 
+            component: <InfoPanel title="مأموریت‌ها" items={quests} emptyMessage="هیچ مأموریت فعالی وجود ندارد." />, 
             show: true 
         },
         { 
