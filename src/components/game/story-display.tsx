@@ -3,7 +3,7 @@
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEffect, useRef, useState } from 'react';
-import { PLAYER_ACTION_PREFIX } from '@/hooks/use-game-loop';
+import { PLAYER_ACTION_PREFIX } from '@/hooks/useGameActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
