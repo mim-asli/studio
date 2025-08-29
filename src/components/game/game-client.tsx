@@ -1,13 +1,14 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StoryDisplay } from "@/components/game/story-display";
 import { InteractionPanel } from "@/components/game/interaction-panel";
 import { Sidebar } from "@/components/sidebar";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertTriangle, LogOut, FilePlus, PanelLeftOpen } from "lucide-react";
 import { GameDirectorChat } from "./game-director-chat";
+import { WelcomeGuide } from "./welcome-guide";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,14 @@ export function GameClient() {
         isImageLoading,
     } = useGameContext();
     const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
+    const [showWelcomeGuide, setShowWelcomeGuide] = useState(false);
+
+    useEffect(() => {
+        // Show guide on first turn of a new game
+        if (gameState && gameState.worldState.day === 1 && gameState.story.length <= 2) {
+            setShowWelcomeGuide(true);
+        }
+    }, [gameState]);
   
     if (!gameState) {
         return (
@@ -73,11 +82,11 @@ export function GameClient() {
                 isOpen={isDirectorChatOpen}
                 onClose={() => setIsDirectorChatOpen(false)}
             />
-            <div className="lg:grid lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px] w-full h-screen">
+            <div className="lg:grid lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px] w-full h-dvh">
                 {/* Main Content Area */}
-                <div className="flex flex-col h-screen bg-background">
+                <main className="flex flex-col h-full bg-background">
                     {/* Header */}
-                    <div className="flex justify-between items-center p-2 sm:p-4 border-b">
+                    <header className="flex justify-between items-center p-2 sm:p-4 border-b">
                         <h1 className="text-4xl font-headline text-primary tracking-widest uppercase">داستان</h1>
                         <div className="flex items-center gap-2">
                           <div className="lg:hidden">
@@ -94,10 +103,10 @@ export function GameClient() {
                               </Tooltip>
                               <SheetContent side="left" className="p-0 pt-10 bg-transparent border-none w-[350px]">
                                 <SheetHeader>
-                                    <SheetTitle className="sr-only">منوی بازی</SheetTitle>
-                                    <SheetDescription className="sr-only">
-                                      در پنل‌های بازی مانند علائم حیاتی، موجودی و نقشه پیمایش کنید.
-                                    </SheetDescription>
+                                  <SheetTitle className="sr-only">منوی بازی</SheetTitle>
+                                  <SheetDescription className="sr-only">
+                                    در پنل‌های بازی مانند علائم حیاتی، موجودی و نقشه پیمایش کنید.
+                                  </SheetDescription>
                                 </SheetHeader>
                                 <Sidebar />
                               </SheetContent>
@@ -130,11 +139,12 @@ export function GameClient() {
                               </AlertDialogContent>
                           </AlertDialog>
                         </div>
-                    </div>
+                    </header>
 
                     {/* Story Display - takes up remaining space and scrolls */}
-                    <div className="flex-grow overflow-y-auto">
-                        <div className="relative border-b">
+                    <div className="flex-grow overflow-y-auto relative">
+                        {showWelcomeGuide && <WelcomeGuide onClose={() => setShowWelcomeGuide(false)} />}
+                        <div className="relative h-full">
                             <StoryDisplay 
                                 storySegments={gameState.story} 
                                 image={currentImage}
@@ -149,7 +159,7 @@ export function GameClient() {
                     </div>
                     
                     {/* Interaction Panel - fixed at the bottom */}
-                    <div className="p-2 sm:p-4 border-t bg-card/50">
+                    <div className="p-2 sm:p-4 border-t bg-card/50 sticky bottom-0">
                         <InteractionPanel 
                             choices={gameState.choices} 
                             onAction={handleAction} 
@@ -157,12 +167,12 @@ export function GameClient() {
                             onDirectorChat={() => setIsDirectorChatOpen(true)}
                         />
                     </div>
-                </div>
+                </main>
 
                 {/* Sidebar - Hidden on small screens */}
-                <div className="hidden lg:block h-full bg-background/50 backdrop-blur-md p-4 border-l">
+                <aside className="hidden lg:block h-full bg-background/50 backdrop-blur-md p-4 border-l">
                     <Sidebar />
-                </div>
+                </aside>
             </div>
         </TooltipProvider>
     );

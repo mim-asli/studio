@@ -26,27 +26,25 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
 
     const locationCoordsRef = useRef<Map<string, { x: number, y: number }>>(new Map());
 
-    const generatePseudoRandom = useCallback(() => {
-        let seed = 1;
-        const a = 1664525;
-        const c = 1013904223;
-        const m = 2**32;
-        return (str: string) => {
-            seed = 1; // Reset seed for each string
-            for(let i = 0; i < str.length; i++) {
-                seed = (a * (seed + str.charCodeAt(i)) + c) % m;
-            }
-            return seed / m;
+    const generatePseudoRandom = useCallback((str: string) => {
+        let h = 1779033703, i = str.length;
+        while(i > 0) {
+            h = (h ^ str.charCodeAt(--i)) * 3432918353;
+            h = h << 13 | h >>> 19;
+        }
+        return () => {
+            h = Math.imul(h ^ h >>> 16, 2246822507);
+            h = Math.imul(h ^ h >>> 13, 3266489909);
+            return ((h ^= h >>> 16) >>> 0) / 4294967296;
         }
     }, []);
 
     useEffect(() => {
-        const randomGenerator = generatePseudoRandom();
         locations.forEach(loc => {
             if (!locationCoordsRef.current.has(loc)) {
-                // Use two different seeds for x and y to get better distribution
-                const xRand = randomGenerator(loc + 'x');
-                const yRand = randomGenerator(loc + 'y');
+                const rng = generatePseudoRandom(loc);
+                const xRand = rng();
+                const yRand = rng();
                 locationCoordsRef.current.set(loc, {
                     x: xRand * (MAP_WIDTH * 0.9) + (MAP_WIDTH * 0.05),
                     y: yRand * (MAP_HEIGHT * 0.9) + (MAP_HEIGHT * 0.05),
@@ -108,7 +106,7 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                         }}
                     >
                         <Image
-                            src="https://picsum.photos/seed/map/2048/1536"
+                            src="https://picsum.photos/seed/dastanmap/2048/1536"
                             alt="World Map"
                             width={MAP_WIDTH}
                             height={MAP_HEIGHT}
@@ -130,12 +128,12 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                                 >
                                     <div 
                                         className="relative flex flex-col items-center cursor-pointer group"
-                                        onClick={() => onFastTravel(`سفر به ${loc}`)}
+                                        onClick={() => onFastTravel(`سفر سریع به ${loc}`)}
                                     >
                                         <div 
                                             className="absolute bottom-full mb-2 w-max px-2 py-1 bg-black/70 text-white text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
                                         >
-                                            {loc}
+                                            سفر سریع به {loc}
                                         </div>
                                         <div 
                                             className="w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-lg"
@@ -145,6 +143,15 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
                                             className="w-px h-4 bg-white/50" 
                                             style={{ transform: `scale(${1 / viewState.zoom})` }}
                                         ></div>
+                                        <div
+                                            className="text-white font-bold text-sm"
+                                            style={{
+                                                transform: `scale(${1 / viewState.zoom})`,
+                                                textShadow: '1px 1px 2px black',
+                                            }}
+                                        >
+                                            {loc}
+                                        </div>
                                     </div>
                                 </div>
                             );
