@@ -96,11 +96,12 @@ export function useGameSaves() {
 
     const deleteSave = useCallback((saveId: string) => {
         try {
-           setSavedGames(prevSaves => {
-                const newSaves = prevSaves.filter(game => game.id !== saveId);
-                localStorage.setItem(SAVES_KEY, JSON.stringify(newSaves));
-                return newSaves;
-           });
+            const currentSavesJson = localStorage.getItem(SAVES_KEY);
+            const currentSaves: SaveFile[] = currentSavesJson ? JSON.parse(currentSavesJson) : [];
+            const newSaves = currentSaves.filter(game => game.id !== saveId);
+            localStorage.setItem(SAVES_KEY, JSON.stringify(newSaves));
+            setSavedGames(newSaves);
+           
            toast({
                title: "فایل حذف شد",
                description: "ماجراجویی انتخاب شده با موفقیت حذف شد.",
