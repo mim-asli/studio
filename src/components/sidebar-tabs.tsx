@@ -4,8 +4,16 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { GameState } from "@/lib/types";
-import { tabsData } from './sidebar-tab-data';
+import { tabsConfig } from './sidebar-tab-data';
 import { cn } from '@/lib/utils';
+import { PlayerHud } from "@/components/player-hud";
+import { InfoPanel } from "./sidebar/info-panel";
+import { SceneDisplay } from "@/components/scene-display";
+import { CraftingPanel } from "@/components/crafting-panel";
+import { WorldStateDisplay } from "@/components/world-state-display";
+import { MapDisplay } from "@/components/map-display";
+import { CombatControls } from "@/components/combat/combat-controls";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 
 interface SidebarTabsProps {
@@ -27,7 +35,45 @@ export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTr
     }
   }, [gameState.isCombat, activeTab]);
 
-  const tabs = tabsData({ gameState, onCraft, onAction, isCrafting, onFastTravel });
+  const availableTabs = tabsConfig.filter(tab => tab.show(gameState));
+
+  const renderTabContent = (value: string) => {
+    switch (value) {
+      case "combat":
+        return <CombatControls enemies={gameState.enemies || []} onAction={onAction} />;
+      case "vitals":
+        return <PlayerHud playerState={gameState.playerState} activeEffects={gameState.activeEffects} isCombat={gameState.isCombat} />;
+      case "inventory":
+        return <InfoPanel title="موجودی" items={gameState.inventory} emptyMessage="کوله پشتی شما خالی است." />;
+      case "scene":
+        return <SceneDisplay entities={gameState.sceneEntities || []} companions={gameState.companions || []} />;
+      case "crafting":
+        return <CraftingPanel inventory={gameState.inventory} onCraft={onCraft} isCrafting={isCrafting} />;
+      case "character":
+        return <InfoPanel title="مهارت‌ها" items={gameState.skills} emptyMessage="شما هنوز مهارت خاصی ندارید." />;
+      case "quests":
+        return <InfoPanel title="مأموریت‌ها" items={gameState.quests} emptyMessage="هیچ مأموریت فعالی وجود ندارد." />;
+      case "world":
+        return <WorldStateDisplay worldState={gameState.worldState} />;
+      case "map":
+        return (
+          <Card className="bg-card/80 backdrop-blur-sm border h-full flex flex-col">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl tracking-wider text-foreground">نقشه جهان</CardTitle>
+                <CardContent className="text-sm text-muted-foreground p-0 pt-2">جهان را بچرخانید و مکان‌های کشف شده را ببینید.</CardContent>
+            </CardHeader>
+            <CardContent className="text-center w-full flex-grow overflow-hidden p-0">
+                <MapDisplay 
+                  locations={gameState.discoveredLocations || []}
+                  onLocationClick={onFastTravel}
+                />
+            </CardContent>
+          </Card>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <Tabs 
@@ -37,7 +83,7 @@ export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTr
       orientation="vertical"
     >
       <TabsList className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-1 md:h-full bg-transparent p-0 gap-2 shrink-0">
-        {tabs.map((tab) => (
+        {availableTabs.map((tab) => (
           <TabsTrigger 
             key={tab.value} 
             value={tab.value}
@@ -52,9 +98,9 @@ export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTr
         ))}
       </TabsList>
       <div className="w-full h-full">
-        {tabs.map((tab) => (
+        {availableTabs.map((tab) => (
           <TabsContent key={tab.value} value={tab.value} className="m-0 h-full">
-            {tab.component}
+            {renderTabContent(tab.value)}
           </TabsContent>
         ))}
       </div>
