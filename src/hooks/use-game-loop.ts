@@ -7,8 +7,9 @@ import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
 import { craftItem } from "@/ai/flows/craft-item-flow";
 import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput, CraftItemOutput, CustomScenario } from "@/lib/types";
-import { PLAYER_ACTION_PREFIX, initialGameState } from "@/lib/game-data";
+import { initialGameState } from "@/lib/game-data";
 import { useGameSaves } from "./use-game-saves";
+import { PLAYER_ACTION_PREFIX } from "@/components/story-display";
 
 export function useGameLoop() {
   const [gameState, setGameState] = useState<GameState | null>(null);

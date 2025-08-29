@@ -4,11 +4,12 @@
 import { useTypewriter } from '@/hooks/use-typewriter';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useEffect, useRef } from 'react';
-import { PLAYER_ACTION_PREFIX } from '@/lib/game-data';
 
 interface StoryDisplayProps {
   storySegments: string[];
 }
+
+export const PLAYER_ACTION_PREFIX = "> ";
 
 const parseSegment = (text: string) => {
     if (!text) return null;
