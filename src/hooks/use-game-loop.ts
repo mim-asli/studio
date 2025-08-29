@@ -4,9 +4,10 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { craftItem } from "@/ai/flows/craft-item-flow";
-import type { GameState, CraftItemOutput, CustomScenario } from "@/lib/types";
+import { generateNextTurn } from "@/ai/flows/generate-next-turn";
+import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
+import type { GameState, CraftItemOutput, CustomScenario, GenerateNextTurnOutput, ManageCombatScenarioOutput } from "@/lib/types";
 import { initialGameState } from "@/lib/game-data";
-import { handleCombatTurn, handleExplorationTurn } from "@/lib/game-manager";
 
 export const PLAYER_ACTION_PREFIX = "> ";
 
@@ -43,9 +44,67 @@ export function useGameLoop({ onImagePrompt, onSaveGame, onGameLoad }: UseGameLo
     try {
         let nextState;
         if (currentState.isCombat) {
-            nextState = await handleCombatTurn(currentState, playerAction, toast);
+            // Logic from handleCombatTurn
+            const combatResult: ManageCombatScenarioOutput = await manageCombatScenario({
+                playerAction,
+                playerState: currentState.playerState,
+                enemies: currentState.enemies || [],
+                combatLog: currentState.story.slice(-5),
+            });
+
+            const { turnNarration, updatedPlayerState, updatedEnemies, choices, isCombatOver, rewards } = combatResult;
+
+            const newStory = [...currentState.story, formattedPlayerAction, turnNarration];
+            let newInventory = currentState.inventory;
+
+            if (isCombatOver) {
+                newStory.push("مبارزه تمام شد.");
+                if (rewards && rewards.items && rewards.items.length > 0) {
+                    newInventory = [...newInventory, ...rewards.items];
+                    const rewardText = `شما به دست آوردید: ${rewards.items.join(', ')}`;
+                    newStory.push(rewardText);
+                    toast({ title: "غنائم جنگی!", description: rewardText });
+                }
+            }
+
+            nextState = {
+                ...currentState,
+                story: newStory,
+                playerState: updatedPlayerState,
+                enemies: updatedEnemies,
+                choices: isCombatOver ? ["ادامه بده..."] : choices,
+                isCombat: !isCombatOver,
+                inventory: newInventory,
+                isLoading: false,
+            };
+
         } else {
-            nextState = await handleExplorationTurn(currentState, playerAction, onImagePrompt, toast);
+            // Logic from handleExplorationTurn
+            const gameStateForAI = JSON.stringify(currentState);
+            const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
+                gameState: gameStateForAI,
+                playerAction,
+                difficulty: currentState.difficulty,
+                gmPersonality: currentState.gmPersonality,
+            });
+
+            if (nextTurn.imagePrompt) {
+                onImagePrompt(nextTurn.imagePrompt);
+            }
+
+            if (nextTurn.newCharacter) toast({ title: "شخصیت جدید", description: `شما با ${nextTurn.newCharacter} ملاقات کردید.` });
+            if (nextTurn.newQuest) toast({ title: "مأموریت جدید", description: nextTurn.newQuest });
+            if (nextTurn.newLocation) toast({ title: "مکان جدید کشف شد", description: `شما ${nextTurn.newLocation} را پیدا کردید.` });
+
+            const { story: newStory, ...restOfNextTurn } = nextTurn;
+
+            nextState = {
+                ...currentState,
+                ...restOfNextTurn,
+                story: [...currentState.story, formattedPlayerAction, newStory],
+                gameStarted: true,
+                isLoading: false,
+            };
         }
 
         if (nextState.playerState.health <= 0) {
@@ -63,11 +122,8 @@ export function useGameLoop({ onImagePrompt, onSaveGame, onGameLoad }: UseGameLo
         title: "خطای هوش مصنوعی",
         description: "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.",
       });
-      setGameState(prev => (prev ? { 
-          ...currentState, 
-          isLoading: false, 
-          choices: currentState.choices.length > 0 ? currentState.choices : ["دوباره تلاش کن"] 
-      }: null));
+      // Restore previous state and choices on error
+      setGameState(currentState);
     } finally {
         setIsLoading(false);
     }
@@ -76,6 +132,7 @@ export function useGameLoop({ onImagePrompt, onSaveGame, onGameLoad }: UseGameLo
   const handleCrafting = useCallback(async (ingredients: string[]) => {
     if (!gameState) return;
     setIsLoading(true);
+    const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}ترکیب کردن: ${ingredients.join('، ')}`;
     try {
         const result: CraftItemOutput = await craftItem({
             ingredients,
@@ -100,7 +157,7 @@ export function useGameLoop({ onImagePrompt, onSaveGame, onGameLoad }: UseGameLo
             const updatedGameState: GameState = {
                 ...prev,
                 inventory: newInventory,
-                story: [...prev.story, `[ساخت و ساز]: ${result.message}`],
+                story: [...prev.story, formattedPlayerAction, `[ساخت و ساز]: ${result.message}`],
             };
 
             onSaveGame(updatedGameState);
