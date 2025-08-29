@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -14,20 +14,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Bot, User, Send } from "lucide-react";
-import type { DirectorMessage } from "@/lib/types";
+import type { DirectorMessage, GameState } from "@/lib/types";
+import { queryGameDirector } from '@/ai/flows/query-game-director';
 
 interface GameDirectorChatProps {
   isOpen: boolean;
   onClose: () => void;
-  messages: DirectorMessage[];
-  onSend: (input: string) => void;
-  isLoading: boolean;
+  gameState: GameState | null;
 }
 
-export function GameDirectorChat({ isOpen, onClose, messages, onSend, isLoading }: GameDirectorChatProps) {
+export function GameDirectorChat({ isOpen, onClose, gameState }: GameDirectorChatProps) {
   const [input, setInput] = useState('');
+  const [messages, setMessages] = useState<DirectorMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   
+  // Effect to add initial director message only once when a game starts
+  useEffect(() => {
+    if(gameState && gameState.gameStarted && messages.length === 0) {
+        setMessages([
+            { role: 'model', content: "سلام! من کارگردان بازی هستم. هر سوالی در مورد دنیای بازی، شخصیت‌ها، یا سناریوهای 'چه می‌شد اگر...' دارید، از من بپرسید. من اینجا هستم تا به شما کمک کنم داستان خود را عمیق‌تر کشف کنید." },
+        ]);
+    }
+    if (!gameState) {
+        setMessages([]);
+    }
+  }, [gameState, messages.length]);
+
+
   useEffect(() => {
     const viewport = scrollViewportRef.current;
     if (viewport) {
@@ -37,10 +51,43 @@ export function GameDirectorChat({ isOpen, onClose, messages, onSend, isLoading 
     }
   }, [messages]);
 
+  const handleSend = useCallback(async (query: string) => {
+    if (!query.trim() || isLoading || !gameState) return;
+
+    const userMessage: DirectorMessage = { role: 'user', content: query };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setIsLoading(true);
+
+    try {
+        const gameStateString = JSON.stringify(gameState, null, 2);
+        const conversationHistory = newMessages.map(msg => ({
+            role: msg.role,
+            content: msg.content
+        }));
+
+        const response = await queryGameDirector({
+            playerQuery: query,
+            gameState: gameStateString,
+            conversationHistory: conversationHistory
+        });
+
+        const directorMessage: DirectorMessage = { role: 'model', content: response.directorResponse };
+        setMessages(prev => [...prev, directorMessage]);
+
+    } catch (error) {
+        console.error("Error querying game director:", error);
+        const errorMessage: DirectorMessage = { role: 'model', content: "متاسفانه در حال حاضر نمی‌توانم پاسخ دهم. لطفاً بعداً دوباره تلاش کنید." };
+        setMessages(prev => [...prev, errorMessage]);
+    } finally {
+        setIsLoading(false);
+    }
+  }, [isLoading, gameState, messages]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    onSend(input);
+    handleSend(input);
     setInput('');
   };
 
@@ -93,5 +140,3 @@ export function GameDirectorChat({ isOpen, onClose, messages, onSend, isLoading 
     </Dialog>
   );
 }
-
-    
