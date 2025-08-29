@@ -31,7 +31,7 @@ export function GameDirectorChat({ isOpen, onClose, gameState }: GameDirectorCha
   
   // Effect to add initial director message only once when a game starts
   useEffect(() => {
-    if(gameState && gameState.gameStarted && messages.length === 0) {
+    if(gameState && messages.length === 0) {
         setMessages([
             { role: 'model', content: "سلام! من کارگردان بازی هستم. هر سوالی در مورد دنیای بازی، شخصیت‌ها، یا سناریوهای 'چه می‌شد اگر...' دارید، از من بپرسید. من اینجا هستم تا به شما کمک کنم داستان خود را عمیق‌تر کشف کنید." },
         ]);
