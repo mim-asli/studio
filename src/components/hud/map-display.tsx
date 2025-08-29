@@ -188,5 +188,3 @@ const MapDisplayComponent = ({ locations, onFastTravel }: MapDisplayProps) => {
 }
 
 export const MapDisplay = memo(MapDisplayComponent);
-
-    
