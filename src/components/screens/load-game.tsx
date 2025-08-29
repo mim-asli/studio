@@ -1,10 +1,9 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,16 +16,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import type { SaveFile } from '@/lib/types';
-import { useGameSaves } from '@/hooks/use-game-saves';
+import { useGameContext } from '@/context/game-context';
+import Link from "next/link";
 
-interface LoadGameProps {
-    onBack: () => void;
-    onLoad: (saveId: string) => void;
-    savedGames: SaveFile[];
-    deleteSave: (saveId: string) => void;
-}
-
-export function LoadGame({ onBack, onLoad, savedGames, deleteSave }: LoadGameProps) {
+export function LoadGame() {
+    const { savedGames, loadGame, deleteSave } = useGameContext();
     
     const handleDeleteGame = (saveId: string) => {
         deleteSave(saveId);
@@ -36,9 +30,11 @@ export function LoadGame({ onBack, onLoad, savedGames, deleteSave }: LoadGamePro
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
             <div className="w-full max-w-2xl">
                 <div className="flex justify-between items-center mb-8">
-                    <Button onClick={onBack} variant="ghost" size="icon">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Button>
+                    <Link href="/" passHref>
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="w-6 h-6" />
+                        </Button>
+                    </Link>
                     <h1 className="text-4xl font-headline text-primary">بارگذاری ماجراجویی</h1>
                     <div className="w-10"></div>
                 </div>
@@ -61,7 +57,7 @@ export function LoadGame({ onBack, onLoad, savedGames, deleteSave }: LoadGamePro
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Button variant="ghost" size="sm" onClick={() => onLoad(save.id)}>
+                                            <Button variant="ghost" size="sm" onClick={() => loadGame(save.id)}>
                                                 بارگذاری
                                             </Button>
                                             <AlertDialog>
@@ -97,14 +93,14 @@ export function LoadGame({ onBack, onLoad, savedGames, deleteSave }: LoadGamePro
                     </CardContent>
                 </Card>
                  <div className="text-center mt-10">
-                    <Button onClick={onBack}>
-                        <ArrowLeft className="ml-2" />
-                        بازگشت به منوی اصلی
-                    </Button>
+                    <Link href="/" passHref>
+                        <Button>
+                            <ArrowLeft className="ml-2" />
+                            بازگشت به منوی اصلی
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </div>
     );
 }
-
-    

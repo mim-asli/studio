@@ -2,6 +2,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import Link from 'next/link';
 import {
   FilePlus,
   Upload,
@@ -18,18 +19,10 @@ import {
 } from "@/components/ui/tooltip"
 
 interface StartScreenProps {
-  onNewGame: () => void;
-  onLoadGame: () => void;
-  onSettings: () => void;
-  onScoreboard: () => void;
   apiKeyError?: string;
 }
 
 export function StartScreen({
-  onNewGame,
-  onLoadGame,
-  onSettings,
-  onScoreboard,
   apiKeyError,
 }: StartScreenProps) {
 
@@ -73,22 +66,28 @@ export function StartScreen({
         )}
 
         <div className="flex flex-col gap-4 w-full max-w-xs">
-          <Button size="lg" onClick={onNewGame} variant="default">
-            <FilePlus />
-            ماجراجویی جدید
-          </Button>
-          <Button size="lg" variant="outline" onClick={onLoadGame}>
-            <Upload />
-            بارگذاری ماجراجویی
-          </Button>
+          <Link href="/new" passHref>
+            <Button size="lg" variant="default" className="w-full">
+              <FilePlus />
+              ماجراجویی جدید
+            </Button>
+          </Link>
+          <Link href="/load" passHref>
+            <Button size="lg" variant="outline" className="w-full">
+              <Upload />
+              بارگذاری ماجراجویی
+            </Button>
+          </Link>
         </div>
 
         <div className="absolute bottom-4 right-4 flex gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={onSettings}>
-                  <Settings />
-                </Button>
+                <Link href="/settings" passHref>
+                    <Button variant="ghost" size="icon">
+                      <Settings />
+                    </Button>
+                </Link>
               </TooltipTrigger>
               <TooltipContent>
                 <p>تنظیمات</p>
@@ -96,9 +95,11 @@ export function StartScreen({
             </Tooltip>
              <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={onScoreboard}>
-                  <Trophy />
-                </Button>
+                <Link href="/scoreboard" passHref>
+                    <Button variant="ghost" size="icon">
+                      <Trophy />
+                    </Button>
+                </Link>
               </TooltipTrigger>
               <TooltipContent>
                 <p>تالار افتخارات</p>

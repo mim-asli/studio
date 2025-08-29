@@ -2,9 +2,8 @@
 "use client";
 
 import { useState } from 'react';
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil } from "lucide-react";
-import { Card, CardContent } from '../ui/card';
 import { Input, Textarea } from '../ui/input';
 import { Progress } from '../ui/progress';
 import { cn } from '@/lib/utils';
@@ -25,15 +24,13 @@ import {
 import { Step } from './new-game/step';
 import { ItemManager } from './new-game/item-manager';
 import { FeatureSelection } from './new-game/feature-selection';
+import { useGameContext } from '@/context/game-context';
+import Link from 'next/link';
 
 const TOTAL_STEPS = 6;
 
-interface NewGameCreatorProps {
-    onBack: () => void;
-    onStartGame: (scenario: CustomScenario, characterName: string) => void;
-}
-
-export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
+export function NewGameCreator() {
+    const { startGame } = useGameContext();
     const [step, setStep] = useState(1);
     
     const [characterName, setCharacterName] = useState('');
@@ -102,7 +99,7 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             difficulty: difficulty,
             gmPersonality: gmPersonality,
         };
-        onStartGame(customScenario, characterName);
+        startGame(customScenario, characterName);
     }
     
     const finalItemsListForReview = Object.entries(initialItems).map(([item, count]) => count > 1 ? `${item} (x${count})` : item);
@@ -187,21 +184,17 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
             case 5: return <Step title="۵. صحنه افتتاحیه" description="یک نقطه شروع برای داستان انتخاب کنید یا خودتان بنویسید.">
                 <div className="space-y-4">
                     {openingScenes[genre].map((scene, index) => (
-                        <Card key={index} onClick={() => { setStoryPrompt(scene); setWritingCustomScene(false); }} className={cn("cursor-pointer hover:border-primary", storyPrompt === scene && !writingCustomScene && "border-primary ring-2 ring-primary")}>
-                            <CardContent className="p-4">
-                                <p className="text-sm text-muted-foreground">{scene}</p>
-                            </CardContent>
-                        </Card>
+                        <div key={index} onClick={() => { setStoryPrompt(scene); setWritingCustomScene(false); }} className={cn("cursor-pointer hover:border-primary p-4 rounded-lg border", storyPrompt === scene && !writingCustomScene ? "border-primary ring-2 ring-primary" : "bg-card")}>
+                           <p className="text-sm text-muted-foreground">{scene}</p>
+                        </div>
                     ))}
-                     <Card onClick={() => { setWritingCustomScene(true); setStoryPrompt(''); }} className={cn("cursor-pointer hover:border-primary", writingCustomScene && "border-primary ring-2 ring-primary")}>
-                        <CardContent className="p-4 flex items-center gap-4">
-                            <Pencil className="w-6 h-6 text-primary"/>
-                            <div>
-                                <p className="font-bold">نوشتن سناریوی سفارشی</p>
-                                <p className="text-sm text-muted-foreground">داستان خود را با جزئیات دلخواهتان شروع کنید.</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                     <div onClick={() => { setWritingCustomScene(true); setStoryPrompt(''); }} className={cn("cursor-pointer hover:border-primary p-4 rounded-lg border flex items-center gap-4", writingCustomScene ? "border-primary ring-2 ring-primary" : "bg-card")}>
+                        <Pencil className="w-6 h-6 text-primary"/>
+                        <div>
+                            <p className="font-bold">نوشتن سناریوی سفارشی</p>
+                            <p className="text-sm text-muted-foreground">داستان خود را با جزئیات دلخواهتان شروع کنید.</p>
+                        </div>
+                    </div>
                     {writingCustomScene && (
                         <Textarea 
                             placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آyید..." 
@@ -214,28 +207,26 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
                 </div>
             </Step>
             case 6: return <Step title="۶. بازبینی و شروع" description="خلاصه‌ای از دنیایی که خلق کرده‌اید. اگر همه چیز درست است، ماجراجویی را آغاز کنید.">
-                <Card className="max-h-[50vh] overflow-y-auto">
-                    <CardContent className="p-6 space-y-4 text-sm">
-                        <div><strong className="text-primary">عنوان:</strong> {scenarioTitle}</div>
-                        <div><strong className="text-primary">ژانر:</strong> {genre}</div>
-                        <div><strong className="text-primary">دشواری:</strong> {difficulty}</div>
-                        <div><strong className="text-primary">سبک راوی:</strong> {gmPersonality}</div>
-                        <hr className="border-border/50"/>
-                        <div><strong className="text-primary">نام شخصیت:</strong> {characterName}</div>
-                        <div><strong className="text-primary">کهن الگو:</strong> {customArchetype.trim() || selectedArchetype}</div>
-                        <div><strong className="text-primary">نقطه قوت:</strong> {perk}</div>
-                        <div><strong className="text-primary">نقطه ضعف:</strong> {flaw}</div>
-                        <hr className="border-border/50"/>
-                        <div>
-                            <strong className="text-primary">تجهیزات:</strong>
-                            <div className="mt-1 space-y-1">
-                                {finalItemsListForReview.map(item => <div key={item}>{item}</div>)}
-                            </div>
+                <div className="max-h-[50vh] overflow-y-auto p-6 space-y-4 text-sm bg-card rounded-lg border">
+                    <div><strong className="text-primary">عنوان:</strong> {scenarioTitle}</div>
+                    <div><strong className="text-primary">ژانر:</strong> {genre}</div>
+                    <div><strong className="text-primary">دشواری:</strong> {difficulty}</div>
+                    <div><strong className="text-primary">سبک راوی:</strong> {gmPersonality}</div>
+                    <hr className="border-border/50"/>
+                    <div><strong className="text-primary">نام شخصیت:</strong> {characterName}</div>
+                    <div><strong className="text-primary">کهن الگو:</strong> {customArchetype.trim() || selectedArchetype}</div>
+                    <div><strong className="text-primary">نقطه قوت:</strong> {perk}</div>
+                    <div><strong className="text-primary">نقطه ضعف:</strong> {flaw}</div>
+                    <hr className="border-border/50"/>
+                    <div>
+                        <strong className="text-primary">تجهیزات:</strong>
+                        <div className="mt-1 space-y-1">
+                            {finalItemsListForReview.map(item => <div key={item}>{item}</div>)}
                         </div>
-                         <hr className="border-border/50"/>
-                        <div><strong className="text-primary">شروع داستان:</strong> <p className="mt-1">{storyPrompt}</p></div>
-                    </CardContent>
-                </Card>
+                    </div>
+                     <hr className="border-border/50"/>
+                    <div><strong className="text-primary">شروع داستان:</strong> <p className="mt-1">{storyPrompt}</p></div>
+                </div>
             </Step>
             default: return null;
         }
@@ -245,9 +236,11 @@ export function NewGameCreator({ onBack, onStartGame }: NewGameCreatorProps) {
         <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
             <div className="w-full max-w-4xl">
                 <div className="flex justify-between items-center mb-4">
-                     <Button onClick={onBack} variant="ghost" size="icon">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Button>
+                     <Link href="/" passHref>
+                        <Button variant="ghost" size="icon">
+                            <ArrowLeft className="w-6 h-6" />
+                        </Button>
+                     </Link>
                     <h1 className="text-2xl sm:text-4xl font-headline text-primary">ماجراجویی جدید</h1>
                     <div className="w-10"></div>
                 </div>

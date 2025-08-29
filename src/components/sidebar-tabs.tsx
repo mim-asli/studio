@@ -3,7 +3,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { GameState } from "@/lib/types";
 import { tabsConfig } from './sidebar-tab-data';
 import { cn } from '@/lib/utils';
 import { PlayerHud } from "@/components/player-hud";
@@ -13,25 +12,27 @@ import { CraftingPanel } from "@/components/crafting-panel";
 import { WorldStateDisplay } from "@/components/world-state-display";
 import { MapDisplay } from "@/components/map-display";
 import { CombatControls } from "@/components/combat/combat-controls";
+import { useGameContext } from '@/context/game-context';
 
 interface SidebarTabsProps {
-    gameState: GameState;
     onCraft: (ingredients: string[]) => void;
     onAction: (action: string) => void;
-    isCrafting: boolean;
     onFastTravel: (action: string) => void;
 }
 
-export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTravel }: SidebarTabsProps) {
+export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProps) {
+  const { gameState, isLoading } = useGameContext();
   const [activeTab, setActiveTab] = useState("vitals");
   
   useEffect(() => {
-    if (gameState.isCombat && activeTab !== "combat") {
+    if (gameState?.isCombat && activeTab !== "combat") {
       setActiveTab("combat");
-    } else if (!gameState.isCombat && activeTab === "combat") {
+    } else if (gameState && !gameState.isCombat && activeTab === "combat") {
       setActiveTab("vitals");
     }
-  }, [gameState.isCombat, activeTab]);
+  }, [gameState?.isCombat, activeTab]);
+
+  if (!gameState) return null;
 
   const availableTabs = tabsConfig.filter(tab => tab.show(gameState));
 
@@ -46,7 +47,7 @@ export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTr
       case "scene":
         return <SceneDisplay entities={gameState.sceneEntities || []} companions={gameState.companions || []} />;
       case "crafting":
-        return <CraftingPanel inventory={gameState.inventory} onCraft={onCraft} isCrafting={isCrafting} />;
+        return <CraftingPanel inventory={gameState.inventory} onCraft={onCraft} isCrafting={isLoading} />;
       case "character":
         return <InfoPanel title="مهارت‌ها" items={gameState.skills} emptyMessage="شما هنوز مهارت خاصی ندارید." />;
       case "quests":

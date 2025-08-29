@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import { Inter, VT323 } from 'next/font/google'
 import './globals.css';
+import { GameProvider } from '@/context/game-context';
+import { SettingsProvider } from '@/context/settings-context';
+import { ThemeWatcher } from '@/components/theme-watcher';
 
 export const metadata: Metadata = {
   title: 'داستان - یک بازی نقش‌آفرینی با هوش مصنوعی',
@@ -27,8 +30,13 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" className={`${inter.variable} ${vt323.variable}`}>
       <body className="font-body antialiased">
-        {children}
-        <Toaster />
+        <SettingsProvider>
+          <GameProvider>
+            <ThemeWatcher />
+            {children}
+            <Toaster />
+          </GameProvider>
+        </SettingsProvider>
       </body>
     </html>
   );

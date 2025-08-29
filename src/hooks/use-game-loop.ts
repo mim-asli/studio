@@ -13,10 +13,12 @@ export const PLAYER_ACTION_PREFIX = "> ";
 interface UseGameLoopProps {
     onImagePrompt: (prompt: string) => void;
     onSaveGame: (gameState: GameState) => void;
+    onGameLoad: (gameState: GameState) => void;
 }
 
-export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
+export function useGameLoop({ onImagePrompt, onSaveGame, onGameLoad }: UseGameLoopProps) {
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
   const handleGameOver = useCallback((state: GameState): GameState => {
@@ -24,8 +26,6 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
     if (finalState.playerState.health <= 0) {
         finalState.story.push("شما مرده‌اید. داستان شما در اینجا به پایان می‌رسد.");
     }
-    // The actual saving to hall of fame is handled by an effect in AppManager
-    // watching for the isGameOver flag.
     return finalState;
   }, []);
 
@@ -33,11 +33,10 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
     if (!currentState) return;
     const formattedPlayerAction = `${PLAYER_ACTION_PREFIX}${playerAction}`;
     
-    // Set loading state and add player action to story immediately
+    setIsLoading(true);
     setGameState(prev => (prev ? { 
       ...prev, 
       story: [...prev.story, formattedPlayerAction],
-      isLoading: true, 
       choices: [] 
     }: null));
 
@@ -49,11 +48,11 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
             nextState = await handleExplorationTurn(currentState, playerAction, onImagePrompt, toast);
         }
 
-        // Check for game over condition
         if (nextState.playerState.health <= 0) {
             nextState = handleGameOver(nextState);
         }
         
+        nextState.isLoading = false;
         onSaveGame(nextState);
         setGameState(nextState);
 
@@ -64,18 +63,19 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
         title: "خطای هوش مصنوعی",
         description: "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.",
       });
-      // Revert to the state before the failed action, but stop loading
       setGameState(prev => (prev ? { 
           ...currentState, 
           isLoading: false, 
           choices: currentState.choices.length > 0 ? currentState.choices : ["دوباره تلاش کن"] 
       }: null));
+    } finally {
+        setIsLoading(false);
     }
-  }, [gameState, onImagePrompt, onSaveGame, toast, handleGameOver]);
+  }, [onImagePrompt, onSaveGame, toast, handleGameOver]);
 
   const handleCrafting = useCallback(async (ingredients: string[]) => {
     if (!gameState) return;
-    setGameState(prev => (prev ? { ...prev, isLoading: true } : null));
+    setIsLoading(true);
     try {
         const result: CraftItemOutput = await craftItem({
             ingredients,
@@ -100,7 +100,6 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
             const updatedGameState: GameState = {
                 ...prev,
                 inventory: newInventory,
-                isLoading: false,
                 story: [...prev.story, `[ساخت و ساز]: ${result.message}`],
             };
 
@@ -116,16 +115,18 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
 
     } catch (error) {
         console.error("Crafting error:", error);
-        setGameState(prev => (prev ? { ...prev, isLoading: false } : null));
         toast({
             variant: "destructive",
             title: "خطای ساخت و ساز",
             description: "یک خطای پیش‌بینی نشده در سیستم ساخت و ساز رخ داد.",
         });
+    } finally {
+        setIsLoading(false);
     }
   }, [gameState, onSaveGame, toast]);
   
   const startGame = useCallback((scenario: CustomScenario, characterName: string) => {
+    setIsLoading(true);
     const gameId = crypto.randomUUID();
     const characterSkills = Array.isArray(scenario.character) ? scenario.character : scenario.character.split(',').map(s => s.trim());
     const isMagical = characterSkills.some(skill => skill.toLowerCase().includes('جادوگر'));
@@ -160,11 +161,13 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
       isGameOver: false,
     };
     
-    // We don't set the state here directly. Instead, we start the first turn.
+    setGameState(freshGameState);
+    onGameLoad(freshGameState);
+
     const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\\n${scenario.storyPrompt}\\n\\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
     
     processPlayerAction(startPrompt, freshGameState);
-  }, [processPlayerAction]);
+  }, [processPlayerAction, onGameLoad]);
 
 
   return {
@@ -173,6 +176,6 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
     processPlayerAction,
     handleCrafting,
     startGame,
-    isLoading: gameState?.isLoading ?? false,
+    isLoading,
   };
 }

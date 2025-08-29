@@ -3,13 +3,12 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle, HelpCircle, KeyRound, Loader2, Plus, Save, Trash2, XCircle, AlertTriangle, Monitor, Moon, Sun, Server, BrainCircuit, Waves, Music, Volume2, Cog, Image } from "lucide-react";
+import { ArrowLeft, CheckCircle, HelpCircle, KeyRound, Loader2, Plus, Trash2, XCircle, AlertTriangle, Monitor, Moon, Sun, Server, BrainCircuit, Cog, Image } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { useSettings } from "@/hooks/use-settings";
 import type { ApiKey } from "@/lib/types";
 import {
   Tooltip,
@@ -18,13 +17,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useSettingsContext } from "@/context/settings-context";
 
-interface SettingsPageProps {
-  onBack: () => void;
-}
-
-export function SettingsPage({ onBack }: SettingsPageProps) {
-  const { settings, updateSettings, isLoaded, setApiKeyStatus } = useSettings();
+export function SettingsPage() {
+  const { settings, updateSettings, isLoaded, setApiKeyStatus } = useSettingsContext();
   const [newApiKey, setNewApiKey] = useState({ name: '', value: '' });
   const [isTesting, setIsTesting] = useState<string | null>(null);
 
@@ -43,7 +40,6 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Simulate different outcomes for demonstration
-    const random = Math.random();
     let status: ApiKey['status'] = 'invalid';
     if (key.value.startsWith("valid")) status = 'valid';
     if (key.value.startsWith("quota")) status = 'quota_exceeded';
@@ -61,7 +57,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
   if (!isLoaded) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
-        <Loader2 className="w-16 h-16 animate-spin text-accent" />
+        <Loader2 className="w-16 h-16 animate-spin text-primary" />
         <p className="mt-4 text-muted-foreground">در حال بارگذاری تنظیمات...</p>
       </div>
     );
@@ -91,10 +87,12 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     <div className="flex justify-center min-h-screen bg-muted/20 text-foreground p-4 sm:p-6 lg:p-8">
       <div className="w-full max-w-4xl">
         <header className="flex justify-between items-center mb-6">
-          <Button onClick={onBack} variant="ghost" size="icon">
-            <ArrowLeft className="w-6 h-6" />
-          </Button>
-          <h1 className="text-3xl sm:text-4xl font-headline text-accent flex items-center gap-3">
+          <Link href="/" passHref>
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="w-6 h-6" />
+            </Button>
+          </Link>
+          <h1 className="text-3xl sm:text-4xl font-headline text-primary flex items-center gap-3">
             <Cog className="w-8 h-8"/>
             تنظیمات
           </h1>
@@ -105,7 +103,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Theme Settings --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Monitor className="w-6 h-6 text-accent"/>پوسته برنامه</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Monitor className="w-6 h-6 text-primary"/>پوسته برنامه</CardTitle>
               <CardDescription>ظاهر کلی برنامه را انتخاب کنید.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -125,7 +123,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
            {/* --- Image Generation --- */}
            <Card>
               <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Image className="w-6 h-6 text-accent" /> تولید تصویر با هوش مصنوعی</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><Image className="w-6 h-6 text-primary" /> تولید تصویر با هوش مصنوعی</CardTitle>
                   <CardDescription>
                       به‌طور خودکار برای لحظات کلیدی داستان، تصاویر تولید کنید. (ممکن است هزینه اضافی داشته باشد)
                   </CardDescription>
@@ -145,7 +143,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Gemini API Keys --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><KeyRound className="w-6 h-6 text-accent"/>کلیدهای Google Gemini API</CardTitle>
+              <CardTitle className="flex items-center gap-2"><KeyRound className="w-6 h-6 text-primary"/>کلیدهای Google Gemini API</CardTitle>
               <CardDescription>
                 موتور اصلی تولید داستان. می‌توانید چندین کلید برای چرخش خودکار اضافه کنید.
               </CardDescription>
@@ -187,7 +185,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Hugging Face --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><BrainCircuit className="w-6 h-6 text-accent"/>هوش مصنوعی Hugging Face (اختیاری)</CardTitle>
+              <CardTitle className="flex items-center gap-2"><BrainCircuit className="w-6 h-6 text-primary"/>هوش مصنوعی Hugging Face (اختیاری)</CardTitle>
               <CardDescription>از مدل‌های زبان هاگینگ فیس به عنوان جایگزین یا پشتیبان استفاده کنید.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -217,7 +215,7 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
           {/* --- Local LLM --- */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Server className="w-6 h-6 text-accent"/>هوش مصنوعی محلی (اختیاری)</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Server className="w-6 h-6 text-primary"/>هوش مصنوعی محلی (اختیاری)</CardTitle>
               <CardDescription>بازی را به یک مدل زبان در حال اجرا روی سیستم خود (مانند Ollama) متصل کنید.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -245,7 +243,3 @@ export function SettingsPage({ onBack }: SettingsPageProps) {
     </TooltipProvider>
   );
 }
-
-    
-
-    

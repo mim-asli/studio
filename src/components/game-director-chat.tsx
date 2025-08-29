@@ -14,16 +14,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Bot, User, Send } from "lucide-react";
-import type { DirectorMessage, GameState } from "@/lib/types";
+import type { DirectorMessage } from "@/lib/types";
 import { queryGameDirector } from '@/ai/flows/query-game-director';
+import { useGameContext } from '@/context/game-context';
 
 interface GameDirectorChatProps {
   isOpen: boolean;
   onClose: () => void;
-  gameState: GameState | null;
 }
 
-export function GameDirectorChat({ isOpen, onClose, gameState }: GameDirectorChatProps) {
+export function GameDirectorChat({ isOpen, onClose }: GameDirectorChatProps) {
+  const { gameState } = useGameContext();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<DirectorMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);

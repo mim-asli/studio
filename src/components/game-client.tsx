@@ -2,8 +2,6 @@
 "use client";
 
 import { useState } from "react";
-import type { GameState } from "@/lib/types";
-
 import { StoryDisplay } from "@/components/story-display";
 import { InteractionPanel } from "@/components/interaction-panel";
 import { SidebarTabs } from "@/components/sidebar-tabs";
@@ -27,30 +25,31 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useGameContext } from "@/context/game-context";
 
-interface GameClientProps {
-    gameState: GameState;
-    handleAction: (action: string) => void;
-    handleCrafting: (ingredients: string[]) => void;
-    handleFastTravel: (location: string) => void;
-    resetGame: () => void;
-    currentImage: string | null;
-    isImageLoading: boolean;
-}
-
-
-export function GameClient({
-    gameState,
-    handleAction,
-    handleCrafting,
-    handleFastTravel,
-    resetGame,
-    currentImage,
-    isImageLoading,
-}: GameClientProps) {
-  const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
+export function GameClient() {
+    const { 
+        gameState, 
+        handleAction, 
+        handleCrafting,
+        handleFastTravel,
+        resetGame,
+        currentImage,
+        isImageLoading,
+    } = useGameContext();
+    const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
   
-  if (gameState.isGameOver) {
+    if (!gameState) {
+        // This should ideally be handled by the page, but as a fallback:
+        return (
+             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4">
+                <Loader2 className="w-16 h-16 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">در حال آماده سازی بازی...</p>
+            </div>
+        )
+    }
+
+    if (gameState.isGameOver) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground p-4 text-center">
                 <AlertTriangle className="w-24 h-24 text-destructive mb-4" />
@@ -66,9 +65,8 @@ export function GameClient({
   return (
         <TooltipProvider>
             <GameDirectorChat 
-            isOpen={isDirectorChatOpen}
-            onClose={() => setIsDirectorChatOpen(false)}
-            gameState={gameState}
+                isOpen={isDirectorChatOpen}
+                onClose={() => setIsDirectorChatOpen(false)}
             />
             <div className="relative w-full h-screen">
             <main className="relative grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 min-h-screen text-foreground font-body p-2 sm:p-4 gap-4">
@@ -76,14 +74,14 @@ export function GameClient({
                 <div className="relative flex-grow border rounded-md shadow-inner bg-card/80 backdrop-blur-sm overflow-hidden flex flex-col">
                     <div className="absolute inset-0 bg-black/60" />
                     <StoryDisplay 
-                    storySegments={gameState.story} 
-                    image={currentImage}
-                    isImageLoading={isImageLoading}
+                        storySegments={gameState.story} 
+                        image={currentImage}
+                        isImageLoading={isImageLoading}
                     />
                     {gameState.isLoading && !isImageLoading && (
-                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
-                        <Loader2 className="w-16 h-16 text-primary animate-spin" />
-                    </div>
+                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-20">
+                            <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                        </div>
                     )}
                 </div>
                 <InteractionPanel 
@@ -128,11 +126,9 @@ export function GameClient({
                 </div>
                 <div className="flex-grow flex flex-col overflow-hidden">
                     <SidebarTabs 
-                    gameState={gameState}
-                    onCraft={handleCrafting}
-                    onAction={handleAction}
-                    isCrafting={gameState.isLoading}
-                    onFastTravel={handleFastTravel}
+                        onCraft={handleCrafting}
+                        onAction={handleAction}
+                        onFastTravel={handleFastTravel}
                     />
                 </div>
                 </div>
@@ -141,4 +137,3 @@ export function GameClient({
         </TooltipProvider>
     );
 }
-
