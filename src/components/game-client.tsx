@@ -36,6 +36,7 @@ import {
 import { useSettings } from "@/hooks/use-settings";
 import { useGameLoop } from "@/hooks/use-game-loop";
 import { useGameSaves } from "@/hooks/use-game-saves";
+import { useImageGenerator } from "@/hooks/use-image-generator";
 
 type View = "start" | "game" | "new-game" | "load-game" | "settings" | "scoreboard";
 
@@ -62,7 +63,9 @@ export function GameClient() {
   const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
   const { toast } = useToast();
   const { settings, isLoaded: settingsLoaded } = useSettings();
-  const { loadGame, saveToHallOfFame } = useGameSaves();
+  const { savedGames, loadGame, saveGame, deleteSave, saveToHallOfFame } = useGameSaves();
+  
+  const { currentImage, isImageLoading, generateImage, clearImage } = useImageGenerator(settings.generateImages);
 
   const {
       gameState,
@@ -71,9 +74,10 @@ export function GameClient() {
       handleCrafting,
       startGame,
       isLoading: isGameLoading,
-      currentImage,
-      isImageLoading,
-  } = useGameLoop(settings.generateImages);
+  } = useGameLoop({
+    onImagePrompt: generateImage,
+    onSaveGame: saveGame,
+  });
 
   useEffect(() => {
     handleLowSanityEffect(gameState);
@@ -114,6 +118,7 @@ export function GameClient() {
 
   const resetGame = () => {
     setGameState(null);
+    clearImage();
     setView("start");
   }
 
@@ -131,7 +136,7 @@ export function GameClient() {
         case "new-game":
             return <NewGameCreator onBack={() => setView("start")} onStartGame={handleStartGame} />;
         case "load-game":
-            return <LoadGame onBack={() => setView("start")} onLoad={handleLoadGame} />;
+            return <LoadGame onBack={() => setView("start")} onLoad={handleLoadGame} savedGames={savedGames} deleteSave={deleteSave}/>;
         case "settings":
             return <SettingsPage onBack={() => setView("start")} />;
         case "scoreboard":
@@ -238,3 +243,5 @@ export function GameClient() {
     </>
   );
 }
+
+    

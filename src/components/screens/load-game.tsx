@@ -22,23 +22,14 @@ import { useGameSaves } from '@/hooks/use-game-saves';
 interface LoadGameProps {
     onBack: () => void;
     onLoad: (saveId: string) => void;
+    savedGames: SaveFile[];
+    deleteSave: (saveId: string) => void;
 }
 
-export function LoadGame({ onBack, onLoad }: LoadGameProps) {
-    const { savedGames, deleteSave, loadSavedGames } = useGameSaves();
-    const [games, setGames] = useState<SaveFile[]>([]);
+export function LoadGame({ onBack, onLoad, savedGames, deleteSave }: LoadGameProps) {
     
-    useEffect(() => {
-        const fetchGames = async () => {
-            const loadedGames = await loadSavedGames();
-            setGames(loadedGames);
-        }
-        fetchGames();
-    }, [loadSavedGames]);
-
     const handleDeleteGame = (saveId: string) => {
         deleteSave(saveId);
-        setGames(currentGames => currentGames.filter(game => game.id !== saveId));
     };
 
     return (
@@ -58,9 +49,9 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
                         <CardDescription>یک ماجراجویی را برای ادامه انتخاب کنید.</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        {games.length > 0 ? (
+                        {savedGames.length > 0 ? (
                             <ul className="space-y-3">
-                                {games.map((save) => (
+                                {savedGames.map((save) => (
                                      <li key={save.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 group border hover:border-primary/50 transition-colors">
                                         <div className="flex-1 overflow-hidden">
                                             <p className="font-semibold truncate">{save.characterName || 'شخصیت بی‌نام'}</p>
@@ -115,3 +106,5 @@ export function LoadGame({ onBack, onLoad }: LoadGameProps) {
         </div>
     );
 }
+
+    
