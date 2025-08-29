@@ -37,7 +37,6 @@ export function GameClient() {
         isImageLoading,
     } = useGameContext();
     const [isDirectorChatOpen, setIsDirectorChatOpen] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
     if (!gameState) {
         // This should ideally be handled by the page, but as a fallback:
@@ -69,10 +68,7 @@ export function GameClient() {
                 onClose={() => setIsDirectorChatOpen(false)}
             />
             <div className="relative w-full h-screen overflow-hidden">
-            <main className={cn(
-                "grid h-screen text-foreground font-body transition-all duration-300 ease-in-out",
-                isSidebarOpen ? "grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px]" : "grid-cols-[1fr_auto]"
-            )}>
+            <main className="grid h-screen grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_450px] text-foreground font-body">
                 {/* Main Content */}
                 <div className="flex flex-col gap-4 h-full p-2 sm:p-4">
                     <div className="flex justify-between items-center">
@@ -128,28 +124,8 @@ export function GameClient() {
                 </div>
 
                 {/* Sidebar */}
-                <div className={cn(
-                    "h-full bg-background/50 backdrop-blur-md transition-all duration-300 ease-in-out flex",
-                    isSidebarOpen ? "w-[400px] xl:w-[450px]" : "w-16"
-                )}>
-                    <div className="w-16 flex flex-col items-center py-4 border-l">
-                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button size="icon" variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
-                                    {isSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="left">
-                                <p>{isSidebarOpen ? 'بستن نوار کناری' : 'باز کردن نوار کناری'}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </div>
-                    <div className={cn(
-                        "flex-grow overflow-hidden transition-opacity duration-300",
-                        isSidebarOpen ? "opacity-100" : "opacity-0"
-                    )}>
-                        {isSidebarOpen && <div className="py-4 pl-0 pr-4 h-full"><Sidebar /></div>}
-                    </div>
+                <div className="h-full bg-background/50 backdrop-blur-md p-4 border-l">
+                    <Sidebar />
                 </div>
             </main>
             </div>

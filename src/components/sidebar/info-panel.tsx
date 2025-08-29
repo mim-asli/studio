@@ -18,7 +18,7 @@ export function InfoPanel({ title, items, emptyMessage, description }: InfoPanel
                 <CardTitle className="font-headline text-2xl tracking-wider text-foreground">{title}</CardTitle>
                 {description && <CardDescription className="pt-1">{description}</CardDescription>}
             </CardHeader>
-            <CardContent className="flex-grow overflow-hidden pt-0">
+            <CardContent className="flex-grow overflow-hidden pt-0 h-[calc(100%-6rem)]">
                 <ScrollArea className="h-full pr-4">
                     {items && items.length > 0 ? (
                         <ul className="space-y-2">
