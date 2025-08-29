@@ -3,14 +3,9 @@
 
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil } from "lucide-react";
-import { Input, Textarea } from '../ui/input';
+import { ArrowLeft } from "lucide-react";
 import { Progress } from '../ui/progress';
-import { cn } from '@/lib/utils';
 import type { CustomScenario } from '@/lib/types';
-import { Label } from '../ui/label';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { 
     genres, 
     archetypes, 
@@ -21,11 +16,16 @@ import {
     difficultyPoints, 
     openingScenes 
 } from '@/lib/game-data';
-import { Step } from './new-game/step';
-import { ItemManager } from './new-game/item-manager';
-import { FeatureSelection } from './new-game/feature-selection';
 import { useGameContext } from '@/context/game-context';
 import Link from 'next/link';
+
+import { Step1_WorldBasics } from './new-game/Step1_WorldBasics';
+import { Step2_CharacterProfile } from './new-game/Step2_CharacterProfile';
+import { Step3_Attributes } from './new-game/Step3_Attributes';
+import { Step4_Equipment } from './new-game/Step4_Equipment';
+import { Step5_OpeningScene } from './new-game/Step5_OpeningScene';
+import { Step6_Review } from './new-game/Step6_Review';
+
 
 const TOTAL_STEPS = 6;
 
@@ -33,6 +33,7 @@ export function NewGameCreator() {
     const { startGame } = useGameContext();
     const [step, setStep] = useState(1);
     
+    // State for all steps
     const [characterName, setCharacterName] = useState('');
     const [characterDesc, setCharacterDesc] = useState('');
     const [customArchetype, setCustomArchetype] = useState('');
@@ -42,7 +43,6 @@ export function NewGameCreator() {
     const [initialItems, setInitialItems] = useState<Record<string, number>>({});
     const [storyPrompt, setStoryPrompt] = useState('');
     const [scenarioTitle, setScenarioTitle] = useState('');
-    
     const [genre, setGenre] = useState<keyof typeof genres>('فانتزی');
     const [difficulty, setDifficulty] = useState<'آسان'|'معمولی'|'سخت'>('معمولی');
     const [gmPersonality, setGmPersonality] = useState('روایی و سینمایی');
@@ -102,132 +102,60 @@ export function NewGameCreator() {
         startGame(customScenario, characterName);
     }
     
-    const finalItemsListForReview = Object.entries(initialItems).map(([item, count]) => count > 1 ? `${item} (x${count})` : item);
-
     const renderStep = () => {
         switch (step) {
-            case 1: return <Step title="۱. مبانی جهان" description="قوانین و حال و هوای کلی دنیای خود را مشخص کنید.">
-                 <div className="space-y-6">
-                    <Input placeholder="عنوان سناریو (مثلا: انتقام جادوگر تاریکی)" value={scenarioTitle} onChange={e => setScenarioTitle(e.target.value)} className="text-center text-lg" />
-                     <FeatureSelection items={genres} selected={genre} onSelect={(key) => setGenre(key as keyof typeof genres)} columns="3" title="ژانر" />
-                    <div>
-                        <Label className="text-lg font-bold text-primary mb-2 block">سطح دشواری</Label>
-                        <RadioGroup value={difficulty} className="mt-2 grid grid-cols-3 gap-4" onValueChange={value => setDifficulty(value as 'آسان'|'معمولی'|'سخت')}>
-                           {(['آسان', 'معمولی', 'سخت'] as const).map(level => (
-                               <Label key={level} htmlFor={`diff-${level}`} className={cn("flex flex-col items-center justify-center rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground cursor-pointer", difficulty === level && "border-primary ring-2 ring-primary")}>
-                                  <RadioGroupItem value={level} id={`diff-${level}`} className="sr-only" />
-                                  {level}
-                                  <span className="text-xs text-muted-foreground mt-1">({difficultyPoints[level]} امتیاز)</span>
-                               </Label>
-                           ))}
-                        </RadioGroup>
-                    </div>
-                     <div>
-                        <Label htmlFor="gm-personality" className="text-lg font-bold text-primary mb-2 block">سبک راوی (GM)</Label>
-                        <Select value={gmPersonality} onValueChange={setGmPersonality}>
-                            <SelectTrigger id="gm-personality" className="w-full mt-2">
-                                <SelectValue placeholder="شخصیت GM را انتخاب کنید" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {gmPersonalities.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-            </Step>
-            case 2: return <Step title="۲. پروفایل شخصیت" description="به قهرمان خود یک نام، یک کلاس و یک پیشینه (اختیاری) بدهید.">
-                <div className="space-y-6">
-                    <Input placeholder="نام شخصیت" value={characterName} onChange={e => setCharacterName(e.target.value)} className="text-center text-lg" />
-                    <div>
-                        <FeatureSelection 
-                            items={archetypes} 
-                            selected={selectedArchetype} 
-                            onSelect={(key) => {
-                                setSelectedArchetype(key as keyof typeof archetypes);
-                                setCustomArchetype(''); 
-                            }} 
-                            columns="4"
-                            title="کهن الگو (Archetype)"
-                            showDescription={true}
-                        />
-                        <div className="flex items-center gap-4 my-4">
-                            <hr className="flex-grow border-border/50"/>
-                            <span className="text-muted-foreground">یا</span>
-                            <hr className="flex-grow border-border/50"/>
-                        </div>
-                        <Input 
-                            placeholder="... یک کهن‌الگوی سفارشی بسازید" 
-                            value={customArchetype} 
-                            onChange={e => {
-                                setCustomArchetype(e.target.value)
-                                setSelectedArchetype(null); 
-                            }}
-                            className="text-center" 
-                        />
-                    </div>
-                    <Textarea placeholder="توضیحات و پیشینه شخصیت (اختیاری)" value={characterDesc} onChange={e => setCharacterDesc(e.target.value)} rows={4} />
-                </div>
-            </Step>
-            case 3: return <Step title="۳. انتخاب ویژگی‌ها" description="یک نقطه قوت (Perk) و یک نقطه ضعف (Flaw) انتخاب کنید تا به شخصیت خود عمق ببخشید.">
-                <div className="grid md:grid-cols-2 gap-8">
-                    <FeatureSelection title="نقاط قوت (Perks)" items={perks} selected={perk} onSelect={setPerk as (key: string) => void} showDescription={true} layout="list" />
-                    <FeatureSelection title="نقاط ضعف (Flaws)" items={flaws} selected={flaw} onSelect={setFlaw as (key: string) => void} showDescription={true} layout="list" />
-                </div>
-            </Step>
-            case 4: return <Step title="۴. تجهیزات اولیه" description="با استفاده از امتیازهای خود، تجهیزات شروع ماجراجویی را انتخاب کنید.">
-                <ItemManager 
-                    totalPoints={difficultyPoints[difficulty]}
-                    items={initialItems}
-                    setItems={setInitialItems}
-                />
-            </Step>
-            case 5: return <Step title="۵. صحنه افتتاحیه" description="یک نقطه شروع برای داستان انتخاب کنید یا خودتان بنویسید.">
-                <div className="space-y-4">
-                    {openingScenes[genre].map((scene, index) => (
-                        <div key={index} onClick={() => { setStoryPrompt(scene); setWritingCustomScene(false); }} className={cn("cursor-pointer hover:border-primary p-4 rounded-lg border", storyPrompt === scene && !writingCustomScene ? "border-primary ring-2 ring-primary" : "bg-card")}>
-                           <p className="text-sm text-muted-foreground">{scene}</p>
-                        </div>
-                    ))}
-                     <div onClick={() => { setWritingCustomScene(true); setStoryPrompt(''); }} className={cn("cursor-pointer hover:border-primary p-4 rounded-lg border flex items-center gap-4", writingCustomScene ? "border-primary ring-2 ring-primary" : "bg-card")}>
-                        <Pencil className="w-6 h-6 text-primary"/>
-                        <div>
-                            <p className="font-bold">نوشتن سناریوی سفارشی</p>
-                            <p className="text-sm text-muted-foreground">داستان خود را با جزئیات دلخواهتان شروع کنید.</p>
-                        </div>
-                    </div>
-                    {writingCustomScene && (
-                        <Textarea 
-                            placeholder="شما در یک جنگل تاریک و مه‌آلود به هوش می‌آyید..." 
-                            value={storyPrompt} 
-                            onChange={e => setStoryPrompt(e.target.value)} 
-                            rows={6}
-                            className="mt-4" 
-                        />
-                    )}
-                </div>
-            </Step>
-            case 6: return <Step title="۶. بازبینی و شروع" description="خلاصه‌ای از دنیایی که خلق کرده‌اید. اگر همه چیز درست است، ماجراجویی را آغاز کنید.">
-                <div className="max-h-[50vh] overflow-y-auto p-6 space-y-4 text-sm bg-card rounded-lg border">
-                    <div><strong className="text-primary">عنوان:</strong> {scenarioTitle}</div>
-                    <div><strong className="text-primary">ژانر:</strong> {genre}</div>
-                    <div><strong className="text-primary">دشواری:</strong> {difficulty}</div>
-                    <div><strong className="text-primary">سبک راوی:</strong> {gmPersonality}</div>
-                    <hr className="border-border/50"/>
-                    <div><strong className="text-primary">نام شخصیت:</strong> {characterName}</div>
-                    <div><strong className="text-primary">کهن الگو:</strong> {customArchetype.trim() || selectedArchetype}</div>
-                    <div><strong className="text-primary">نقطه قوت:</strong> {perk}</div>
-                    <div><strong className="text-primary">نقطه ضعف:</strong> {flaw}</div>
-                    <hr className="border-border/50"/>
-                    <div>
-                        <strong className="text-primary">تجهیزات:</strong>
-                        <div className="mt-1 space-y-1">
-                            {finalItemsListForReview.map(item => <div key={item}>{item}</div>)}
-                        </div>
-                    </div>
-                     <hr className="border-border/50"/>
-                    <div><strong className="text-primary">شروع داستان:</strong> <p className="mt-1">{storyPrompt}</p></div>
-                </div>
-            </Step>
+            case 1: return <Step1_WorldBasics 
+                scenarioTitle={scenarioTitle}
+                setScenarioTitle={setScenarioTitle}
+                genre={genre}
+                setGenre={setGenre}
+                difficulty={difficulty}
+                setDifficulty={setDifficulty}
+                gmPersonality={gmPersonality}
+                setGmPersonality={setGmPersonality}
+            />;
+            case 2: return <Step2_CharacterProfile
+                characterName={characterName}
+                setCharacterName={setCharacterName}
+                characterDesc={characterDesc}
+                setCharacterDesc={setCharacterDesc}
+                customArchetype={customArchetype}
+                setCustomArchetype={setCustomArchetype}
+                selectedArchetype={selectedArchetype}
+                setSelectedArchetype={setSelectedArchetype}
+            />;
+            case 3: return <Step3_Attributes
+                perk={perk}
+                setPerk={setPerk}
+                flaw={flaw}
+                setFlaw={setFlaw}
+            />;
+            case 4: return <Step4_Equipment
+                difficulty={difficulty}
+                initialItems={initialItems}
+                setInitialItems={setInitialItems}
+            />;
+            case 5: return <Step5_OpeningScene
+                genre={genre}
+                storyPrompt={storyPrompt}
+                setStoryPrompt={setStoryPrompt}
+                writingCustomScene={writingCustomScene}
+                setWritingCustomScene={setWritingCustomScene}
+            />;
+            case 6: return <Step6_Review
+                data={{
+                    scenarioTitle,
+                    genre,
+                    difficulty,
+                    gmPersonality,
+                    characterName,
+                    archetype: customArchetype.trim() || selectedArchetype,
+                    perk,
+                    flaw,
+                    items: Object.entries(initialItems).map(([item, count]) => count > 1 ? `${item} (x${count})` : item),
+                    storyPrompt,
+                }}
+            />;
             default: return null;
         }
     };
