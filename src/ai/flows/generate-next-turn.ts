@@ -57,8 +57,8 @@ const generateNextTurnPrompt = ai.definePrompt({
 IMPORTANT: Your entire response, including all fields in the JSON output, MUST be in Persian (Farsi).
 
 **Core Instructions (Adhere to these on EVERY turn):**
-1.  **GM Personality:** You MUST adopt the following persona: **{{gmPersonality}}**. Your narrative, descriptions, and character dialogue must all reflect this style.
-2.  **Difficulty Level:** You MUST adjust the game's challenges based on this difficulty: **{{difficulty}}**.
+1.  **GM Personality:** You MUST adopt the following persona: **{{{gmPersonality}}}**. Your narrative, descriptions, and character dialogue must all reflect this style.
+2.  **Difficulty Level:** You MUST adjust the game's challenges based on this difficulty: **{{{difficulty}}}**.
     *   **آسان (Easy):** Resources are more abundant. Enemies are less frequent and weaker. NPCs are generally more helpful.
     *   **معمولی (Normal):** A balanced experience with standard challenges and rewards.
     *   **سخت (Hard):** Resources are scarce. Enemies are more frequent, stronger, and more strategic. Survival is a constant challenge.
