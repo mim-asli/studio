@@ -39,7 +39,7 @@ export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat 
           <CardTitle className="font-headline text-2xl tracking-wider">اقدامات</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col flex-grow gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2">
             {choices?.map((choice, index) => (
               <Button
                 key={index}
