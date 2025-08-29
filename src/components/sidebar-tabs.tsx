@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { tabsConfig } from './sidebar-tab-data';
 import { cn } from '@/lib/utils';
@@ -23,11 +23,20 @@ interface SidebarTabsProps {
 export function SidebarTabs({ onCraft, onAction, onFastTravel }: SidebarTabsProps) {
   const { gameState, isLoading } = useGameContext();
   const [activeTab, setActiveTab] = useState("vitals");
-  
+  const prevIsCombatRef = useRef<boolean>();
+
   useEffect(() => {
-    // When combat is over, if the user is on the combat tab, switch them to vitals.
-    if (gameState && !gameState.isCombat && activeTab === "combat") {
-      setActiveTab("vitals");
+    if (gameState) {
+      // Switch to combat tab only when combat *starts*
+      if (gameState.isCombat && !prevIsCombatRef.current) {
+        setActiveTab("combat");
+      }
+      // When combat is over, if the user is on the combat tab, switch them to vitals.
+      else if (!gameState.isCombat && prevIsCombatRef.current && activeTab === "combat") {
+        setActiveTab("vitals");
+      }
+      // Update the ref for the next render
+      prevIsCombatRef.current = gameState.isCombat;
     }
   }, [gameState?.isCombat, activeTab]);
 
