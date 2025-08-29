@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -9,7 +10,23 @@
  */
 
 import {ai} from '@/ai/genkit';
-import { QueryGameDirectorInputSchema, QueryGameDirectorOutputSchema, type QueryGameDirectorInput, type QueryGameDirectorOutput } from '@/lib/types';
+import {z} from 'zod';
+import type { QueryGameDirectorInput, QueryGameDirectorOutput } from '@/lib/types';
+
+
+// Schemas for queryGameDirector flow
+const QueryGameDirectorInputSchema = z.object({
+  playerQuery: z.string().describe('The question the player wants to ask the game director.'),
+  gameState: z.string().describe('The current game state in JSON format.'),
+  conversationHistory: z.array(z.object({
+    role: z.enum(['user', 'model']),
+    content: z.string(),
+  })).optional().describe('The history of the conversation so far.'),
+});
+
+const QueryGameDirectorOutputSchema = z.object({
+  directorResponse: z.string().describe('The game director’s insightful answer to the player’s question.'),
+});
 
 
 export async function queryGameDirector(input: QueryGameDirectorInput): Promise<QueryGameDirectorOutput> {

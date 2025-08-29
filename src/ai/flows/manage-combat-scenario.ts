@@ -10,8 +10,32 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {z} from 'zod';
+import { PlayerStateSchema, EnemySchema } from '@/lib/types';
 import type { ManageCombatScenarioInput, ManageCombatScenarioOutput } from '@/lib/types';
-import { ManageCombatScenarioInputSchema, ManageCombatScenarioOutputSchema } from '@/lib/types';
+
+
+// Schemas for manageCombatScenarioFlow
+const ManageCombatScenarioInputSchema = z.object({
+  playerAction: z.string().describe("The combat action taken by the player (e.g., '[مبارزه] حمله به گابلین')."),
+  playerState: PlayerStateSchema.describe('The current state of the player.'),
+  enemies: z.array(EnemySchema).describe('The list of enemies currently in combat.'),
+  combatLog: z.array(z.string()).optional().describe('A log of recent events in this combat.'),
+});
+
+const CombatRewardSchema = z.object({
+    items: z.array(z.string()).optional().describe("Items looted from the enemies."),
+    experience: z.number().optional().describe("Experience points gained."),
+});
+
+const ManageCombatScenarioOutputSchema = z.object({
+  turnNarration: z.string().describe('A step-by-step narration of what happened this turn. First the player action, then the enemy actions.'),
+  updatedPlayerState: PlayerStateSchema.describe("The player's state after this turn's events."),
+  updatedEnemies: z.array(EnemySchema).describe('The updated state of all enemies after this turn. Include defeated enemies with 0 health.'),
+  choices: z.array(z.string()).describe("The available combat choices for the next player turn."),
+  isCombatOver: z.boolean().describe('Set to true if all enemies are defeated or the player is defeated.'),
+  rewards: CombatRewardSchema.optional().describe('If combat is over and the player won, populate this with rewards. Be realistic about loot.'),
+});
 
 
 export async function manageCombatScenario(input: ManageCombatScenarioInput): Promise<ManageCombatScenarioOutput> {
