@@ -1,0 +1,46 @@
+
+'use server';
+
+import {ai} from '@/ai/genkit';
+import {z} from 'zod';
+import type { DirectorMessage } from '@/lib/types';
+
+// Schemas for queryGameDirector flow
+const QueryGameDirectorInputSchema = z.object({
+  playerQuery: z.string().describe('The question the player wants to ask the game director.'),
+  gameState: z.string().describe('The current game state in JSON format.'),
+  conversationHistory: z.custom<DirectorMessage[]>().optional().describe('The history of the conversation so far.'),
+});
+
+const QueryGameDirectorOutputSchema = z.object({
+  directorResponse: z.string().describe('The game director’s insightful answer to the player’s question.'),
+});
+
+
+export const queryGameDirectorPrompt = ai.definePrompt({
+  name: 'queryGameDirectorPrompt',
+  input: {schema: QueryGameDirectorInputSchema},
+  output: {schema: QueryGameDirectorOutputSchema},
+  prompt: `You are the game director of an AI-driven RPG called "Dastan". A player has paused the game to ask you a question about the game world. Your persona is helpful, knowledgeable, and a bit mysterious, like a good Dungeon Master.
+
+  The player's message history with you is provided, use it to understand the context of the current question.
+  {{#if conversationHistory}}
+  Conversation History:
+  {{#each conversationHistory}}
+  - {{role}}: {{content}}
+  {{/each}}
+  {{/if}}
+
+  Here is the current game state:
+  {{gameState}}
+
+  Here is the player's latest question:
+  {{playerQuery}}
+
+  Provide an insightful and helpful answer from the perspective of the game director. Focus on providing hints and lore about the world.
+  Respond in character as the game director, but do not reveal critical plot points that would ruin the player experience.
+  Your response must be in Persian (Farsi).
+  
+  Additionally, if the player asks about the potential outcome of an action they did not take ("what if" questions), provide a creative and interesting response. Speculate on what might have happened. This is an opportunity to show the complexity of the world and the consequences of choices.
+`,
+});
