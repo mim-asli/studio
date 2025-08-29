@@ -4,20 +4,16 @@
 import { useCallback } from "react";
 import { craftItem } from "@/ai/flows/craft-item-flow";
 import type { GameState, CraftItemOutput } from "@/lib/types";
-import type { Toast } from "@/components/ui/toast";
+import { useToast } from "./use-toast";
 
 interface UseCraftingHandlerProps {
   gameState: GameState | null;
   setIsLoading: (loading: boolean) => void;
   onStateUpdate: (newState: GameState) => void;
-  toast: ({ ...props }: Omit<Toast, "id">) => {
-    id: string;
-    dismiss: () => void;
-    update: (props: Toast) => void;
-  };
 }
 
-export function useCraftingHandler({ gameState, setIsLoading, onStateUpdate, toast }: UseCraftingHandlerProps) {
+export function useCraftingHandler({ gameState, setIsLoading, onStateUpdate }: UseCraftingHandlerProps) {
+  const { toast } = useToast();
 
   const handleCrafting = useCallback(async (ingredients: string[]) => {
     if (!gameState) return;

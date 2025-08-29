@@ -1,16 +1,15 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useToast } from "@/hooks/use-toast";
-import { useGameSaves } from "@/hooks/use-game-saves";
-import { useImageGenerator } from "@/hooks/use-image-generator";
+import React, { createContext, useContext, useCallback } from 'react';
 import type { GameState, SaveFile, CustomScenario } from "@/lib/types";
 import { useSettingsContext } from './settings-context';
 import { useGameInitializer } from '@/hooks/useGameInitializer';
 import { useGameActions } from '@/hooks/useGameActions';
 import { useCraftingHandler } from '@/hooks/useCraftingHandler';
+import { useImageGenerator } from '@/hooks/use-image-generator';
+import { useGameSaves } from '@/hooks/use-game-saves';
+import { useGameState } from '@/hooks/useGameState';
 
 interface GameContextType {
     gameState: GameState | null;
@@ -31,71 +30,34 @@ interface GameContextType {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const router = useRouter();
-    const { toast } = useToast();
     const { settings } = useSettingsContext();
-    const { savedGames, loadGame: loadGameFromStorage, saveGame, deleteSave, saveToHallOfFame } = useGameSaves();
+    const { gameState, setGameState, isLoading, setIsLoading, isGameLoading, setIsGameLoading } = useGameState();
+
+    const { savedGames, loadGame: loadGameFromStorage, deleteSave, saveToHallOfFame } = useGameSaves();
     const { currentImage, isImageLoading, generateImage, clearImage } = useImageGenerator(settings.generateImages);
     
-    const [gameState, setGameState] = useState<GameState | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [isGameLoading, setIsGameLoading] = useState(true);
-
-
-    const onGameLoad = (state: GameState) => {
-        router.push('/play');
-    };
-
-    const onStateUpdate = (newState: GameState) => {
+    const onStateUpdate = useCallback((newState: GameState) => {
         setGameState(newState);
-        saveGame(newState);
-        if (newState.playerState.health <= 0) {
-            setGameState(prev => prev ? {...prev, isGameOver: true, isLoading: false, choices: []} : null);
-        }
-    };
+    }, [setGameState]);
     
-    const { startGame } = useGameInitializer({ setGameState, setIsLoading, onGameLoad, onStateUpdate, onImagePrompt: generateImage });
     const { processPlayerAction } = useGameActions({ setIsLoading, onStateUpdate, onImagePrompt: generateImage });
-    const { handleCrafting } = useCraftingHandler({ gameState, setIsLoading, onStateUpdate, toast });
+    const { handleCrafting } = useCraftingHandler({ gameState, setIsLoading, onStateUpdate });
+    
+    const onGameLoad = useCallback((state: GameState) => {
+        setGameState(state);
+    }, [setGameState]);
 
-
-    useEffect(() => {
-        if (gameState?.isGameOver) {
-            saveToHallOfFame(gameState);
-        }
-    }, [gameState?.isGameOver, saveToHallOfFame, gameState]);
-
-    const startNewGame = useCallback((scenario: CustomScenario, characterName: string) => {
-        clearImage();
-        startGame(scenario, characterName);
-    }, [startGame, clearImage]);
-
+    const { startGame, resetGame } = useGameInitializer({ onGameLoad, processPlayerAction, clearImage });
+    
     const loadGame = useCallback(async (saveId: string) => {
         setIsGameLoading(true);
         const loadedState = await loadGameFromStorage(saveId);
         if (loadedState) {
             setGameState({ ...loadedState, isLoading: false, gameStarted: true });
-            toast({
-              title: "بازی بارگذاری شد",
-              description: "ماجراجویی شما ادامه می‌یابد!",
-            });
-            router.push('/play');
-        } else {
-             toast({
-                variant: "destructive",
-                title: "فایل ذخیره یافت نشد",
-                description: "فایل ذخیره مورد نظر پیدا نشد.",
-            });
         }
         setIsGameLoading(false);
-    }, [loadGameFromStorage, setGameState, toast, router]);
+    }, [loadGameFromStorage, setGameState, setIsGameLoading]);
 
-    const resetGame = useCallback(() => {
-        setGameState(null);
-        clearImage();
-        router.push('/');
-    }, [setGameState, clearImage, router]);
-    
     const handleAction = useCallback((action: string) => {
         if (gameState) {
             processPlayerAction(action, gameState);
@@ -106,18 +68,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         handleAction(`سفر به ${location}`);
     }, [handleAction]);
 
-    useEffect(() => {
-        setIsGameLoading(false);
-    }, []);
 
     const value: GameContextType = {
         gameState,
-        isLoading: isLoading || isGameLoading,
+        isLoading,
         isGameLoading,
         currentImage,
         isImageLoading,
         savedGames,
-        startGame: startNewGame,
+        startGame,
         loadGame,
         deleteSave,
         resetGame,

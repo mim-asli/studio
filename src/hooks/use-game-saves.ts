@@ -4,12 +4,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import type { GameState, SaveFile, HallOfFameEntry } from "@/lib/types";
+import { useRouter } from 'next/navigation';
 
 const SAVES_KEY = "dastan-saves";
 const HALL_OF_FAME_KEY = "dastan-hall-of-fame";
 
 export function useGameSaves() {
     const { toast } = useToast();
+    const router = useRouter();
     const [savedGames, setSavedGames] = useState<SaveFile[]>([]);
     
     const loadSavedGames = useCallback(async (): Promise<void> => {
@@ -69,7 +71,20 @@ export function useGameSaves() {
     const loadGame = useCallback(async (saveId: string): Promise<GameState | null> => {
         try {
             const saveFile = savedGames.find(save => save.id === saveId);
-            return saveFile ? saveFile.gameState : null;
+            if (saveFile) {
+                toast({
+                  title: "بازی بارگذاری شد",
+                  description: "ماجراجویی شما ادامه می‌یابد!",
+                });
+                router.push('/play');
+                return saveFile.gameState;
+            }
+            toast({
+                variant: "destructive",
+                title: "فایل ذخیره یافت نشد",
+                description: "فایل ذخیره مورد نظر پیدا نشد.",
+            });
+            return null;
         } catch (error) {
             console.error("Failed to load game:", error);
             toast({
@@ -79,7 +94,7 @@ export function useGameSaves() {
             });
             return null;
         }
-    }, [toast, savedGames]);
+    }, [toast, savedGames, router]);
 
 
     const deleteSave = useCallback((saveId: string) => {
@@ -89,10 +104,19 @@ export function useGameSaves() {
                 localStorage.setItem(SAVES_KEY, JSON.stringify(newSaves));
                 return newSaves;
            });
+           toast({
+               title: "فایل حذف شد",
+               description: "ماجراجویی انتخاب شده با موفقیت حذف شد.",
+           });
         } catch (error) {
             console.error("Failed to delete save:", error);
+            toast({
+                variant: "destructive",
+                title: "حذف ناموفق بود",
+                description: "خطایی در هنگام حذف فایل ذخیره رخ داد.",
+            });
         }
-    }, []);
+    }, [toast]);
 
     const saveToHallOfFame = useCallback((finalState: GameState) => {
         try {
@@ -123,5 +147,3 @@ export function useGameSaves() {
 
     return { savedGames, saveGame, loadGame, deleteSave, saveToHallOfFame };
 }
-
-    
