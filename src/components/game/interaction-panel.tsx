@@ -1,11 +1,12 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Send, ChevronsLeft, Bot } from 'lucide-react';
+import { Send, ChevronsLeft, Bot, Mic, MicOff, AlertCircle } from 'lucide-react';
+import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +24,20 @@ interface InteractionPanelProps {
 
 export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat }: InteractionPanelProps) {
   const [customInput, setCustomInput] = useState('');
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    isSupported,
+    error,
+  } = useSpeechRecognition();
+
+  useEffect(() => {
+    if (transcript) {
+      setCustomInput(transcript);
+    }
+  }, [transcript]);
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,13 +95,50 @@ export function InteractionPanel({ choices, onAction, isLoading, onDirectorChat 
                       disabled={isLoading}
                       className="bg-background/50 focus:ring-primary"
                   />
+                  {isSupported ? (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                type="button"
+                                size="icon"
+                                onClick={isListening ? stopListening : startListening}
+                                disabled={isLoading}
+                                variant={isListening ? 'destructive' : 'outline'}
+                                className="bg-background/50 hover:bg-background/80"
+                            >
+                                {isListening ? <MicOff /> : <Mic />}
+                                <span className="sr-only">{isListening ? 'توقف ضبط' : 'شروع ضبط'}</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{isListening ? 'توقف ضبط' : 'ورودی صوتی'}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button type="button" size="icon" disabled={true} variant="outline">
+                                <MicOff />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>تشخیص گفتار توسط این مرورگر پشتیبانی نمی‌شود.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                  )}
                   <Button type="submit" size="icon" disabled={isLoading} variant="default">
                       <Send />
                   </Button>
               </form>
+              {error && (
+                <p className="text-xs text-destructive mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {error}
+                </p>
+              )}
           </div>
         </CardContent>
       </Card>
     </TooltipProvider>
   );
 }
+
