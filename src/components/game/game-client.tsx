@@ -28,6 +28,9 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { useGameContext } from "@/context/game-context";
@@ -90,6 +93,12 @@ export function GameClient() {
                                 </TooltipContent>
                               </Tooltip>
                               <SheetContent side="left" className="p-0 pt-10 bg-transparent border-none w-[350px]">
+                                <SheetHeader>
+                                    <SheetTitle className="sr-only">منوی بازی</SheetTitle>
+                                    <SheetDescription className="sr-only">
+                                      در پنل‌های بازی مانند علائم حیاتی، موجودی و نقشه پیمایش کنید.
+                                    </SheetDescription>
+                                </SheetHeader>
                                 <Sidebar />
                               </SheetContent>
                             </Sheet>
