@@ -9,7 +9,8 @@ import { craftItem } from "@/ai/flows/craft-item-flow";
 import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput, CraftItemOutput, CustomScenario } from "@/lib/types";
 import { initialGameState } from "@/lib/game-data";
 import { useGameSaves } from "./use-game-saves";
-import { PLAYER_ACTION_PREFIX } from "@/components/story-display";
+
+export const PLAYER_ACTION_PREFIX = "> ";
 
 export function useGameLoop() {
   const [gameState, setGameState] = useState<GameState | null>(null);
