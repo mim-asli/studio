@@ -155,10 +155,10 @@ export function GameClient() {
       startGame(scenario, characterName);
       setView("game");
   };
-
-  const handleFastTravel = useCallback((location: string) => {
+  
+  const handleAction = useCallback((action: string) => {
     if (gameState) {
-      processPlayerAction(location, gameState);
+      processPlayerAction(action, gameState);
     }
   }, [gameState, processPlayerAction]);
 
@@ -227,7 +227,7 @@ export function GameClient() {
                         </div>
                         <InteractionPanel 
                           choices={gameState.choices} 
-                          onAction={(action) => processPlayerAction(action, gameState)} 
+                          onAction={handleAction} 
                           isLoading={gameState.isLoading}
                           onDirectorChat={() => setIsDirectorChatOpen(true)}
                         />
@@ -269,8 +269,9 @@ export function GameClient() {
                           <SidebarTabs 
                             gameState={gameState}
                             onCraft={handleCrafting}
+                            onAction={handleAction}
                             isCrafting={gameState.isLoading}
-                            onFastTravel={handleFastTravel}
+                            onFastTravel={(loc) => handleAction(`سفر به ${loc}`)}
                           />
                         </div>
                       </div>

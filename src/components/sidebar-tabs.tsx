@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { GameState } from "@/lib/types";
 import { tabsData } from './sidebar-tab-data';
@@ -11,14 +11,23 @@ import { cn } from '@/lib/utils';
 interface SidebarTabsProps {
     gameState: GameState;
     onCraft: (ingredients: string[]) => void;
+    onAction: (action: string) => void;
     isCrafting: boolean;
     onFastTravel: (action: string) => void;
 }
 
-export function SidebarTabs({ gameState, onCraft, isCrafting, onFastTravel }: SidebarTabsProps) {
+export function SidebarTabs({ gameState, onCraft, onAction, isCrafting, onFastTravel }: SidebarTabsProps) {
   const [activeTab, setActiveTab] = useState("vitals");
   
-  const tabs = tabsData({ gameState, onCraft, isCrafting, onFastTravel });
+  useEffect(() => {
+    if (gameState.isCombat && activeTab !== "combat") {
+      setActiveTab("combat");
+    } else if (!gameState.isCombat && activeTab === "combat") {
+      setActiveTab("vitals");
+    }
+  }, [gameState.isCombat, activeTab]);
+
+  const tabs = tabsData({ gameState, onCraft, onAction, isCrafting, onFastTravel });
 
   return (
     <Tabs 

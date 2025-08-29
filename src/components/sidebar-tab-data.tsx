@@ -2,26 +2,35 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe } from "lucide-react";
+import { Backpack, PersonStanding, ScrollText, Map, Hammer, HeartPulse, Microscope, Globe, Swords } from "lucide-react";
 import { CraftingPanel } from "@/components/crafting-panel";
 import { PlayerHud } from "@/components/player-hud";
 import { SceneDisplay } from "@/components/scene-display";
 import { WorldStateDisplay } from "@/components/world-state-display";
 import type { GameState } from "@/lib/types";
 import { MapDisplay } from "./map-display";
+import { CombatControls } from "./combat/combat-controls";
 
 interface TabDataArgs {
     gameState: GameState;
     onCraft: (ingredients: string[]) => void;
+    onAction: (action: string) => void;
     isCrafting: boolean;
     onFastTravel: (action: string) => void;
 }
 
-export const tabsData = ({ gameState, onCraft, isCrafting, onFastTravel }: TabDataArgs) => {
-    const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects, discoveredLocations, isCombat } = gameState;
+export const tabsData = ({ gameState, onCraft, onAction, isCrafting, onFastTravel }: TabDataArgs) => {
+    const { inventory, skills, quests, playerState, worldState, sceneEntities, companions, activeEffects, discoveredLocations, isCombat, enemies } = gameState;
 
-    return [
-        { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" />, component: <PlayerHud playerState={playerState} activeEffects={activeEffects} isCombat={isCombat} /> },
+    const allTabs = [
+        { 
+            value: "combat", 
+            label: "مبارزه", 
+            icon: <Swords className="w-5 h-5" />, 
+            component: <CombatControls enemies={enemies || []} onAction={onAction} />,
+            show: isCombat 
+        },
+        { value: "vitals", label: "علائم حیاتی", icon: <HeartPulse className="w-5 h-5" />, component: <PlayerHud playerState={playerState} activeEffects={activeEffects} isCombat={isCombat} />, show: true },
         { value: "inventory", label: "موجودی", icon: <Backpack className="w-5 h-5" />, component: (
           <Card className="bg-card/80 backdrop-blur-sm border h-full">
             <CardHeader>
@@ -35,9 +44,9 @@ export const tabsData = ({ gameState, onCraft, isCrafting, onFastTravel }: TabDa
                 )}
             </CardContent>
           </Card>
-        )},
-        { value: "scene", label: "صحنه", icon: <Microscope className="w-5 h-5" />, component: <SceneDisplay entities={sceneEntities || []} companions={companions || []} /> },
-        { value: "crafting", label: "ساخت و ساز", icon: <Hammer className="w-5 h-5" />, component: <CraftingPanel inventory={inventory} onCraft={onCraft} isCrafting={isCrafting}/> },
+        ), show: true },
+        { value: "scene", label: "صحنه", icon: <Microscope className="w-5 h-5" />, component: <SceneDisplay entities={sceneEntities || []} companions={companions || []} />, show: true },
+        { value: "crafting", label: "ساخت و ساز", icon: <Hammer className="w-5 h-5" />, component: <CraftingPanel inventory={inventory} onCraft={onCraft} isCrafting={isCrafting}/>, show: true },
         { value: "character", label: "شخصیت", icon: <PersonStanding className="w-5 h-5" />, component: (
           <Card className="bg-card/80 backdrop-blur-sm border h-full">
             <CardHeader>
@@ -51,7 +60,7 @@ export const tabsData = ({ gameState, onCraft, isCrafting, onFastTravel }: TabDa
                 )}
             </CardContent>
           </Card>
-        )},
+        ), show: true },
         { value: "quests", label: "مأموریت‌ها", icon: <ScrollText className="w-5 h-5" />, component: (
           <Card className="bg-card/80 backdrop-blur-sm border h-full">
              <CardHeader>
@@ -65,8 +74,8 @@ export const tabsData = ({ gameState, onCraft, isCrafting, onFastTravel }: TabDa
                   )}
               </CardContent>
           </Card>
-        )},
-        { value: "world", label: "جهان", icon: <Globe className="w-5 h-5" />, component: <WorldStateDisplay worldState={worldState} /> },
+        ), show: true },
+        { value: "world", label: "جهان", icon: <Globe className="w-5 h-5" />, component: <WorldStateDisplay worldState={worldState} />, show: true },
         { value: "map", label: "نقشه", icon: <Map className="w-5 h-5" />, component: (
           <Card className="bg-card/80 backdrop-blur-sm border h-full flex flex-col">
             <CardHeader>
@@ -80,6 +89,8 @@ export const tabsData = ({ gameState, onCraft, isCrafting, onFastTravel }: TabDa
                 />
             </CardContent>
           </Card>
-        )},
+        ), show: true },
       ];
+    
+    return allTabs.filter(tab => tab.show);
 }
