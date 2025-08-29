@@ -4,16 +4,16 @@
 import { useCallback } from "react";
 import type { GameState, CustomScenario } from "@/lib/types";
 import { initialGameState } from "@/lib/game-data";
-import { useRouter } from 'next/navigation';
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 interface UseGameInitializerProps {
-  onGameLoad: (gameState: GameState) => void;
+  onGameLoad: (gameState: GameState | null) => void;
   processPlayerAction: (action: string, gameState: GameState) => void;
   clearImage: () => void;
+  router: AppRouterInstance;
 }
 
-export function useGameInitializer({ onGameLoad, processPlayerAction, clearImage }: UseGameInitializerProps) {
-    const router = useRouter();
+export function useGameInitializer({ onGameLoad, processPlayerAction, clearImage, router }: UseGameInitializerProps) {
 
     const startGame = useCallback((scenario: CustomScenario, characterName: string) => {
         clearImage();
@@ -61,7 +61,7 @@ export function useGameInitializer({ onGameLoad, processPlayerAction, clearImage
 
 
     const resetGame = useCallback(() => {
-        onGameLoad(initialGameState); // Essentially clears the state
+        onGameLoad(null); // Clears the state
         clearImage();
         router.push('/');
     }, [onGameLoad, clearImage, router]);

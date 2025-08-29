@@ -10,6 +10,7 @@ import { useCraftingHandler } from '@/hooks/useCraftingHandler';
 import { useImageGenerator } from '@/hooks/use-image-generator';
 import { useGameSaves } from '@/hooks/use-game-saves';
 import { useGameState } from '@/hooks/useGameState';
+import { useRouter } from 'next/navigation';
 
 interface GameContextType {
     gameState: GameState | null;
@@ -31,9 +32,10 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { settings } = useSettingsContext();
+    const router = useRouter();
     const { gameState, setGameState, isLoading, setIsLoading, isGameLoading, setIsGameLoading } = useGameState();
 
-    const { savedGames, loadGame: loadGameFromStorage, deleteSave, saveToHallOfFame } = useGameSaves();
+    const { savedGames, loadGame: loadGameFromStorage, deleteSave } = useGameSaves();
     const { currentImage, isImageLoading, generateImage, clearImage } = useImageGenerator(settings.generateImages);
     
     const onStateUpdate = useCallback((newState: GameState) => {
@@ -43,20 +45,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { processPlayerAction } = useGameActions({ setIsLoading, onStateUpdate, onImagePrompt: generateImage });
     const { handleCrafting } = useCraftingHandler({ gameState, setIsLoading, onStateUpdate });
     
-    const onGameLoad = useCallback((state: GameState) => {
-        setGameState(state);
-    }, [setGameState]);
-
-    const { startGame, resetGame } = useGameInitializer({ onGameLoad, processPlayerAction, clearImage });
+    const { startGame, resetGame } = useGameInitializer({
+        onGameLoad: setGameState,
+        processPlayerAction,
+        clearImage,
+        router
+    });
     
     const loadGame = useCallback(async (saveId: string) => {
         setIsGameLoading(true);
         const loadedState = await loadGameFromStorage(saveId);
         if (loadedState) {
             setGameState({ ...loadedState, isLoading: false, gameStarted: true });
+            router.push('/play');
         }
         setIsGameLoading(false);
-    }, [loadGameFromStorage, setGameState, setIsGameLoading]);
+    }, [loadGameFromStorage, setGameState, setIsGameLoading, router]);
 
     const handleAction = useCallback((action: string) => {
         if (gameState) {

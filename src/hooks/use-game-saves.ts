@@ -4,14 +4,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import type { GameState, SaveFile, HallOfFameEntry } from "@/lib/types";
-import { useRouter } from 'next/navigation';
 
 const SAVES_KEY = "dastan-saves";
 const HALL_OF_FAME_KEY = "dastan-hall-of-fame";
 
 export function useGameSaves() {
     const { toast } = useToast();
-    const router = useRouter();
     const [savedGames, setSavedGames] = useState<SaveFile[]>([]);
     
     const loadSavedGames = useCallback(async (): Promise<void> => {
@@ -76,7 +74,6 @@ export function useGameSaves() {
                   title: "بازی بارگذاری شد",
                   description: "ماجراجویی شما ادامه می‌یابد!",
                 });
-                router.push('/play');
                 return saveFile.gameState;
             }
             toast({
@@ -94,7 +91,7 @@ export function useGameSaves() {
             });
             return null;
         }
-    }, [toast, savedGames, router]);
+    }, [toast, savedGames]);
 
 
     const deleteSave = useCallback((saveId: string) => {
