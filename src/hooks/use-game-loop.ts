@@ -145,7 +145,7 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
         ap: 4, 
         maxAp: 4,
       },
-      inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\n').filter(i => i.trim() !== ''),
+      inventory: Array.isArray(scenario.initialItems) ? scenario.initialItems : scenario.initialItems.split('\\n').filter(i => i.trim() !== ''),
       skills: characterSkills,
       companions: [],
       gameStarted: true,
@@ -161,7 +161,7 @@ export function useGameLoop({ onImagePrompt, onSaveGame }: UseGameLoopProps) {
     };
     
     // We don't set the state here directly. Instead, we start the first turn.
-    const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\n${scenario.storyPrompt}\n\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
+    const startPrompt = `دستورالعمل‌های سناریو برای هوش مصنوعی (این متن به بازیکن نشان داده نمی‌شود):\\n${scenario.storyPrompt}\\n\\nبازی را شروع کن و اولین صحنه را با جزئیات توصیف کن.`;
     
     processPlayerAction(startPrompt, freshGameState);
   }, [processPlayerAction]);
