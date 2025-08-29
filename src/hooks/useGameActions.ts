@@ -6,6 +6,8 @@ import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
 import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput } from "@/lib/types";
 import { useToast } from "./use-toast";
+import { setCurrentApiKey, getApiKey } from "@/lib/apiKey-manager";
+import { useSettingsContext } from "@/context/settings-context";
 
 export const PLAYER_ACTION_PREFIX = "> ";
 
@@ -17,6 +19,7 @@ interface UseGameActionsProps {
 
 export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: UseGameActionsProps) {
     const { toast } = useToast();
+    const { setAndCycleApiKey } = useSettingsContext();
 
     const handleGameOver = useCallback((state: GameState): GameState => {
         const finalState = { ...state, isGameOver: true, isLoading: false, choices: [] };
@@ -40,6 +43,13 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
 
 
         try {
+            // Select an API key before making a call
+            const apiKey = setAndCycleApiKey(getApiKey());
+            if (!apiKey) {
+                throw new Error("No valid API key available.");
+            }
+            setCurrentApiKey(apiKey);
+
             let nextState;
             if (currentState.isCombat) {
                 const combatResult: ManageCombatScenarioOutput = await manageCombatScenario({
@@ -107,18 +117,26 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
             
             onStateUpdate({...nextState, isLoading: false});
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error processing player action:", error);
+            
+            let description = "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.";
+            if (error.message.includes("No valid API key available")) {
+                description = "هیچ کلید API معتبری یافت نشد. لطفاً کلیدهای خود را در صفحه تنظیمات بررسی کنید یا یک کلید جدید اضافه کنید."
+            } else if (error.cause?.status === 429) {
+                 description = "سهمیه کلید فعلی تمام شده است. برنامه به طور خودکار از کلید بعدی استفاده خواهد کرد. لطفاً دوباره تلاش کنید."
+            }
+
             toast({
                 variant: "destructive",
                 title: "خطای هوش مصنوعی",
-                description: "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.",
+                description,
             });
             onStateUpdate({...currentState, isLoading: false});
         } finally {
             setIsLoading(false);
         }
-    }, [setIsLoading, onStateUpdate, onImagePrompt, toast, handleGameOver]);
+    }, [setIsLoading, onStateUpdate, onImagePrompt, toast, handleGameOver, setAndCycleApiKey]);
 
     return { processPlayerAction };
 }

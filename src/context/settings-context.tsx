@@ -29,6 +29,7 @@ interface SettingsContextType {
     isLoaded: boolean;
     updateSettings: (updater: (draft: AppSettings) => void) => void;
     setApiKeyStatus: (id: string, status: ApiKey['status']) => void;
+    setAndCycleApiKey: (keyToDisable?: string) => string | undefined;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -47,6 +48,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ...parsed,
             huggingFace: {...defaultSettings.huggingFace, ...parsed.huggingFace},
             localLlm: {...defaultSettings.localLlm, ...parsed.localLlm},
+            geminiApiKeys: (parsed.geminiApiKeys || []).map((k: ApiKey) => ({...k, status: k.status === 'valid' ? 'unchecked' : k.status}))
         };
         setSettings(mergedSettings);
       } else {
@@ -81,12 +83,35 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
     });
   }, [updateSettings]);
+  
+  const setAndCycleApiKey = useCallback((keyToDisable?: string): string | undefined => {
+    let nextKey: ApiKey | undefined;
+
+    setSettings(produce(draft => {
+      if (keyToDisable) {
+        const key = draft.geminiApiKeys.find(k => k.value === keyToDisable);
+        if (key) {
+          key.status = 'quota_exceeded';
+        }
+      }
+      
+      const availableKeys = draft.geminiApiKeys.filter(
+        k => k.enabled && k.status !== 'invalid' && k.status !== 'quota_exceeded'
+      );
+
+      nextKey = availableKeys.length > 0 ? availableKeys[0] : undefined;
+    }));
+    
+    return nextKey?.value;
+  }, []);
+
 
   const value = {
       settings,
       isLoaded,
       updateSettings,
       setApiKeyStatus,
+      setAndCycleApiKey,
   }
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
