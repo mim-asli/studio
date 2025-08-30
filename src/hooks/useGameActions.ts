@@ -6,7 +6,6 @@ import { generateNextTurn } from "@/ai/flows/generate-next-turn";
 import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
 import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput } from "@/lib/types";
 import { useToast } from "./use-toast";
-import { setCurrentApiKey, getApiKey } from "@/lib/apiKey-manager";
 import { useSettingsContext } from "@/context/settings-context";
 
 export const PLAYER_ACTION_PREFIX = "> ";
@@ -19,7 +18,7 @@ interface UseGameActionsProps {
 
 export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: UseGameActionsProps) {
     const { toast } = useToast();
-    const { setAndCycleApiKey } = useSettingsContext();
+    const { settings } = useSettingsContext();
 
     const handleGameOver = useCallback((state: GameState): GameState => {
         const finalState = { ...state, isGameOver: true, isLoading: false, choices: [] };
@@ -43,12 +42,11 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
 
 
         try {
-            // Select an API key before making a call. Pass the currently failing key to disable it.
-            const apiKey = setAndCycleApiKey(getApiKey());
-            if (!apiKey) {
+            // The API key selection and rotation is now handled by the genkit middleware.
+            const hasApiKey = settings.geminiApiKeys.some(k => k.enabled && k.value);
+            if (!hasApiKey) {
                 throw new Error("No valid API key available.");
             }
-            setCurrentApiKey(apiKey);
 
             let nextState;
             if (currentState.isCombat) {
@@ -137,7 +135,7 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
         } finally {
             setIsLoading(false);
         }
-    }, [setIsLoading, onStateUpdate, onImagePrompt, toast, handleGameOver, setAndCycleApiKey]);
+    }, [setIsLoading, onStateUpdate, onImagePrompt, toast, handleGameOver, settings.geminiApiKeys]);
 
     return { processPlayerAction };
 }
