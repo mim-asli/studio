@@ -43,7 +43,7 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
 
 
         try {
-            // Select an API key before making a call
+            // Select an API key before making a call. Pass the currently failing key to disable it.
             const apiKey = setAndCycleApiKey(getApiKey());
             if (!apiKey) {
                 throw new Error("No valid API key available.");
@@ -121,10 +121,11 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
             console.error("Error processing player action:", error);
             
             let description = "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.";
-            if (error.message.includes("No valid API key available")) {
-                description = "هیچ کلید API معتبری یافت نشد. لطفاً کلیدهای خود را در صفحه تنظیمات بررسی کنید یا یک کلید جدید اضافه کنید."
-            } else if (error.cause?.status === 429) {
+            // Check for Genkit's structured error for quota
+            if (error.code === 'resourceExhausted' || error.cause?.status === 429) {
                  description = "سهمیه کلید فعلی تمام شده است. برنامه به طور خودکار از کلید بعدی استفاده خواهد کرد. لطفاً دوباره تلاش کنید."
+            } else if (error.message.includes("No valid API key available")) {
+                description = "هیچ کلید API معتبری یافت نشد. لطفاً کلیدهای خود را در صفحه تنظیمات بررسی کنید یا یک کلید جدید اضافه کنید."
             }
 
             toast({

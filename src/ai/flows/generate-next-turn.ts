@@ -61,14 +61,16 @@ const generateNextTurnFlow = ai.defineFlow(
     // Add retry configuration for server errors
     retry: {
       backoff: {
-        // Start with a 1-second delay, and increase it by a factor of 2 for each retry
-        initial: 1000,
+        // Start with a 2-second delay, and increase it by a factor of 2 for each retry
+        initial: 2000,
         factor: 2,
         // Don't wait more than 10 seconds between retries
         max: 10000,
       },
-      // Try up to 3 times
+      // Try up to 3 times on quota errors
       maxAttempts: 3,
+      // Only retry on "unavailable" which corresponds to a 429 error
+      codes: ['unavailable', 'resourceExhausted'],
     },
   },
   async (input) => {

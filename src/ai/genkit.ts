@@ -13,7 +13,7 @@ export const ai = genkit({
         } catch (e) {
           const err = e as GenkitError;
           // Check if the error is a 429 (quota exceeded) and mark the key as such.
-          if (err.code === ('unavailable' as GenkitErrorCode)) {
+          if (err.code === ('unavailable' as GenkitErrorCode) || err.code === ('resourceExhausted' as GenkitErrorCode)) {
             const cause = err.cause as any;
             if (cause?.status === 429) {
                 // The key manager will see this and mark the current key as invalid.
