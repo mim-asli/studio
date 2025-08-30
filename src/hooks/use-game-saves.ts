@@ -143,5 +143,70 @@ export function useGameSaves() {
         }
     }, [toast]);
 
-    return { savedGames, saveGame, loadGame, deleteSave, saveToHallOfFame };
+    const exportSave = useCallback((saveId: string) => {
+        const saveFile = savedGames.find(save => save.id === saveId);
+        if (!saveFile) {
+            toast({ variant: 'destructive', title: 'فایل یافت نشد' });
+            return;
+        }
+
+        const jsonString = JSON.stringify(saveFile, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const safeCharName = saveFile.characterName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        a.download = `dastan_save_${safeCharName}_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast({ title: 'فایل با موفقیت خروجی گرفته شد!' });
+    }, [savedGames, toast]);
+
+    const importSave = useCallback(async (file: File): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const json = event.target?.result as string;
+                    if (!json) {
+                        throw new Error("فایل خالی است");
+                    }
+                    const newSave: SaveFile = JSON.parse(json);
+
+                    if (!newSave.id || !newSave.timestamp || !newSave.gameState || !newSave.characterName) {
+                        throw new Error("فرمت فایل ذخیره نامعتبر است.");
+                    }
+
+                    setSavedGames(prevSaves => {
+                        const newSaves = [...prevSaves];
+                        const existingSaveIndex = newSaves.findIndex(s => s.id === newSave.id);
+                        if (existingSaveIndex > -1) {
+                            newSaves[existingSaveIndex] = newSave;
+                        } else {
+                            newSaves.push(newSave);
+                        }
+                        newSaves.sort((a, b) => b.timestamp - a.timestamp);
+                        localStorage.setItem(SAVES_KEY, JSON.stringify(newSaves));
+                        return newSaves;
+                    });
+
+                    toast({ title: 'فایل با موفقیت وارد شد!', description: `ماجراجویی "${newSave.characterName}" اضافه شد.` });
+                    resolve();
+                } catch (error: any) {
+                    console.error("Failed to import save:", error);
+                    toast({ variant: 'destructive', title: 'وارد کردن ناموفق بود', description: error.message });
+                    reject(error);
+                }
+            };
+            reader.onerror = (error) => {
+                 toast({ variant: 'destructive', title: 'خطا در خواندن فایل' });
+                 reject(error);
+            }
+            reader.readAsText(file);
+        });
+    }, [toast]);
+
+    return { savedGames, saveGame, loadGame, deleteSave, saveToHallOfFame, exportSave, importSave };
 }

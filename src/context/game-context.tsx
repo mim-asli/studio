@@ -22,6 +22,8 @@ interface GameContextType {
     startGame: (scenario: CustomScenario, characterName: string) => void;
     loadGame: (saveId: string) => void;
     deleteSave: (saveId: string) => void;
+    importSave: (file: File) => Promise<void>;
+    exportSave: (saveId: string) => void;
     resetGame: () => void;
     handleAction: (action: string) => void;
     handleCrafting: (ingredients: string[]) => void;
@@ -35,7 +37,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const router = useRouter();
     const { gameState, setGameState, isLoading, setIsLoading, isGameLoading, setIsGameLoading } = useGameState();
 
-    const { savedGames, loadGame: loadGameFromStorage, deleteSave } = useGameSaves();
+    const { savedGames, loadGame: loadGameFromStorage, deleteSave, importSave, exportSave } = useGameSaves();
     const { currentImage, isImageLoading, generateImage, clearImage } = useImageGenerator(settings.generateImages);
     
     const onStateUpdate = useCallback((newState: GameState) => {
@@ -83,6 +85,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         startGame,
         loadGame,
         deleteSave,
+        importSave,
+        exportSave,
         resetGame,
         handleAction,
         handleCrafting,

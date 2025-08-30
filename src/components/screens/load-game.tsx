@@ -1,8 +1,9 @@
 
 "use client";
 
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, Download, UploadCloud } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -18,12 +19,37 @@ import {
 import type { SaveFile } from '@/lib/types';
 import { useGameContext } from '@/context/game-context';
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
+
 
 export function LoadGame() {
-    const { savedGames, loadGame, deleteSave } = useGameContext();
-    
+    const { savedGames, loadGame, deleteSave, importSave, exportSave } = useGameContext();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
+
     const handleDeleteGame = (saveId: string) => {
         deleteSave(saveId);
+    };
+
+    const handleImportClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            if (file.type !== 'application/json') {
+                toast({
+                    variant: 'destructive',
+                    title: 'فایل نامعتبر',
+                    description: 'لطفاً یک فایل ذخیره با فرمت .json انتخاب کنید.',
+                });
+                return;
+            }
+            await importSave(file);
+            // Reset the input value to allow importing the same file again
+            event.target.value = '';
+        }
     };
 
     return (
@@ -40,9 +66,24 @@ export function LoadGame() {
                 </div>
 
                 <Card className="mb-6 border-primary/20">
-                    <CardHeader>
-                        <CardTitle>بازی‌های ذخیره شده</CardTitle>
-                        <CardDescription>یک ماجراجویی را برای ادامه انتخاب کنید.</CardDescription>
+                    <CardHeader className="flex-row justify-between items-center">
+                        <div>
+                            <CardTitle>بازی‌های ذخیره شده</CardTitle>
+                            <CardDescription>یک ماجراجویی را برای ادامه انتخاب کنید.</CardDescription>
+                        </div>
+                        <div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                accept=".json"
+                                className="hidden"
+                            />
+                            <Button onClick={handleImportClick} variant="outline">
+                                <UploadCloud className="ml-2"/>
+                                وارد کردن
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         {savedGames.length > 0 ? (
@@ -59,6 +100,9 @@ export function LoadGame() {
                                         <div className="flex items-center gap-2">
                                             <Button variant="ghost" size="sm" onClick={() => loadGame(save.id)}>
                                                 بارگذاری
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" onClick={() => exportSave(save.id)}>
+                                                <Download className="w-4 h-4"/>
                                             </Button>
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
