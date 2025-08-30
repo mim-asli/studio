@@ -16,22 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { useSettingsContext } from "@/context/settings-context";
-
-// A simple (and not very reliable) function to test an API key.
-// It just tries to fetch the models list. A 400 or 429 error can still mean the key is valid.
-// A more robust solution would involve a dedicated Genkit flow.
-async function simpleTestApiKey(apiKey: string): Promise<ApiKey['status']> {
-    try {
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models', {
-            headers: { 'x-goog-api-key': apiKey }
-        });
-        if (response.ok) return 'valid';
-        if (response.status === 429) return 'quota_exceeded';
-        return 'invalid';
-    } catch (error) {
-        return 'invalid';
-    }
-}
+import { testApiKey } from "@/ai/flows/test-api-key-flow";
 
 
 export function GeminiApiKeys() {
@@ -51,8 +36,8 @@ export function GeminiApiKeys() {
     const handleTestKey = async (key: ApiKey) => {
         setIsTesting(key.id);
         try {
-            const status = await simpleTestApiKey(key.value);
-            setApiKeyStatus(key.id, status);
+            const result = await testApiKey(key.value);
+            setApiKeyStatus(key.id, result.status);
         } catch (error) {
             console.error("Failed to test API key:", error);
             setApiKeyStatus(key.id, 'invalid');
