@@ -85,25 +85,26 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [updateSettings]);
   
   const setAndCycleApiKey = useCallback((keyToDisable?: string): string | undefined => {
-    let nextKey: ApiKey | undefined;
-
-    setSettings(produce(draft => {
-      if (keyToDisable) {
-        const key = draft.geminiApiKeys.find(k => k.value === keyToDisable);
-        if (key) {
-          key.status = 'quota_exceeded';
-        }
-      }
-      
-      const availableKeys = draft.geminiApiKeys.filter(
+    // First, find the next valid key from the current state.
+    // This avoids accessing a revoked proxy later.
+    const availableKeys = settings.geminiApiKeys.filter(
         k => k.enabled && k.status !== 'invalid' && k.status !== 'quota_exceeded'
-      );
+    );
+    const nextKey = availableKeys.length > 0 ? availableKeys[0] : undefined;
 
-      nextKey = availableKeys.length > 0 ? availableKeys[0] : undefined;
-    }));
+    // Now, update the state to disable the failing key.
+    if (keyToDisable) {
+        updateSettings(draft => {
+            const key = draft.geminiApiKeys.find(k => k.value === keyToDisable);
+            if (key) {
+                key.status = 'quota_exceeded';
+            }
+        });
+    }
     
+    // Return the value of the key we found *before* the state update.
     return nextKey?.value;
-  }, []);
+  }, [settings, updateSettings]);
 
 
   const value = {
