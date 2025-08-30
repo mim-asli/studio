@@ -7,6 +7,7 @@ import { manageCombatScenario } from "@/ai/flows/manage-combat-scenario";
 import type { GameState, GenerateNextTurnOutput, ManageCombatScenarioOutput } from "@/lib/types";
 import { useToast } from "./use-toast";
 import { useSettingsContext } from "@/context/settings-context";
+import {type GenkitErrorCode, type GenkitError} from 'genkit';
 
 export const PLAYER_ACTION_PREFIX = "> ";
 
@@ -18,7 +19,7 @@ interface UseGameActionsProps {
 
 export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: UseGameActionsProps) {
     const { toast } = useToast();
-    const { settings } = useSettingsContext();
+    const { settings, setAndCycleApiKey } = useSettingsContext();
 
     const handleGameOver = useCallback((state: GameState): GameState => {
         const finalState = { ...state, isGameOver: true, isLoading: false, choices: [] };
@@ -40,17 +41,56 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
         }
         onStateUpdate(optimisticState);
 
+        const executeAI = async <T,U>(
+            flow: (input: T & { apiKey?: string }) => Promise<U>,
+            input: T, 
+            maxRetries = settings.geminiApiKeys.length
+        ): Promise<U> => {
+            
+            let attempts = 0;
+            let currentApiKeyId: string | undefined;
+
+            while(attempts < maxRetries) {
+                const availableKeys = settings.geminiApiKeys.filter(
+                    k => k.enabled && k.status !== 'invalid' && k.status !== 'quota_exceeded'
+                );
+
+                if (availableKeys.length === 0) {
+                    throw new Error("No valid, enabled Gemini API keys are available.");
+                }
+                
+                const keyToUse = availableKeys[0];
+                currentApiKeyId = keyToUse.id;
+
+                try {
+                    return await flow({...input, apiKey: keyToUse.value });
+                } catch (e) {
+                    const err = e as GenkitError;
+                    const cause = err.cause as any;
+
+                    if ((err.code === ('unavailable' as GenkitErrorCode) || 
+                         err.code === ('resourceExhausted' as GenkitErrorCode) ||
+                         (cause?.status === 429))
+                    ) {
+                        attempts++;
+                        setAndCycleApiKey(currentApiKeyId); // Mark the key as bad
+                        if(attempts >= maxRetries) {
+                            throw new Error("All API keys have exceeded their quota.");
+                        }
+                    } else {
+                        // For non-quota errors, we don't retry.
+                        throw err;
+                    }
+                }
+            }
+            throw new Error("Failed to get a response from the AI after multiple attempts.");
+        }
+
 
         try {
-            // The API key selection and rotation is now handled by the genkit middleware.
-            const hasApiKey = settings.geminiApiKeys.some(k => k.enabled && k.value);
-            if (!hasApiKey) {
-                throw new Error("No valid API key available.");
-            }
-
             let nextState;
             if (currentState.isCombat) {
-                const combatResult: ManageCombatScenarioOutput = await manageCombatScenario({
+                const combatResult = await executeAI<ManageCombatScenarioOutput, ManageCombatScenarioOutput>(manageCombatScenario, {
                     playerAction,
                     playerState: currentState.playerState,
                     enemies: currentState.enemies || [],
@@ -84,7 +124,7 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
 
             } else {
                 const gameStateForAI = JSON.stringify(currentState);
-                const nextTurn: GenerateNextTurnOutput = await generateNextTurn({
+                const nextTurn = await executeAI<GenerateNextTurnInput, GenerateNextTurnOutput>(generateNextTurn, {
                     gameState: gameStateForAI,
                     playerAction,
                     difficulty: currentState.difficulty,
@@ -119,11 +159,10 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
             console.error("Error processing player action:", error);
             
             let description = "عملیات با خطا مواجه شد. لطفاً یک اقدام متفاوت را امتحان کنید.";
-            // Check for Genkit's structured error for quota
-            if (error.code === 'resourceExhausted' || error.cause?.status === 429) {
-                 description = "سهمیه کلید فعلی تمام شده است. برنامه به طور خودکار از کلید بعدی استفاده خواهد کرد. لطفاً دوباره تلاش کنید."
-            } else if (error.message.includes("No valid API key available")) {
+            if (error.message.includes("No valid, enabled Gemini API keys are available")) {
                 description = "هیچ کلید API معتبری یافت نشد. لطفاً کلیدهای خود را در صفحه تنظیمات بررسی کنید یا یک کلید جدید اضافه کنید."
+            } else if (error.message.includes("All API keys have exceeded their quota")) {
+                description = "سهمیه تمام کلیدهای API شما تمام شده است. لطفاً کلید جدیدی اضافه کنید یا بعداً دوباره تلاش کنید."
             }
 
             toast({
@@ -135,7 +174,7 @@ export function useGameActions({ setIsLoading, onStateUpdate, onImagePrompt }: U
         } finally {
             setIsLoading(false);
         }
-    }, [setIsLoading, onStateUpdate, onImagePrompt, toast, handleGameOver, settings.geminiApiKeys]);
+    }, [setIsLoading, onStateUpdate, onImagePrompt, toast, handleGameOver, settings.geminiApiKeys, setAndCycleApiKey]);
 
     return { processPlayerAction };
 }

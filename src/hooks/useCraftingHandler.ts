@@ -5,6 +5,7 @@ import { useCallback } from "react";
 import { craftItem } from "@/ai/flows/craft-item-flow";
 import type { GameState, CraftItemOutput } from "@/lib/types";
 import { useToast } from "./use-toast";
+import { useSettingsContext } from "@/context/settings-context";
 
 interface UseCraftingHandlerProps {
   gameState: GameState | null;
@@ -14,6 +15,7 @@ interface UseCraftingHandlerProps {
 
 export function useCraftingHandler({ gameState, setIsLoading, onStateUpdate }: UseCraftingHandlerProps) {
   const { toast } = useToast();
+  const { settings } = useSettingsContext();
 
   const handleCrafting = useCallback(async (ingredients: string[]) => {
     if (!gameState) return;
@@ -22,9 +24,17 @@ export function useCraftingHandler({ gameState, setIsLoading, onStateUpdate }: U
     const formattedPlayerAction = `> ترکیب کردن: ${ingredients.join('، ')}`;
 
     try {
+        const availableKeys = settings.geminiApiKeys.filter(k => k.enabled && k.value && k.status !== 'invalid' && k.status !== 'quota_exceeded');
+        if (availableKeys.length === 0) {
+            throw new Error("No valid API key available.");
+        }
+        const apiKey = availableKeys[0].value;
+
+
         const result: CraftItemOutput = await craftItem({
             ingredients,
             playerSkills: gameState.skills,
+            apiKey: apiKey,
         });
 
         let newInventory = [...gameState.inventory];
@@ -65,7 +75,7 @@ export function useCraftingHandler({ gameState, setIsLoading, onStateUpdate }: U
     } finally {
         setIsLoading(false);
     }
-  }, [gameState, setIsLoading, onStateUpdate, toast]);
+  }, [gameState, setIsLoading, onStateUpdate, toast, settings.geminiApiKeys]);
 
   return { handleCrafting };
 }

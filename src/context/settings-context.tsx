@@ -29,7 +29,7 @@ interface SettingsContextType {
     isLoaded: boolean;
     updateSettings: (updater: (draft: AppSettings) => void) => void;
     setApiKeyStatus: (id: string, status: ApiKey['status']) => void;
-    setAndCycleApiKey: (keyToDisable?: string) => string | undefined;
+    setAndCycleApiKey: (keyToDisableId?: string) => string | undefined;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -84,27 +84,36 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
   }, [updateSettings]);
   
-  const setAndCycleApiKey = useCallback((keyToDisable?: string): string | undefined => {
-    // This logic needs to read the current state, but not from a revoked proxy.
-    // So we find the next key from the current 'settings' state object.
-    const availableKeys = settings.geminiApiKeys.filter(
-        k => k.enabled && k.status !== 'invalid' && k.status !== 'quota_exceeded' && k.value !== keyToDisable
-    );
-    const nextKey = availableKeys.length > 0 ? availableKeys[0] : undefined;
+  const setAndCycleApiKey = useCallback((keyToDisableId?: string): string | undefined => {
+    // This function now has two jobs:
+    // 1. Mark the specified key (if any) as having a quota issue.
+    // 2. Find the *next* valid key to be used for the subsequent attempt.
 
-    // Now, schedule the update to disable the failing key.
-    if (keyToDisable) {
+    // Perform the state update to mark the key as disabled.
+    if (keyToDisableId) {
         updateSettings(draft => {
-            const key = draft.geminiApiKeys.find(k => k.value === keyToDisable);
-            if (key) {
-                key.status = 'quota_exceeded';
+            const keyToUpdate = draft.geminiApiKeys.find(k => k.id === keyToDisableId);
+            if (keyToUpdate) {
+                keyToUpdate.status = 'quota_exceeded';
             }
         });
     }
+
+    // Return the *current* list of keys, filtered to find the next valid one.
+    // This needs to be done on the freshest state.
+    // We use a functional update with `setSettings` to get the most recent state.
+    let nextKey: ApiKey | undefined;
+    setSettings(currentSettings => {
+        const availableKeys = currentSettings.geminiApiKeys.filter(
+            k => k.enabled && k.status !== 'invalid' && k.status !== 'quota_exceeded'
+        );
+        nextKey = availableKeys[0];
+        return currentSettings; // No change in this update, just for reading latest state.
+    });
     
-    // Return the value of the key we found *before* the state update.
     return nextKey?.value;
-  }, [settings, updateSettings]);
+
+  }, [updateSettings]);
 
 
   const value = {

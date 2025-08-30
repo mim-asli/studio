@@ -18,6 +18,7 @@ import { craftItemPrompt } from '../prompts/craft-item-prompt';
 const CraftItemInputSchema = z.object({
   ingredients: z.array(z.string()).describe("A list of item names from the player's inventory to be combined."),
   playerSkills: z.array(z.string()).optional().describe("A list of the player's current skills, which might influence the crafting outcome."),
+  apiKey: z.string().optional().describe("The API key for the AI model."),
 });
 
 const CraftItemOutputSchema = z.object({
@@ -28,7 +29,7 @@ const CraftItemOutputSchema = z.object({
 });
 
 
-export async function craftItem(input: CraftItemInput): Promise<CraftItemOutput> {
+export async function craftItem(input: CraftItemInput & { apiKey?: string }): Promise<CraftItemOutput> {
   return craftItemFlow(input);
 }
 
@@ -38,8 +39,14 @@ const craftItemFlow = ai.defineFlow(
     inputSchema: CraftItemInputSchema,
     outputSchema: CraftItemOutputSchema,
   },
-  async input => {
-    const {output} = await craftItemPrompt(input);
+  async ({apiKey, ...input}) => {
+    const model = apiKey ? ai.model('googleai/gemini-pro', { requestMiddleware: (req, next) => {
+        if (!req.headers) req.headers = new Headers();
+        req.headers.set('x-goog-api-key', apiKey);
+        return next(req);
+    }}) : ai.model('googleai/gemini-pro');
+
+    const {output} = await ai.run(craftItemPrompt, {input, model});
     return output!;
   }
 );

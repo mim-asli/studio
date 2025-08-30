@@ -17,6 +17,7 @@ import { Loader2, Bot, User, Send } from "lucide-react";
 import type { DirectorMessage } from "@/lib/types";
 import { queryGameDirector } from '@/ai/flows/query-game-director';
 import { useGameContext } from '@/context/game-context';
+import { useSettingsContext } from '@/context/settings-context';
 
 interface GameDirectorChatProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ interface GameDirectorChatProps {
 
 export function GameDirectorChat({ isOpen, onClose }: GameDirectorChatProps) {
   const { gameState } = useGameContext();
+  const { settings } = useSettingsContext();
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<DirectorMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +63,12 @@ export function GameDirectorChat({ isOpen, onClose }: GameDirectorChatProps) {
     setIsLoading(true);
 
     try {
+        const availableKeys = settings.geminiApiKeys.filter(k => k.enabled && k.value && k.status !== 'invalid' && k.status !== 'quota_exceeded');
+        if (availableKeys.length === 0) {
+            throw new Error("No valid API key available.");
+        }
+        const apiKey = availableKeys[0].value;
+
         const gameStateString = JSON.stringify(gameState, null, 2);
         const conversationHistory = newMessages.map(msg => ({
             role: msg.role,
@@ -70,7 +78,8 @@ export function GameDirectorChat({ isOpen, onClose }: GameDirectorChatProps) {
         const response = await queryGameDirector({
             playerQuery: query,
             gameState: gameStateString,
-            conversationHistory: conversationHistory
+            conversationHistory: conversationHistory,
+            apiKey: apiKey
         });
 
         const directorMessage: DirectorMessage = { role: 'model', content: response.directorResponse };
@@ -83,7 +92,7 @@ export function GameDirectorChat({ isOpen, onClose }: GameDirectorChatProps) {
     } finally {
         setIsLoading(false);
     }
-  }, [isLoading, gameState, messages]);
+  }, [isLoading, gameState, messages, settings.geminiApiKeys]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

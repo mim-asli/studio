@@ -20,6 +20,7 @@ const QueryGameDirectorInputSchema = z.object({
   playerQuery: z.string().describe('The question the player wants to ask the game director.'),
   gameState: z.string().describe('The current game state in JSON format.'),
   conversationHistory: z.custom<DirectorMessage[]>().optional().describe('The history of the conversation so far.'),
+  apiKey: z.string().optional(),
 });
 
 const QueryGameDirectorOutputSchema = z.object({
@@ -27,7 +28,7 @@ const QueryGameDirectorOutputSchema = z.object({
 });
 
 
-export async function queryGameDirector(input: QueryGameDirectorInput): Promise<QueryGameDirectorOutput> {
+export async function queryGameDirector(input: QueryGameDirectorInput & { apiKey?: string }): Promise<QueryGameDirectorOutput> {
   return queryGameDirectorFlow(input);
 }
 
@@ -37,8 +38,14 @@ const queryGameDirectorFlow = ai.defineFlow(
     inputSchema: QueryGameDirectorInputSchema,
     outputSchema: QueryGameDirectorOutputSchema,
   },
-  async input => {
-    const {output} = await queryGameDirectorPrompt(input);
+  async ({apiKey, ...input}) => {
+    const model = apiKey ? ai.model('googleai/gemini-pro', { requestMiddleware: (req, next) => {
+        if (!req.headers) req.headers = new Headers();
+        req.headers.set('x-goog-api-key', apiKey);
+        return next(req);
+    }}) : ai.model('googleai/gemini-pro');
+
+    const {output} = await ai.run(queryGameDirectorPrompt, {input, model});
     return output!;
   }
 );

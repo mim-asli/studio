@@ -22,6 +22,7 @@ const ManageCombatScenarioInputSchema = z.object({
   playerState: PlayerStateSchema.describe('The current state of the player.'),
   enemies: z.array(EnemySchema).describe('The list of enemies currently in combat.'),
   combatLog: z.array(z.string()).optional().describe('A log of recent events in this combat.'),
+  apiKey: z.string().optional(),
 });
 
 const CombatRewardSchema = z.object({
@@ -39,7 +40,7 @@ const ManageCombatScenarioOutputSchema = z.object({
 });
 
 
-export async function manageCombatScenario(input: ManageCombatScenarioInput): Promise<ManageCombatScenarioOutput> {
+export async function manageCombatScenario(input: ManageCombatScenarioInput & { apiKey?: string }): Promise<ManageCombatScenarioOutput> {
   return manageCombatScenarioFlow(input);
 }
 
@@ -49,13 +50,19 @@ const manageCombatScenarioFlow = ai.defineFlow(
     inputSchema: ManageCombatScenarioInputSchema,
     outputSchema: ManageCombatScenarioOutputSchema,
   },
-  async input => {
+  async ({apiKey, ...input}) => {
     // If player action is to end turn, or if they have no AP, make it explicit for the AI
     if (input.playerState.ap <= 0 && !input.playerAction) {
       input.playerAction = '[پایان نوبت]';
     }
+    
+    const model = apiKey ? ai.model('googleai/gemini-pro', { requestMiddleware: (req, next) => {
+        if (!req.headers) req.headers = new Headers();
+        req.headers.set('x-goog-api-key', apiKey);
+        return next(req);
+    }}) : ai.model('googleai/gemini-pro');
 
-    const {output} = await manageCombatScenarioPrompt(input);
+    const {output} = await ai.run(manageCombatScenarioPrompt, {input, model});
     return output!;
   }
 );

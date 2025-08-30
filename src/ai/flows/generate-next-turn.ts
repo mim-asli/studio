@@ -22,6 +22,7 @@ const GenerateNextTurnInputSchema = z.object({
   playerAction: z.string(),
   difficulty: z.string().optional(),
   gmPersonality: z.string().optional(),
+  apiKey: z.string().optional(),
 });
 
 const GenerateNextTurnOutputSchema = z.object({
@@ -47,7 +48,7 @@ const GenerateNextTurnOutputSchema = z.object({
 });
 
 
-export async function generateNextTurn(input: GenerateNextTurnInput): Promise<GenerateNextTurnOutput> {
+export async function generateNextTurn(input: GenerateNextTurnInput & { apiKey?: string }): Promise<GenerateNextTurnOutput> {
   // Call the flow instead of the prompt directly
   return generateNextTurnFlow(input);
 }
@@ -58,23 +59,15 @@ const generateNextTurnFlow = ai.defineFlow(
     name: 'generateNextTurnFlow',
     inputSchema: GenerateNextTurnInputSchema,
     outputSchema: GenerateNextTurnOutputSchema,
-    // Add retry configuration for server errors
-    retry: {
-      backoff: {
-        // Start with a 2-second delay, and increase it by a factor of 2 for each retry
-        initial: 2000,
-        factor: 2,
-        // Don't wait more than 10 seconds between retries
-        max: 10000,
-      },
-      // Try up to 3 times on quota errors
-      maxAttempts: 3,
-      // Only retry on "unavailable" which corresponds to a 429 error
-      codes: ['unavailable', 'resourceExhausted'],
-    },
   },
-  async (input) => {
-    const { output } = await generateNextTurnPrompt(input);
+  async ({apiKey, ...input}) => {
+    const model = apiKey ? ai.model('googleai/gemini-pro', { requestMiddleware: (req, next) => {
+        if (!req.headers) req.headers = new Headers();
+        req.headers.set('x-goog-api-key', apiKey);
+        return next(req);
+    }}) : ai.model('googleai/gemini-pro');
+
+    const { output } = await ai.run(generateNextTurnPrompt, {input, model});
     return output!;
   }
 );
